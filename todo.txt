@@ -1,0 +1,10 @@
+* modal that asks you to input the CLIENT_ID
+
+* removed the notification for moved songs
+  moved to a separate div where it only shows the playlist that you are sorting
+  and a progress bar
+
+* automatically load the playlist when logging in
+
+* new ui for the loaded playlist
+  maybe move them in a slider w some modern animations
