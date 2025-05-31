@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Spotify Playlist Sorter</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="app.js"></script>
+    <script src="main.js"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -315,62 +315,31 @@
 
         /* Notification styles */
         .notification {
+            position: fixed;
+            top: 16px;
+            right: 16px;
             background-color: rgba(40, 40, 40, 0.95);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 12px;
-            padding: 16px;
+            border-left: 3px solid #1DB954;
+            border-radius: 6px;
+            padding: 14px 20px;
             color: white;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
             display: flex;
             align-items: center;
             gap: 12px;
-            animation: slideInRight 0.3s ease-out;
-            max-width: 400px;
-            transition: all 0.3s ease;
-        }
-
-        .notification.success {
-            border-left: 4px solid #1DB954;
-        }
-
-        .notification.error {
-            border-left: 4px solid #E91429;
+            width: fit-content;
+            min-width: 340px;
+            height: 48px;
         }
 
         .notification-icon {
-            flex-shrink: 0;
+            width: 22px;
+            height: 22px;
         }
 
-        .notification-content {
-            flex: 1;
-        }
-
-        .notification-title {
-            font-weight: 600;
-            font-size: 14px;
-            margin-bottom: 2px;
-        }
-
-        .notification-message {
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 13px;
-        }
-
-        @keyframes slideInRight {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-
-        .notification.fade-out {
-            opacity: 0;
-            transform: translateX(100%);
+        .notification-text {
+            font-size: 17px;
+            white-space: nowrap;
+            font-weight: 500;
         }
     </style>
 </body>

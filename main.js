@@ -1,5 +1,5 @@
 // SPOTIFY API CONFIGURATION
-        const CLIENT_ID = 'YOUR_SPOTIFY_CLIENT_ID'; // Your Client ID
+        const CLIENT_ID = 'YOUR_SPOTIFY_CLIENT_ID'; // YOUR_SPOTIFY_CLIENT_ID
         const REDIRECT_URI = window.location.origin + window.location.pathname;
         const SCOPES = 'playlist-read-private playlist-modify-private playlist-modify-public';
 
@@ -516,34 +516,18 @@
             }
         }
 
-        function showNotification(title, message, type = 'success') {
+        function showNotification(message, type = 'success') {
             const container = document.getElementById('notifications-container');
             const notification = document.createElement('div');
-            notification.className = `notification ${type}`;
+            notification.className = `notification`;
             
-            const icon = type === 'success' 
-                ? `<svg class="w-5 h-5 text-spotify-green notification-icon" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                   </svg>`
-                : `<svg class="w-5 h-5 text-red-500 notification-icon" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
-                   </svg>`;
-
             notification.innerHTML = `
-                ${icon}
-                <div class="notification-content">
-                    <div class="notification-title">${title}</div>
-                    <div class="notification-message">${message}</div>
-                </div>
+                <svg class="notification-icon text-spotify-green" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                </svg>
+                <span class="notification-text">${message}</span>
             `;
 
             container.appendChild(notification);
-
-            // Remove notification after 5 seconds
-            setTimeout(() => {
-                notification.classList.add('fade-out');
-                setTimeout(() => {
-                    notification.remove();
-                }, 300);
-            }, 5000);
+            setTimeout(() => notification.remove(), 3000);
         }
