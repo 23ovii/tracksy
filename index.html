@@ -1,1 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spotify Playlist Sorter</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="app.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        spotify: {
+                            green: '#1DB954',
+                            dark: '#0F0F0F',
+                            card: '#1A1A1A',
+                            border: '#2A2A2A',
+                            text: '#B3B3B3'
+                        }
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-out',
+                        'slide-up': 'slideUp 0.4s ease-out',
+                        'pulse-green': 'pulseGreen 2s infinite',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="min-h-screen bg-spotify-dark text-white overflow-x-hidden">
+    <!-- Main Container -->
+    <div class="min-h-screen flex flex-col">
+        <!-- Header moved to top -->
+        <div class="pt-12 pb-8 animate-fade-in">
+            <div class="flex flex-col items-center">
+                <div class="mb-6">
+                    <div class="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-spotify-green to-green-400 rounded-xl">
+                        <svg class="w-10 h-10 text-black" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.42 1.56-.299.421-1.02.599-1.559.3z"/>
+                        </svg>
+                    </div>
+                </div>
+                <h1 class="text-4xl font-bold text-white mb-2">Playlist Sorter</h1>
+                <p class="text-base text-spotify-text">Sort by artist, then album</p>
+            </div>
+        </div>
 
+        <!-- Auth section centered in remaining space -->
+        <div class="flex-1 flex items-center justify-center p-4">
+            <div class="w-full max-w-4xl">
+                <!-- Auth Card -->
+                <div id="authSection" class="bg-spotify-card border border-spotify-border rounded-xl p-6 w-[480px] mx-auto animate-slide-up hover:border-spotify-green/30 transition-all duration-300">
+                    <div class="text-center space-y-5">
+                        <div class="w-16 h-16 bg-gradient-to-br from-spotify-green to-green-400 rounded-lg mx-auto flex items-center justify-center">
+                            <svg class="w-8 h-8 text-black" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.42 1.56-.299.421-1.02.599-1.559.3z"/>
+                            </svg>
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <h2 class="text-xl font-semibold text-white">Connect Spotify</h2>
+                            <p class="text-sm text-spotify-text max-w-sm mx-auto">
+                                Authorize access to organize your playlists
+                                <span class="block text-xs opacity-75 mt-1">No data is stored or shared</span>
+                            </p>
+                        </div>
+                        
+                        <button 
+                            onclick="redirectToAuth()" 
+                            class="w-full max-w-md mx-auto bg-spotify-green hover:bg-green-400 text-black font-medium py-3 px-6 rounded-lg transition-all duration-200 flex items-center justify-center gap-2 text-sm hover:scale-[1.02] active:scale-[0.98]"
+                        >
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11.707 4.707a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                            </svg>
+                            Connect
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Main Section -->
+                <div id="mainSection" style="display: none;" class="space-y-6 animate-fade-in">
+                    
+                    <!-- Header with refresh -->
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-lg font-semibold text-white">Your Playlists</h2>
+                        <button 
+                            onclick="loadPlaylists()" 
+                            id="loadBtn"
+                            class="p-2 text-spotify-text hover:text-white hover:bg-spotify-card rounded-lg transition-all duration-200"
+                            title="Refresh playlists"
+                        >
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- Playlists Grid -->
+                    <div id="playlists" class="space-y-3">
+                        <!-- Playlist items will be inserted here -->
+                    </div>
+
+                    <!-- Progress Status -->
+                    <div id="reorderStatus" class="hidden">
+                        <div class="bg-spotify-card border border-spotify-border rounded-xl p-4">
+                            <div class="flex items-center gap-3 mb-3">
+                                <div class="flex-shrink-0">
+                                    <div class="animate-spin">
+                                        <svg class="w-5 h-5 text-spotify-green" fill="none" viewBox="0 0 24 24">
+                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                    </div>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-medium text-white truncate" id="statusPlaylistName"></p>
+                                    <p class="text-xs text-spotify-text" id="statusMessage">Reordering tracks...</p>
+                                </div>
+                                <div class="flex-shrink-0" id="statusComplete" style="display: none;">
+                                    <svg class="w-5 h-5 text-spotify-green" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="h-1.5 bg-spotify-border rounded-full overflow-hidden">
+                                <div id="progressBar" class="h-full bg-spotify-green transition-all duration-300 rounded-full" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status Messages -->
+        <div id="status" class="mt-6"></div>
+    </div>
+
+    <!-- Notifications Container -->
+    <div id="notifications-container" class="fixed top-4 right-4 z-50 space-y-2 max-w-sm"></div>
+
+    <style>
+        /* Keep only essential animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(10px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        /* Simplify card styles */
+        .playlist-card {
+            background-color: #282828;
+            border-radius: 8px;
+            padding: 16px;
+            transition: all 0.2s ease;
+        }
+        
+        .playlist-card:hover {
+            transform: translateY(-2px);
+            background-color: #323232;
+        }
+
+        /* Clean up other styles */
+        /* Update Playlist Grid Layout */
+        #playlists {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            padding: 20px 0;
+        }
+
+        /* Modernize Playlist Cards */
+        .playlist-card {
+            background-color: rgba(40, 40, 40, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 16px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            backdrop-filter: blur(10px);
+            height: 100%;
+        }
+        
+        .playlist-card:hover {
+            transform: translateY(-4px);
+            background-color: rgba(50, 50, 50, 0.9);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+            border-color: rgba(29, 185, 84, 0.5);
+        }
+        
+        .playlist-image {
+            width: 100%;
+            aspect-ratio: 1;
+            border-radius: 12px;
+            object-fit: cover;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+        
+        .playlist-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        
+        .playlist-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: white;
+            line-height: 1.4;
+        }
+        
+        .playlist-tracks {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .playlist-button {
+            background: linear-gradient(45deg, #1DB954, #1ed760);
+            color: black;
+            border: none;
+            border-radius: 12px;
+            padding: 10px 16px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            margin-top: auto;
+        }
+        
+        .playlist-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(29, 185, 84, 0.3);
+            background: linear-gradient(45deg, #1ed760, #22e266);
+        }
+        
+        .playlist-button:active {
+            transform: translateY(0);
+        }
+
+        /* Improve Status Bar */
+        #reorderStatus {
+            background: rgba(40, 40, 40, 0.9);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Modern Progress Bar */
+        #progressBar {
+            height: 6px;
+            background: linear-gradient(90deg, #1DB954, #1ed760);
+            border-radius: 999px;
+            transition: width 0.3s ease-in-out;
+        }
+
+        /* Keep existing scrollbar styles */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #1A1A1A;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #2A2A2A;
+            border-radius: 3px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3A3A3A;
+        }
+        
+        /* Loading state */
+        .loading {
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Add to your existing styles */
+        .shadow-xl {
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+        }
+
+        .hover\:shadow-spotify-green\/20:hover {
+            box-shadow: 0 0 30px rgba(29, 185, 84, 0.2);
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .animate-float {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        /* Notification styles */
+        .notification {
+            background-color: rgba(40, 40, 40, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 16px;
+            color: white;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: slideInRight 0.3s ease-out;
+            max-width: 400px;
+            transition: all 0.3s ease;
+        }
+
+        .notification.success {
+            border-left: 4px solid #1DB954;
+        }
+
+        .notification.error {
+            border-left: 4px solid #E91429;
+        }
+
+        .notification-icon {
+            flex-shrink: 0;
+        }
+
+        .notification-content {
+            flex: 1;
+        }
+
+        .notification-title {
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 2px;
+        }
+
+        .notification-message {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 13px;
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .notification.fade-out {
+            opacity: 0;
+            transform: translateX(100%);
+        }
+    </style>
+</body>
+</html>
