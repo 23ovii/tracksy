@@ -108,12 +108,12 @@ npx serve
         <br><strong>HTML5</strong>
       </td>
       <td align="center" width="96">
-        <img src="https://skillicons.dev/icons?i=css" width="48" height="48" alt="CSS3" />
-        <br><strong>CSS3</strong>
+        <img src="https://skillicons.dev/icons?i=tailwindcss" width="48" height="48" alt="Tailwind CSS" />
+        <br><strong>TailwindCSS</strong>
       </td>
       <td align="center" width="96">
-        <img src="https://skillicons.dev/icons?i=tailwind" width="48" height="48" alt="Tailwind CSS" />
-        <br><strong>TailwindCSS</strong>
+        <img src="https://skillicons.dev/icons?i=js" width="48" height="48" alt="JS" />
+        <br><strong>JavaScript</strong>
       </td>
       <td align="center" width="96">
         <img src="https://upload.wikimedia.org/wikipedia/commons/8/84/Spotify_icon.svg" width="48" height="48" alt="Spotify" style="filter: invert(1);" />
