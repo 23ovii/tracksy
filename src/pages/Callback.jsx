@@ -1,0 +1,50 @@
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth.jsx';
+import { exchangeSpotifyCode } from '../services/auth.js';
+
+function Callback() {
+  const navigate = useNavigate();
+  const { login, isAuthenticated } = useAuth();
+  const [errorMessage, setErrorMessage] = useState('');
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/dashboard');
+      return;
+    }
+
+    const code = new URLSearchParams(window.location.search).get('code');
+    if (!code) {
+      navigate('/');
+      return;
+    }
+
+    async function finalizeAuth() {
+      try {
+        const tokenData = await exchangeSpotifyCode(code);
+        login(tokenData);
+        navigate('/dashboard');
+      } catch (error) {
+        setErrorMessage(error.message);
+      }
+    }
+
+    finalizeAuth();
+  }, [isAuthenticated, login, navigate]);
+
+  return (
+    <section className="mx-auto max-w-3xl rounded-3xl border border-slate-700 bg-white/5 p-10 text-center text-slate-200 shadow-glow">
+      <p className="text-sm uppercase tracking-[0.32em] text-spotify-green">OAuth callback</p>
+      <h2 className="mt-6 text-3xl font-semibold text-white">Finishing authentication...</h2>
+      <p className="mt-4 text-slate-400">
+        {errorMessage || 'This page captures the Spotify authorization code and exchanges it for an access token.'}
+      </p>
+      {errorMessage && (
+        <p className="mt-4 rounded-3xl bg-rose-500/10 px-4 py-3 text-sm text-rose-200">{errorMessage}</p>
+      )}
+    </section>
+  );
+}
+
+export default Callback;
