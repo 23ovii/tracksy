@@ -63,7 +63,8 @@ In your GitHub repository, go to **Settings → Secrets and variables → Action
 
 - `VITE_SPOTIFY_CLIENT_ID`: Your Spotify Client ID
 - `VITE_SPOTIFY_REDIRECT_URI`: `https://23ovii.github.io/tracksy/callback`
-- `VITE_SPOTIFY_SCOPE`: `playlist-read-private playlist-read-collaborative user-read-private`
+
+**Note**: The scope (`playlist-read-private playlist-read-collaborative user-read-private`) is now hardcoded in the code for simplicity and doesn't need to be a secret.
 
 ### 2. Enable GitHub Pages
 
