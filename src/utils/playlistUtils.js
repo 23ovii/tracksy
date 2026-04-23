@@ -11,15 +11,12 @@ export function removeDuplicateTracks(tracks) {
 }
 
 export function sortTracksByVibe(tracks) {
-  return [...tracks].sort((a, b) => {
-    const score = (track) => {
-      const durationScore = Math.min(track.durationMs / 300000, 1);
-      const keywordScore = (track.name + ' ' + track.artist).split(/\s+/).length / 10;
-      return durationScore * 0.6 + Math.min(keywordScore, 1) * 0.4;
-    };
-
-    return score(b) - score(a);
-  });
+  const score = (track) => {
+    const durationScore = Math.min(track.durationMs / 300000, 1);
+    const keywordScore = `${track.name} ${track.artist}`.split(/\s+/).length / 10;
+    return durationScore * 0.6 + Math.min(keywordScore, 1) * 0.4;
+  };
+  return [...tracks].sort((a, b) => score(b) - score(a));
 }
 
 export function enhancePlaylistSuggestions(tracks) {

@@ -1,9 +1,11 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth.jsx';
+
+const navLinkClass = ({ isActive }) =>
+  `rounded-full px-4 py-2 transition ${isActive ? 'bg-white/10 text-white' : 'hover:bg-white/5'}`;
 
 function Navbar() {
   const { logout, isAuthenticated } = useAuth();
-  const location = useLocation();
 
   return (
     <header className="border-b border-slate-800 bg-black/10 backdrop-blur-xl">
@@ -15,18 +17,8 @@ function Navbar() {
           Tracksy
         </Link>
         <nav className="flex items-center gap-3 text-sm text-slate-300">
-          <Link
-            to="/"
-            className={`rounded-full px-4 py-2 transition ${location.pathname === '/' ? 'bg-white/10 text-white' : 'hover:bg-white/5'}`}
-          >
-            Home
-          </Link>
-          <Link
-            to="/dashboard"
-            className={`rounded-full px-4 py-2 transition ${location.pathname === '/dashboard' ? 'bg-white/10 text-white' : 'hover:bg-white/5'}`}
-          >
-            Dashboard
-          </Link>
+          <NavLink to="/" end className={navLinkClass}>Home</NavLink>
+          <NavLink to="/dashboard" className={navLinkClass}>Dashboard</NavLink>
           {isAuthenticated && (
             <button
               onClick={logout}

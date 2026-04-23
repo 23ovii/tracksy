@@ -3,11 +3,8 @@ import Navbar from './components/Navbar.jsx';
 import Home from './pages/Home.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import Callback from './pages/Callback.jsx';
-import { useAuth } from './hooks/useAuth.jsx';
 
 function App() {
-  const { isAuthenticated } = useAuth();
-
   return (
     <div className="min-h-screen bg-spotify-bg text-white">
       <Navbar />

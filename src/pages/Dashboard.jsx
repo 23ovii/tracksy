@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth.jsx';
 import { useSpotify } from '../hooks/useSpotify.jsx';
@@ -32,10 +32,9 @@ function Dashboard() {
     loadPlaylists();
   }, [isAuthenticated, loadPlaylists, navigate]);
 
-  const trackCountLabel = useMemo(() => {
-    if (!selectedPlaylist) return 'Select a playlist to see track details';
-    return `${selectedPlaylist.trackCount} tracks ready to review`;
-  }, [selectedPlaylist]);
+  const trackCountLabel = selectedPlaylist
+    ? `${selectedPlaylist.trackCount} tracks ready to review`
+    : 'Select a playlist to see track details';
 
   return (
     <section className="space-y-8 py-10">
