@@ -1,0 +1,72 @@
+name: ✨ Feature Request
+description: Propose a new feature or improvement
+labels: ["enhancement", "needs-triage"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Have an idea that would make Tracksy better? We'd love to hear it.
+        Please [search existing issues](https://github.com/23ovii/tracksy/issues?q=label%3Aenhancement) first — your idea may already be tracked.
+
+  - type: dropdown
+    id: type
+    attributes:
+      label: Feature type
+      options:
+        - "New Feature — something that doesn't exist yet"
+        - "Enhancement — improving an existing feature"
+        - "UI/UX Improvement — visual or interaction change"
+        - "Performance — speed, load time, or efficiency"
+        - "Developer Experience — tooling, docs, or workflow"
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem statement
+      description: What problem does this feature solve? What frustration or limitation led to this request?
+      placeholder: |
+        e.g. When I have a playlist with 500+ tracks, there's no way to filter out songs I've already heard recently.
+        I end up manually scrolling through the sorted list to find what I want.
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: Describe your ideal solution in as much detail as you like.
+      placeholder: |
+        e.g. Add a "Recently played" filter that hides tracks played in the last 30 days.
+        A toggle above the track list would show/hide these tracks without removing them from the sort.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Have you thought of other ways to solve this? Why do you prefer your proposed solution?
+      placeholder: "e.g. I considered a separate 'Played' playlist but that would require leaving Tracksy."
+
+  - type: textarea
+    id: mockups
+    attributes:
+      label: Mockups or examples
+      description: Sketches, screenshots from other apps, or links to similar implementations.
+      placeholder: "Drag images here or describe visually what this might look like..."
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional context
+      description: Links, related issues, or anything else that helps make the case.
+
+  - type: checkboxes
+    id: implementation
+    attributes:
+      label: Contribution
+      options:
+        - label: I'm willing to open a pull request to implement this feature

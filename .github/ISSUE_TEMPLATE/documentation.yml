@@ -1,0 +1,68 @@
+name: 📝 Documentation
+description: Report missing, unclear, or incorrect documentation
+labels: ["documentation", "needs-triage"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Good documentation matters. If something was confusing or missing, let us know so we can fix it.
+
+  - type: dropdown
+    id: doc_type
+    attributes:
+      label: Documentation type
+      options:
+        - "Missing — this topic isn't documented anywhere"
+        - "Unclear — it exists but is hard to follow"
+        - "Incorrect — something is wrong or out of date"
+        - "Needs examples — more code examples would help"
+    validations:
+      required: true
+
+  - type: textarea
+    id: location
+    attributes:
+      label: Where is the documentation issue?
+      description: Link to the specific file, section, or page. If it's missing, describe where it should go.
+      placeholder: |
+        e.g. README.md → "Setup" section doesn't mention that Spotify requires 127.0.0.1, not localhost.
+        Or: There's no documentation at all for how audio features (BPM/energy) are fetched.
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What's wrong or missing?
+      description: Describe the problem clearly. What were you trying to do and what did the docs fail to tell you?
+      placeholder: "e.g. I followed the setup steps exactly but got a 'Missing code verifier' error. Nowhere in the docs does it mention the 127.0.0.1 vs localhost difference."
+    validations:
+      required: true
+
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: Suggested improvement
+      description: If you know what the correct content should be, share it here. Even a rough draft helps.
+      placeholder: "e.g. Add a note in the .env.example section: 'Use 127.0.0.1, not localhost, to avoid PKCE sessionStorage issues on Windows.'"
+
+  - type: dropdown
+    id: audience
+    attributes:
+      label: Target audience
+      description: Who would benefit most from this documentation?
+      options:
+        - "New users setting up the app"
+        - "Contributors working on the codebase"
+        - "Anyone using the Spotify integration"
+        - "Everyone"
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: contribution
+    attributes:
+      label: Contribution
+      options:
+        - label: I'm willing to open a pull request to fix this documentation

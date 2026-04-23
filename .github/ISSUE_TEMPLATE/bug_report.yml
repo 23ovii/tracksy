@@ -1,0 +1,108 @@
+name: 🐛 Bug Report
+description: Something isn't working as expected
+labels: ["bug", "needs-triage"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug! Please fill out the form below as completely as possible.
+        Before submitting, please [search existing issues](https://github.com/23ovii/tracksy/issues) to avoid duplicates.
+
+  - type: checkboxes
+    id: preflight
+    attributes:
+      label: Preflight checklist
+      options:
+        - label: I have searched existing issues and this is not a duplicate
+          required: true
+        - label: I have read the [CONTRIBUTING.md](https://github.com/23ovii/tracksy/blob/main/CONTRIBUTING.md)
+          required: false
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      description: How badly does this bug affect you?
+      options:
+        - "Critical — app is unusable / data loss"
+        - "High — major feature broken, no workaround"
+        - "Medium — feature partially broken, workaround exists"
+        - "Low — minor issue, cosmetic or edge case"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: A clear and concise description of the bug.
+      placeholder: "e.g. When I click 'Apply to Spotify', the playlist order doesn't update and an error appears in the console."
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Step-by-step instructions to reliably reproduce the issue.
+      placeholder: |
+        1. Log in with Spotify
+        2. Select a playlist with more than 50 tracks
+        3. Choose sort by BPM → Ascending
+        4. Click "Apply to Spotify"
+        5. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What should have happened?
+      placeholder: "The playlist should be reordered by BPM in Spotify."
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: What actually happened?
+      placeholder: "A 403 error appears and the playlist remains unchanged."
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Fill in your environment details.
+      value: |
+        - OS: [e.g. Windows 11, macOS 14, Ubuntu 22.04]
+        - Browser: [e.g. Chrome 124, Firefox 125, Safari 17]
+        - Node.js: [e.g. 20.12.0]
+        - Tracksy version/commit: [e.g. main branch, commit abc1234]
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Console errors / logs
+      description: Paste any relevant console output. This is automatically formatted as code.
+      render: shell
+      placeholder: "Paste error messages or logs here..."
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots or screen recording
+      description: Drag and drop images or videos here. Visual context helps a lot.
+      placeholder: "Drag images here or paste a link..."
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional context
+      description: Anything else that might help — related issues, attempted fixes, etc.
