@@ -8,16 +8,14 @@ import Callback from './pages/Callback.jsx';
 
 function App() {
   return (
-    <div className="min-h-screen bg-spotify-bg text-white">
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', color: 'var(--text)' }}>
       <Navbar />
-      <main className="mx-auto max-w-6xl px-4 pb-12 pt-6 md:px-8">
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/callback" element={<Callback />} />
-          <Route path="*" element={<Home />} />
-        </Routes>
-      </main>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/callback" element={<Callback />} />
+        <Route path="*" element={<Home />} />
+      </Routes>
       <Analytics />
       <SpeedInsights />
     </div>

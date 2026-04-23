@@ -1,31 +1,29 @@
+export const SORT_OPTIONS = [
+  { id: 'name',        label: 'Title',      sub: 'A → Z',         color: '#7a90aa' },
+  { id: 'artist',      label: 'Artist',     sub: 'A → Z',         color: '#7a90aa' },
+  { id: 'bpm',         label: 'BPM',        sub: 'Beats per min', color: '#e8622a' },
+  { id: 'energy',      label: 'Energy',     sub: 'Calm → Hype',   color: '#f5a623' },
+  { id: 'popularity',  label: 'Popularity', sub: 'Chart rank',    color: '#1db954' },
+  { id: 'addedAt',     label: 'Date Added', sub: 'Old → New',     color: '#7a90aa' },
+  { id: 'durationMs',  label: 'Duration',   sub: 'Short → Long',  color: '#7a90aa' },
+];
+
+export function sortTracks(tracks, by, dir = 'asc') {
+  return [...tracks].sort((a, b) => {
+    let va = a[by], vb = b[by];
+    if (by === 'addedAt') { va = new Date(va); vb = new Date(vb); }
+    if (typeof va === 'string') { va = va.toLowerCase(); vb = vb.toLowerCase(); }
+    const c = va < vb ? -1 : va > vb ? 1 : 0;
+    return dir === 'asc' ? c : -c;
+  });
+}
+
 export function removeDuplicateTracks(tracks) {
   const seen = new Set();
   return tracks.filter((track) => {
     const key = track.id || `${track.name}-${track.artist}`;
-    if (seen.has(key)) {
-      return false;
-    }
+    if (seen.has(key)) return false;
     seen.add(key);
     return true;
   });
-}
-
-export function sortTracksByVibe(tracks) {
-  const score = (track) => {
-    const durationScore = Math.min(track.durationMs / 300000, 1);
-    const keywordScore = `${track.name} ${track.artist}`.split(/\s+/).length / 10;
-    return durationScore * 0.6 + Math.min(keywordScore, 1) * 0.4;
-  };
-  return [...tracks].sort((a, b) => score(b) - score(a));
-}
-
-export function enhancePlaylistSuggestions(tracks) {
-  const topArtists = Array.from(
-    new Set(tracks.slice(0, 5).map((track) => track.artist))
-  );
-
-  return {
-    seedArtists: topArtists,
-    message: `Use ${topArtists.join(', ')} as recommendation seeds for future playlist enhancement.`,
-  };
 }

@@ -1,28 +1,64 @@
 import { Link, NavLink } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth.jsx';
 
-const navLinkClass = ({ isActive }) =>
-  `rounded-full px-4 py-2 transition ${isActive ? 'bg-white/10 text-white' : 'hover:bg-white/5'}`;
-
 function Navbar() {
   const { logout, isAuthenticated } = useAuth();
 
   return (
-    <header className="border-b border-slate-800 bg-black/10 backdrop-blur-xl">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 md:px-8">
-        <Link to="/" className="flex items-center gap-3 text-lg font-semibold text-white">
-          <span className="inline-flex h-10 w-10 items-center justify-center rounded-3xl bg-spotify-green text-slate-950 shadow-glow">
-            T
-          </span>
-          Tracksy
+    <header style={{
+      height: 'var(--nav-h)',
+      borderBottom: '1px solid var(--border)',
+      background: 'rgba(10,13,18,0.85)',
+      backdropFilter: 'blur(24px)',
+      position: 'sticky', top: 0, zIndex: 200,
+      display: 'flex', alignItems: 'center',
+    }}>
+      <div style={{
+        width: '100%', maxWidth: 1140, margin: '0 auto',
+        padding: '0 28px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+      }}>
+        <Link to="/" style={{
+          display: 'flex', alignItems: 'center', gap: 10,
+          textDecoration: 'none',
+        }}>
+          <div style={{
+            width: 34, height: 34, borderRadius: 10, background: 'var(--green)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            boxShadow: '0 0 20px rgba(29,185,84,0.4)',
+          }}>
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none">
+              <path d="M9 18V5l12-2v13" stroke="#000" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+              <circle cx="6" cy="18" r="3" stroke="#000" strokeWidth="2.4" />
+              <circle cx="18" cy="16" r="3" stroke="#000" strokeWidth="2.4" />
+            </svg>
+          </div>
+          <span style={{ fontWeight: 800, fontSize: 16, letterSpacing: '-0.3px', color: 'var(--text)' }}>Tracksy</span>
         </Link>
-        <nav className="flex items-center gap-3 text-sm text-slate-300">
-          <NavLink to="/" end className={navLinkClass}>Home</NavLink>
-          <NavLink to="/dashboard" className={navLinkClass}>Dashboard</NavLink>
+
+        <nav style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          {[{ to: '/', label: 'Home', end: true }, { to: '/dashboard', label: 'Dashboard', end: false }].map(({ to, label, end }) => (
+            <NavLink key={to} to={to} end={end} style={({ isActive }) => ({
+              padding: '7px 16px', borderRadius: 50,
+              background: isActive ? 'rgba(255,255,255,0.08)' : 'transparent',
+              color: isActive ? 'var(--text)' : 'var(--text-2)',
+              fontSize: 13, fontWeight: 500,
+              textDecoration: 'none',
+              transition: 'background 0.15s, color 0.15s',
+            })}>
+              {label}
+            </NavLink>
+          ))}
           {isAuthenticated && (
             <button
               onClick={logout}
-              className="rounded-full border border-slate-700 bg-white/5 px-4 py-2 text-slate-200 transition hover:border-spotify-green hover:text-white"
+              style={{
+                marginLeft: 8, padding: '7px 16px', borderRadius: 50,
+                border: '1px solid var(--border2)', background: 'transparent',
+                color: 'var(--text-2)', fontFamily: 'inherit', fontSize: 13,
+                cursor: 'pointer', transition: 'border-color 0.15s',
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--green)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border2)'; }}
             >
               Sign Out
             </button>

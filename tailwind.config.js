@@ -3,19 +3,17 @@ export default {
   theme: {
     extend: {
       colors: {
+        bg:       '#0a0d12',
+        surface:  '#0f141a',
+        surface2: '#141b24',
+        surface3: '#1a2232',
+        border:   '#1e2a3a',
+        border2:  '#2a3a50',
         spotify: {
-          bg: '#0f1419',
-          surface: '#12171f',
-          panel: '#181f2a',
-          border: '#373f55',
           green: '#1db954',
-          soft: '#a7b8d8',
-        }
+        },
       },
-      boxShadow: {
-        glow: '0 18px 45px rgba(29, 185, 84, 0.12)',
-      }
-    }
+    },
   },
   plugins: [],
 };

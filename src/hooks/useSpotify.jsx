@@ -1,16 +1,11 @@
 import { useState, useCallback } from 'react';
 import { useAuth } from './useAuth.jsx';
 import {
-  getMockPlaylistTracks,
-  getMockPlaylists,
-  getSpotifyPlaylistTracks,
   getSpotifyPlaylists,
+  getSpotifyPlaylistTracks,
+  getAudioFeatures,
+  savePlaylistTracks,
 } from '../services/spotify.js';
-import {
-  enhancePlaylistSuggestions,
-  removeDuplicateTracks,
-  sortTracksByVibe,
-} from '../utils/playlistUtils.js';
 
 export function useSpotify() {
   const { token } = useAuth();
@@ -23,56 +18,49 @@ export function useSpotify() {
   const loadPlaylists = useCallback(async () => {
     setIsLoading(true);
     setFeedback('');
-
     try {
-      const data = token ? await getSpotifyPlaylists(token) : await getMockPlaylists();
-      setPlaylists(data);
+      setPlaylists(await getSpotifyPlaylists(token));
     } catch (error) {
       console.error(error);
-      setPlaylists(await getMockPlaylists());
-      setFeedback('Unable to load Spotify playlists, showing sample data.');
+      setFeedback('Unable to load Spotify playlists.');
     } finally {
       setIsLoading(false);
     }
   }, [token]);
 
-  const loadPlaylistTracks = useCallback(
-    async (playlist) => {
-      setIsLoading(true);
-      setFeedback('');
+  const loadPlaylistTracks = useCallback(async (playlist) => {
+    setIsLoading(true);
+    setFeedback('');
+    try {
+      const raw = await getSpotifyPlaylistTracks(token, playlist.id);
+      setSelectedPlaylist(playlist);
+      setTracks(raw);
+      setIsLoading(false);
 
-      try {
-        const data = token
-          ? await getSpotifyPlaylistTracks(token, playlist.id)
-          : await getMockPlaylistTracks(playlist.id);
-        setSelectedPlaylist(playlist);
-        setTracks(data);
-      } catch (error) {
-        console.error(error);
-        setTracks(await getMockPlaylistTracks(playlist.id));
-        setSelectedPlaylist(playlist);
-        setFeedback('Unable to load track details from Spotify. Showing sample track data.');
-      } finally {
-        setIsLoading(false);
+      // Audio features are optional — enrich in the background if available
+      const ids = raw.map((t) => t.id).filter((id) => id && !id.startsWith('spotify:local:'));
+      if (ids.length) {
+        try {
+          const features = await getAudioFeatures(token, ids);
+          setTracks(raw.map((t) => ({
+            ...t,
+            bpm: features[t.id]?.bpm ?? 0,
+            energy: features[t.id]?.energy ?? 0,
+          })));
+        } catch {
+          // Audio features unavailable — tracks still show without BPM/energy
+        }
       }
-    },
-    [token]
-  );
+    } catch (error) {
+      console.error(error);
+      setFeedback('Unable to load track details from Spotify.');
+      setIsLoading(false);
+    }
+  }, [token]);
 
-  const cleanDuplicates = useCallback(() => {
-    setTracks((current) => removeDuplicateTracks(current));
-    setFeedback('Duplicates removed from the current track list.');
-  }, []);
-
-  const sortByVibe = useCallback(() => {
-    setTracks((current) => sortTracksByVibe(current));
-    setFeedback('Tracks sorted by a simple vibe score.');
-  }, []);
-
-  const enhanceRecommendations = useCallback(() => {
-    const suggestion = enhancePlaylistSuggestions(tracks);
-    setFeedback(suggestion.message);
-  }, [tracks]);
+  const applySort = useCallback(async (sortedTracks) => {
+    await savePlaylistTracks(token, selectedPlaylist.id, sortedTracks);
+  }, [token, selectedPlaylist]);
 
   const clearSelection = useCallback(() => {
     setSelectedPlaylist(null);
@@ -88,9 +76,7 @@ export function useSpotify() {
     feedback,
     loadPlaylists,
     loadPlaylistTracks,
-    cleanDuplicates,
-    sortByVibe,
-    enhanceRecommendations,
+    applySort,
     clearSelection,
   };
 }
