@@ -5,15 +5,10 @@ import { exchangeSpotifyCode } from '../services/auth.js';
 
 function Callback() {
   const navigate = useNavigate();
-  const { login, isAuthenticated } = useAuth();
+  const { login } = useAuth();
   const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
-    if (isAuthenticated) {
-      navigate('/dashboard');
-      return;
-    }
-
     const code = new URLSearchParams(window.location.search).get('code');
     if (!code) {
       navigate('/');
@@ -31,7 +26,7 @@ function Callback() {
     }
 
     finalizeAuth();
-  }, [isAuthenticated, login, navigate]);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <section className="mx-auto max-w-3xl rounded-3xl border border-slate-700 bg-white/5 p-10 text-center text-slate-200 shadow-glow">

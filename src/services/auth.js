@@ -1,10 +1,7 @@
 const SPOTIFY_AUTHORIZE_URL = 'https://accounts.spotify.com/authorize';
 const SPOTIFY_TOKEN_URL = 'https://accounts.spotify.com/api/token';
 const CLIENT_ID = import.meta.env.VITE_SPOTIFY_CLIENT_ID;
-const REDIRECT_URI = import.meta.env.VITE_SPOTIFY_REDIRECT_URI ||
-  (import.meta.env.PROD
-    ? 'https://23ovii.github.io/tracksy/callback'
-    : `${window.location.origin}/callback`);
+const REDIRECT_URI = import.meta.env.VITE_SPOTIFY_REDIRECT_URI || `${window.location.origin}/callback`;
 const SCOPES = import.meta.env.VITE_SPOTIFY_SCOPE || 'playlist-read-private playlist-read-collaborative user-read-private';
 const VERIFIER_KEY = 'tracksy_pkce_verifier';
 
