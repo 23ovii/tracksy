@@ -33,22 +33,32 @@ function PlaylistCard({ playlist, selected, onClick }: PlaylistCardProps) {
       <div style={{
         height: 100,
         background: `linear-gradient(135deg, ${playlist.color1}cc, ${playlist.color2}aa)`,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
         position: 'relative', overflow: 'hidden',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}>
-        <div style={{
-          position: 'absolute', width: 90, height: 90, borderRadius: '50%',
-          background: 'rgba(255,255,255,0.06)', right: -20, top: -20,
-        }} />
-        <div style={{
-          position: 'absolute', width: 60, height: 60, borderRadius: '50%',
-          background: 'rgba(255,255,255,0.06)', left: 10, bottom: -20,
-        }} />
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
-          <path d="M9 18V5l12-2v13" stroke="rgba(255,255,255,0.85)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-          <circle cx="6" cy="18" r="3" stroke="rgba(255,255,255,0.85)" strokeWidth="1.8" />
-          <circle cx="18" cy="16" r="3" stroke="rgba(255,255,255,0.85)" strokeWidth="1.8" />
-        </svg>
+        {playlist.imageUrl ? (
+          <img
+            src={playlist.imageUrl}
+            alt={playlist.name}
+            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+          />
+        ) : (
+          <>
+            <div style={{
+              position: 'absolute', width: 90, height: 90, borderRadius: '50%',
+              background: 'rgba(255,255,255,0.06)', right: -20, top: -20,
+            }} />
+            <div style={{
+              position: 'absolute', width: 60, height: 60, borderRadius: '50%',
+              background: 'rgba(255,255,255,0.06)', left: 10, bottom: -20,
+            }} />
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+              <path d="M9 18V5l12-2v13" stroke="rgba(255,255,255,0.85)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+              <circle cx="6" cy="18" r="3" stroke="rgba(255,255,255,0.85)" strokeWidth="1.8" />
+              <circle cx="18" cy="16" r="3" stroke="rgba(255,255,255,0.85)" strokeWidth="1.8" />
+            </svg>
+          </>
+        )}
         {isSelected && (
           <div style={{
             position: 'absolute', top: 8, right: 8,

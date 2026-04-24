@@ -16,6 +16,7 @@ export interface Playlist {
   trackCount: number;
   color1: string;
   color2: string;
+  imageUrl?: string;
 }
 
 export interface TokenResponse {

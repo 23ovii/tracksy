@@ -31,6 +31,7 @@ function mapPlaylist(item: any): Playlist {
     trackCount: item.tracks?.total ?? 0,
     color1,
     color2,
+    imageUrl: item.images?.[0]?.url,
   };
 }
 
