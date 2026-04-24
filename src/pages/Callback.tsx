@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth.jsx';
-import { exchangeSpotifyCode } from '../services/auth.js';
+import { useAuth } from '../hooks/useAuth.tsx';
+import { exchangeSpotifyCode } from '../services/auth.ts';
 
 function Callback() {
   const navigate = useNavigate();
@@ -17,16 +17,16 @@ function Callback() {
 
     async function finalizeAuth() {
       try {
-        const tokenData = await exchangeSpotifyCode(code);
+        const tokenData = await exchangeSpotifyCode(code!);
         login(tokenData);
         navigate('/dashboard');
-      } catch (error) {
+      } catch (error: any) {
         setErrorMessage(error.message);
       }
     }
 
     finalizeAuth();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <section className="mx-auto max-w-3xl rounded-3xl border border-slate-700 bg-white/5 p-10 text-center text-slate-200 shadow-glow">

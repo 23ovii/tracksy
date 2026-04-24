@@ -1,11 +1,18 @@
 import { useState, useRef } from 'react';
-import PlaylistCard from './PlaylistCard.jsx';
+import PlaylistCard from './PlaylistCard.tsx';
+import type { Playlist } from '../types';
+
+interface PlaylistSliderProps {
+  playlists: Playlist[];
+  selected: Playlist | null;
+  onSelect: (playlist: Playlist) => void;
+}
 
 const CARD_W = 160;
 const GAP = 10;
 
-function PlaylistSlider({ playlists, selected, onSelect }) {
-  const ref = useRef(null);
+function PlaylistSlider({ playlists, selected, onSelect }: PlaylistSliderProps) {
+  const ref = useRef<HTMLDivElement>(null);
   const [offset, setOffset] = useState(0);
   const max = Math.max(0, playlists.length * (CARD_W + GAP) - (ref.current?.offsetWidth || 600));
 

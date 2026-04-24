@@ -1,10 +1,10 @@
 import { Routes, Route } from 'react-router-dom';
 import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/react';
-import Navbar from './components/Navbar.jsx';
-import Home from './pages/Home.jsx';
-import Dashboard from './pages/Dashboard.jsx';
-import Callback from './pages/Callback.jsx';
+import Navbar from './components/Navbar.tsx';
+import Home from './pages/Home.tsx';
+import Dashboard from './pages/Dashboard.tsx';
+import Callback from './pages/Callback.tsx';
 
 function App() {
   return (

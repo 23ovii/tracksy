@@ -1,13 +1,22 @@
-import MiniWave from './MiniWave.jsx';
-import { SORT_OPTIONS } from '../utils/playlistUtils.js';
+import type { MouseEvent } from 'react';
+import MiniWave from './MiniWave.tsx';
+import { SORT_OPTIONS } from '../utils/playlistUtils.ts';
+import type { Track } from '../types';
 
-function formatDuration(ms) {
+interface TrackItemProps {
+  track: Track;
+  index: number;
+  sortBy: string;
+  sortKey?: number;
+}
+
+function formatDuration(ms: number): string {
   const m = Math.floor(ms / 60000);
   const s = Math.floor((ms % 60000) / 1000);
   return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
-function TrackItem({ track, index, sortBy, sortKey }) {
+function TrackItem({ track, index, sortBy }: TrackItemProps) {
   const opt = SORT_OPTIONS.find((o) => o.id === sortBy);
 
   return (
@@ -24,8 +33,8 @@ function TrackItem({ track, index, sortBy, sortKey }) {
         animation: `trackIn 0.25s ease ${Math.min(index * 0.04, 0.4)}s both`,
         cursor: 'default',
       }}
-      onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.025)'; }}
-      onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+      onMouseEnter={(e: MouseEvent<HTMLDivElement>) => { e.currentTarget.style.background = 'rgba(255,255,255,0.025)'; }}
+      onMouseLeave={(e: MouseEvent<HTMLDivElement>) => { e.currentTarget.style.background = 'transparent'; }}
     >
       <span style={{ color: 'var(--text-3)', fontSize: 12, fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>
         {index + 1}

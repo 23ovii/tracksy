@@ -1,4 +1,6 @@
-const COLOR_PAIRS = [
+import type { Track, Playlist } from '../types';
+
+const COLOR_PAIRS: [string, string][] = [
   ['#e8622a', '#e84080'],
   ['#7c5cbf', '#3a1fa8'],
   ['#1db954', '#0e7a38'],
@@ -15,13 +17,13 @@ const COLOR_PAIRS = [
   ['#2472d4', '#103090'],
 ];
 
-function playlistColors(id) {
+function playlistColors(id: string): [string, string] {
   let hash = 0;
   for (const ch of id) hash = (hash * 31 + ch.charCodeAt(0)) >>> 0;
   return COLOR_PAIRS[hash % COLOR_PAIRS.length];
 }
 
-function mapPlaylist(item) {
+function mapPlaylist(item: any): Playlist {
   const [color1, color2] = playlistColors(item.id);
   return {
     id: item.id,
@@ -32,14 +34,14 @@ function mapPlaylist(item) {
   };
 }
 
-function mapTrack(item) {
+function mapTrack(item: any): Track | null {
   const track = item.track;
   if (!track) return null;
 
   return {
     id: track.id || track.uri,
     name: track.name,
-    artist: track.artists?.map((a) => a.name).join(', ') ?? 'Unknown artist',
+    artist: track.artists?.map((a: any) => a.name).join(', ') ?? 'Unknown artist',
     album: track.album?.name ?? '',
     durationMs: track.duration_ms ?? 0,
     addedAt: item.added_at ?? '',
@@ -49,7 +51,7 @@ function mapTrack(item) {
   };
 }
 
-async function fetchSpotify(url, token) {
+async function fetchSpotify(url: string, token: string): Promise<any> {
   const response = await fetch(url, {
     headers: { Authorization: `Bearer ${token}` },
   });
@@ -62,7 +64,7 @@ async function fetchSpotify(url, token) {
   return response.json();
 }
 
-async function writeSpotify(url, token, method, body) {
+async function writeSpotify(url: string, token: string, method: string, body: object): Promise<void> {
   const response = await fetch(url, {
     method,
     headers: {
@@ -78,9 +80,9 @@ async function writeSpotify(url, token, method, body) {
   }
 }
 
-async function fetchAllPages(firstUrl, token) {
-  const items = [];
-  let url = firstUrl;
+async function fetchAllPages(firstUrl: string, token: string): Promise<any[]> {
+  const items: any[] = [];
+  let url: string | null = firstUrl;
   while (url) {
     const data = await fetchSpotify(url, token);
     items.push(...data.items);
@@ -89,34 +91,34 @@ async function fetchAllPages(firstUrl, token) {
   return items;
 }
 
-export async function getSpotifyPlaylists(token) {
+export async function getSpotifyPlaylists(token: string): Promise<Playlist[]> {
   const [user, items] = await Promise.all([
     fetchSpotify('https://api.spotify.com/v1/me', token),
     fetchAllPages('https://api.spotify.com/v1/me/playlists?limit=50', token),
   ]);
   return items
-    .filter((item) => item.owner.id === user.id)
+    .filter((item: any) => item.owner.id === user.id)
     .map(mapPlaylist);
 }
 
-export async function getSpotifyPlaylistTracks(token, playlistId) {
+export async function getSpotifyPlaylistTracks(token: string, playlistId: string): Promise<Track[]> {
   const items = await fetchAllPages(`https://api.spotify.com/v1/playlists/${playlistId}/tracks?limit=100`, token);
-  return items.map(mapTrack).filter(Boolean);
+  return items.map(mapTrack).filter((t): t is Track => t !== null);
 }
 
-export async function getAudioFeatures(token, trackIds) {
-  const features = {};
+export async function getAudioFeatures(token: string, trackIds: string[]): Promise<Record<string, { bpm: number; energy: number }>> {
+  const features: Record<string, { bpm: number; energy: number }> = {};
   for (let i = 0; i < trackIds.length; i += 100) {
     const ids = trackIds.slice(i, i + 100).join(',');
     const data = await fetchSpotify(`https://api.spotify.com/v1/audio-features?ids=${ids}`, token);
-    data.audio_features.forEach((f) => {
+    data.audio_features.forEach((f: any) => {
       if (f) features[f.id] = { bpm: Math.round(f.tempo), energy: f.energy };
     });
   }
   return features;
 }
 
-export async function savePlaylistTracks(token, playlistId, tracks) {
+export async function savePlaylistTracks(token: string, playlistId: string, tracks: Track[]): Promise<void> {
   const uris = tracks.map((t) =>
     t.id.startsWith('spotify:') ? t.id : `spotify:track:${t.id}`
   );

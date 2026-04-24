@@ -1,25 +1,33 @@
 import { createContext, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { refreshSpotifyToken } from '../services/auth.js';
+import type { ReactNode } from 'react';
+import { refreshSpotifyToken } from '../services/auth.ts';
+import type { TokenResponse, AuthContextValue } from '../types';
 
-const AuthContext = createContext(null);
+interface AuthState {
+  access_token: string;
+  refresh_token?: string;
+  expires_at: number;
+}
+
+const AuthContext = createContext<AuthContextValue | null>(null);
 const STORAGE_KEY = 'tracksy_auth_state';
 
-function readSavedAuth() {
+function readSavedAuth(): AuthState | null {
   const stored = localStorage.getItem(STORAGE_KEY);
   if (!stored) {
     return null;
   }
 
   try {
-    return JSON.parse(stored);
+    return JSON.parse(stored) as AuthState;
   } catch {
     return null;
   }
 }
 
-export function AuthProvider({ children }) {
-  const [authState, setAuthState] = useState(readSavedAuth);
-  const refreshTimerRef = useRef(null);
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const [authState, setAuthState] = useState<AuthState | null>(readSavedAuth);
+  const refreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (authState) {
@@ -29,7 +37,7 @@ export function AuthProvider({ children }) {
     }
   }, [authState]);
 
-  const applyToken = useCallback((tokenResponse) => {
+  const applyToken = useCallback((tokenResponse: TokenResponse): number => {
     const expiresAt = Date.now() + (tokenResponse.expires_in ?? 3600) * 1000;
     setAuthState({
       access_token: tokenResponse.access_token,
@@ -43,7 +51,7 @@ export function AuthProvider({ children }) {
     if (!authState?.refresh_token || !authState?.expires_at) return;
 
     const msUntilExpiry = authState.expires_at - Date.now();
-    const msUntilRefresh = msUntilExpiry - 60_000; // refresh 1 minute early
+    const msUntilRefresh = msUntilExpiry - 60_000;
 
     if (msUntilRefresh <= 0) {
       refreshSpotifyToken(authState.refresh_token)
@@ -53,19 +61,19 @@ export function AuthProvider({ children }) {
     }
 
     refreshTimerRef.current = setTimeout(() => {
-      refreshSpotifyToken(authState.refresh_token)
+      refreshSpotifyToken(authState.refresh_token!)
         .then(applyToken)
         .catch(() => setAuthState(null));
     }, msUntilRefresh);
 
-    return () => clearTimeout(refreshTimerRef.current);
+    return () => clearTimeout(refreshTimerRef.current!);
   }, [authState?.refresh_token, authState?.expires_at, applyToken]);
 
   const isAuthenticated = Boolean(
     authState?.access_token && authState.expires_at && authState.expires_at > Date.now()
   );
 
-  const value = useMemo(
+  const value = useMemo<AuthContextValue>(
     () => ({
       token: authState?.access_token ?? null,
       refreshToken: authState?.refresh_token ?? null,

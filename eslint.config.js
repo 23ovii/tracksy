@@ -1,6 +1,8 @@
 import js from '@eslint/js';
 import reactPlugin from 'eslint-plugin-react';
 import reactHooks from 'eslint-plugin-react-hooks';
+import tsParser from '@typescript-eslint/parser';
+import tsPlugin from '@typescript-eslint/eslint-plugin';
 import globals from 'globals';
 
 export default [
@@ -10,8 +12,10 @@ export default [
     plugins: {
       react: reactPlugin,
       'react-hooks': reactHooks,
+      '@typescript-eslint': tsPlugin,
     },
     languageOptions: {
+      parser: tsParser,
       globals: { ...globals.browser, ...globals.es2020 },
       parserOptions: {
         ecmaFeatures: { jsx: true },
@@ -25,7 +29,8 @@ export default [
       ...reactPlugin.configs.flat.recommended.rules,
       'react/react-in-jsx-scope': 'off',
       'react/prop-types': 'off',
-      'no-unused-vars': 'warn',
+      'no-unused-vars': 'off',
+      '@typescript-eslint/no-unused-vars': 'warn',
       'no-console': 'off',
     },
   },

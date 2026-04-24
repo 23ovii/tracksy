@@ -1,4 +1,9 @@
-function MiniWave({ value, color = '#1db954' }) {
+interface MiniWaveProps {
+  value: number;
+  color?: string;
+}
+
+function MiniWave({ value, color = '#1db954' }: MiniWaveProps) {
   const bars = 8;
   return (
     <div style={{ display: 'flex', alignItems: 'flex-end', gap: 2, height: 16 }}>

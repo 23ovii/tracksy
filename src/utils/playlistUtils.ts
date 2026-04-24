@@ -1,4 +1,13 @@
-export const SORT_OPTIONS = [
+import type { Track } from '../types';
+
+export interface SortOption {
+  id: string;
+  label: string;
+  sub: string;
+  color: string;
+}
+
+export const SORT_OPTIONS: SortOption[] = [
   { id: 'name',        label: 'Title',      sub: 'A → Z',         color: '#7a90aa' },
   { id: 'artist',      label: 'Artist',     sub: 'A → Z',         color: '#7a90aa' },
   { id: 'bpm',         label: 'BPM',        sub: 'Beats per min', color: '#e8622a' },
@@ -8,9 +17,10 @@ export const SORT_OPTIONS = [
   { id: 'durationMs',  label: 'Duration',   sub: 'Short → Long',  color: '#7a90aa' },
 ];
 
-export function sortTracks(tracks, by, dir = 'asc') {
+export function sortTracks(tracks: Track[], by: string, dir: 'asc' | 'desc' = 'asc'): Track[] {
   return [...tracks].sort((a, b) => {
-    let va = a[by], vb = b[by];
+    let va: any = (a as any)[by];
+    let vb: any = (b as any)[by];
     if (by === 'addedAt') { va = new Date(va); vb = new Date(vb); }
     if (typeof va === 'string') { va = va.toLowerCase(); vb = vb.toLowerCase(); }
     const c = va < vb ? -1 : va > vb ? 1 : 0;
@@ -18,8 +28,8 @@ export function sortTracks(tracks, by, dir = 'asc') {
   });
 }
 
-export function removeDuplicateTracks(tracks) {
-  const seen = new Set();
+export function removeDuplicateTracks(tracks: Track[]): Track[] {
+  const seen = new Set<string>();
   return tracks.filter((track) => {
     const key = track.id || `${track.name}-${track.artist}`;
     if (seen.has(key)) return false;

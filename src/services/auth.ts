@@ -1,3 +1,5 @@
+import type { TokenResponse } from '../types';
+
 const SPOTIFY_AUTHORIZE_URL = 'https://accounts.spotify.com/authorize';
 const SPOTIFY_TOKEN_URL = 'https://accounts.spotify.com/api/token';
 const CLIENT_ID = import.meta.env.VITE_SPOTIFY_CLIENT_ID;
@@ -5,7 +7,7 @@ const REDIRECT_URI = import.meta.env.VITE_SPOTIFY_REDIRECT_URI || `${window.loca
 const SCOPES = 'user-read-private playlist-read-private playlist-read-collaborative playlist-modify-public playlist-modify-private';
 const VERIFIER_KEY = 'tracksy_pkce_verifier';
 
-function randomString(length = 64) {
+function randomString(length = 64): string {
   const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
   let result = '';
   const values = new Uint32Array(length);
@@ -16,24 +18,24 @@ function randomString(length = 64) {
   return result;
 }
 
-async function sha256(message) {
+async function sha256(message: string): Promise<Uint8Array> {
   const encoder = new TextEncoder();
   const data = encoder.encode(message);
   const hashBuffer = await window.crypto.subtle.digest('SHA-256', data);
   return new Uint8Array(hashBuffer);
 }
 
-function base64UrlEncode(buffer) {
+function base64UrlEncode(buffer: Uint8Array): string {
   const base64 = btoa(String.fromCharCode(...buffer));
   return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
 
-async function createCodeChallenge(verifier) {
+async function createCodeChallenge(verifier: string): Promise<string> {
   const hashed = await sha256(verifier);
   return base64UrlEncode(hashed);
 }
 
-export async function buildSpotifyAuthUrl() {
+export async function buildSpotifyAuthUrl(): Promise<string> {
   if (!CLIENT_ID) {
     throw new Error('Missing VITE_SPOTIFY_CLIENT_ID in environment variables.');
   }
@@ -56,7 +58,7 @@ export async function buildSpotifyAuthUrl() {
   return `${SPOTIFY_AUTHORIZE_URL}?${params.toString()}`;
 }
 
-export async function exchangeSpotifyCode(code) {
+export async function exchangeSpotifyCode(code: string): Promise<TokenResponse> {
   const codeVerifier = sessionStorage.getItem(VERIFIER_KEY);
   if (!CLIENT_ID || !codeVerifier) {
     throw new Error('Missing PKCE code verifier or Spotify client ID.');
@@ -83,12 +85,12 @@ export async function exchangeSpotifyCode(code) {
     throw new Error(errorData.error_description || 'Failed to exchange Spotify authorization code.');
   }
 
-  const tokenData = await response.json();
+  const tokenData: TokenResponse = await response.json();
   sessionStorage.removeItem(VERIFIER_KEY);
   return tokenData;
 }
 
-export async function refreshSpotifyToken(refreshToken) {
+export async function refreshSpotifyToken(refreshToken: string): Promise<TokenResponse> {
   if (!CLIENT_ID || !refreshToken) {
     throw new Error('Missing refresh token or Spotify client ID.');
   }
@@ -111,5 +113,5 @@ export async function refreshSpotifyToken(refreshToken) {
     throw new Error('Failed to refresh Spotify access token.');
   }
 
-  return response.json();
+  return response.json() as Promise<TokenResponse>;
 }
