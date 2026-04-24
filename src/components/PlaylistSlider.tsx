@@ -19,7 +19,7 @@ function PlaylistSlider({ playlists, selected, onSelect }: PlaylistSliderProps) 
 
   useEffect(() => {
     if (!ref.current) return;
-    const update = () => setViewportWidth(ref.current?.offsetWidth || 600);
+    const update = () => setViewportWidth(Math.round(ref.current?.offsetWidth || 600));
     update();
     const ro = new ResizeObserver(update);
     ro.observe(ref.current);
@@ -27,12 +27,12 @@ function PlaylistSlider({ playlists, selected, onSelect }: PlaylistSliderProps) 
   }, []);
 
   const contentWidth = playlists.length * (CARD_W + GAP) - GAP;
-  const max = Math.max(0, contentWidth - viewportWidth);
+  const max = Math.round(Math.max(0, contentWidth - viewportWidth));
   const atStart = offset <= 0;
   const atEnd = offset >= max - 2;
 
   const step = (d: -1 | 1) => setOffset((o) =>
-    Math.max(0, Math.min(max, o + d * (CARD_W + GAP) * 3))
+    Math.round(Math.max(0, Math.min(max, o + d * (CARD_W + GAP) * 3)))
   );
 
   const navBtn = (dir: -1 | 1, disabled: boolean) => (
@@ -97,10 +97,9 @@ function PlaylistSlider({ playlists, selected, onSelect }: PlaylistSliderProps) 
         <div ref={ref} style={{ overflow: 'hidden', padding: '4px 0' }}>
           <div style={{
             display: 'flex', gap: GAP,
-            transform: `translate3d(-${offset}px, 0, 0)`,
+            transform: `translateX(-${Math.round(offset)}px)`,
             transition: 'transform 0.5s var(--ease-out)',
             width: contentWidth,
-            willChange: 'transform',
           }}>
             {playlists.map((p) => (
               <div key={p.id} style={{ width: CARD_W, flexShrink: 0 }}>
