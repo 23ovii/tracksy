@@ -24,36 +24,52 @@ function Navbar() {
           textDecoration: 'none',
         }}>
           <div style={{
-            width: 30, height: 30,
-            borderRadius: 9,
+            width: 40, height: 40,
+            borderRadius: 12,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            background: 'linear-gradient(135deg, rgba(29,185,84,0.15), rgba(29,185,84,0.02))',
-            border: '1px solid rgba(29,185,84,0.25)',
-            boxShadow: '0 0 18px rgba(29,185,84,0.18)',
+            background: 'linear-gradient(135deg, rgba(29,185,84,0.22), rgba(29,185,84,0.04))',
+            border: '1px solid rgba(29,185,84,0.35)',
+            boxShadow: '0 0 24px rgba(29,185,84,0.28), 0 0 0 1px rgba(255,255,255,0.04) inset',
           }}>
-            <img src="/tracksy-mark-green.png" alt="Tracksy" style={{ width: 20, height: 20 }} />
+            <img src="/tracksy-mark-green.png" alt="Tracksy" style={{ width: 26, height: 26, filter: 'drop-shadow(0 0 6px rgba(29,185,84,0.5))' }} />
           </div>
-          <span style={{ fontWeight: 800, fontSize: 16, letterSpacing: '-0.4px' }}>
+          <span style={{ fontWeight: 800, fontSize: 20, letterSpacing: '-0.6px' }}>
             <span style={{ color: 'var(--text)' }}>track</span><span style={{ color: 'var(--green)' }}>sy</span>
           </span>
           <span style={{
             fontSize: 9, fontWeight: 700, letterSpacing: '0.08em',
             color: 'var(--text-3)', border: '1px solid var(--border2)',
-            borderRadius: 4, padding: '2px 5px', marginLeft: 4,
+            borderRadius: 4, padding: '2px 5px', marginLeft: 2,
           }}>BETA</span>
         </Link>
 
         <nav style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           {[{ to: '/', label: 'Home', end: true }, { to: '/dashboard', label: 'Dashboard', end: false }].map(({ to, label, end }) => (
-            <NavLink key={to} to={to} end={end} style={({ isActive }) => ({
-              position: 'relative',
-              padding: '8px 16px', borderRadius: 50,
-              background: isActive ? 'rgba(255,255,255,0.07)' : 'transparent',
-              color: isActive ? 'var(--text)' : 'var(--text-2)',
-              fontSize: 13, fontWeight: isActive ? 600 : 500,
-              textDecoration: 'none',
-              transition: 'background 0.2s, color 0.2s',
-            })}>
+            <NavLink
+              key={to}
+              to={to}
+              end={end}
+              style={({ isActive }) => ({
+                position: 'relative',
+                padding: '8px 16px', borderRadius: 50,
+                background: isActive ? 'rgba(255,255,255,0.07)' : 'transparent',
+                color: isActive ? 'var(--text)' : 'var(--text-2)',
+                fontSize: 13, fontWeight: isActive ? 600 : 500,
+                textDecoration: 'none',
+                boxShadow: '0 0 0 1px transparent',
+                transition: 'background 0.2s, color 0.2s, transform 0.2s var(--ease-out), box-shadow 0.2s',
+              })}
+              onMouseEnter={(e: MouseEvent<HTMLAnchorElement>) => {
+                e.currentTarget.style.transform = 'translateY(-1px)';
+                e.currentTarget.style.color = 'var(--text)';
+                e.currentTarget.style.boxShadow = '0 0 0 1px rgba(255,255,255,0.12)';
+              }}
+              onMouseLeave={(e: MouseEvent<HTMLAnchorElement>) => {
+                e.currentTarget.style.transform = '';
+                e.currentTarget.style.color = '';
+                e.currentTarget.style.boxShadow = '0 0 0 1px transparent';
+              }}
+            >
               {label}
             </NavLink>
           ))}
