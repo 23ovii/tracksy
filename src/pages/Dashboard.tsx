@@ -3,7 +3,6 @@ import type { CSSProperties, MouseEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth.tsx';
 import { useSpotify } from '../hooks/useSpotify.tsx';
-import PlaylistGrid from '../components/PlaylistGrid.tsx';
 import PlaylistSlider from '../components/PlaylistSlider.tsx';
 import TrackItem from '../components/TrackItem.tsx';
 import SortProgress from '../components/SortProgress.tsx';
@@ -59,11 +58,6 @@ function Dashboard() {
   const [applied, setApplied] = useState(false);
   const [sortFeedback, setSortFeedback] = useState('');
   const [sortKey, setSortKey] = useState(0);
-  const [cardLayout, setCardLayout] = useState(() => localStorage.getItem('tracksy_layout') || 'grid');
-
-  useEffect(() => {
-    localStorage.setItem('tracksy_layout', cardLayout);
-  }, [cardLayout]);
 
   useEffect(() => {
     if (!isAuthenticated) { navigate('/'); return; }
@@ -100,28 +94,15 @@ function Dashboard() {
     setSortFeedback(`"${selectedPlaylist!.name}" sorted by ${label} and saved.`);
   }
 
-  const Layout = cardLayout === 'grid' ? PlaylistGrid : PlaylistSlider;
-
   return (
     <div style={{ maxWidth: 1140, margin: '0 auto', padding: '28px 28px 60px', animation: 'fadeUp 0.35s ease' }}>
 
       {/* Playlist picker */}
       <div style={{ ...CARD_STYLE, padding: 24, marginBottom: 16 }}>
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12, gap: 6 }}>
-          {['grid', 'slider'].map((v) => (
-            <button key={v} onClick={() => setCardLayout(v)} style={{
-              padding: '5px 12px', borderRadius: 8, border: 'none',
-              background: cardLayout === v ? 'var(--green)' : 'var(--surface3)',
-              color: cardLayout === v ? '#000' : 'var(--text-2)',
-              fontFamily: 'inherit', fontSize: 11, fontWeight: 600,
-              cursor: 'pointer', textTransform: 'capitalize', transition: 'background 0.15s',
-            }}>{v}</button>
-          ))}
-        </div>
         {isLoading && !selectedPlaylist ? (
           <p style={{ fontSize: 13, color: 'var(--text-3)' }}>Loading playlists…</p>
         ) : (
-          <Layout playlists={playlists} selected={selectedPlaylist} onSelect={handleSelect} />
+          <PlaylistSlider playlists={playlists} selected={selectedPlaylist} onSelect={handleSelect} />
         )}
       </div>
 
