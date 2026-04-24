@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import type { CSSProperties, MouseEvent } from 'react';
+import type { JSX, MouseEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth.tsx';
 import { buildSpotifyAuthUrl } from '../services/auth.ts';
@@ -96,7 +96,7 @@ function Home() {
     <div style={{
       minHeight: 'calc(100vh - var(--nav-h))',
       display: 'flex', alignItems: 'center',
-      padding: '80px 28px 80px',
+      padding: '32px 28px 40px',
       position: 'relative',
       overflow: 'hidden',
     }}>
@@ -213,7 +213,7 @@ function Home() {
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-          gap: 14, marginTop: 72, maxWidth: 980,
+          gap: 14, marginTop: 48, maxWidth: 980,
         }}>
           {FEATURES.map((f, i) => {
             const isLive = f.tag === 'Live';
