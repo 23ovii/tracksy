@@ -18,26 +18,37 @@ function formatDuration(ms: number): string {
 
 function TrackItem({ track, index, sortBy }: TrackItemProps) {
   const opt = SORT_OPTIONS.find((o) => o.id === sortBy);
+  const activeColor = opt?.color ?? 'var(--text-2)';
 
   return (
     <div
       style={{
         display: 'grid',
-        gridTemplateColumns: '40px 1fr 160px 56px 64px 52px 44px',
+        gridTemplateColumns: '40px 1fr 160px 56px 64px 52px 52px',
         gap: 8,
         padding: '0 24px',
-        height: 56,
+        height: 58,
         alignItems: 'center',
-        borderBottom: '1px solid var(--border)',
-        transition: 'background 0.12s',
-        animation: `trackIn 0.25s ease ${Math.min(index * 0.04, 0.4)}s both`,
+        borderBottom: '1px solid rgba(255,255,255,0.04)',
+        transition: 'background 0.18s, box-shadow 0.18s',
+        animation: index < 20 ? `trackIn 0.24s var(--ease-out) ${index * 0.02}s both` : 'none',
         cursor: 'default',
+        position: 'relative',
       }}
-      onMouseEnter={(e: MouseEvent<HTMLDivElement>) => { e.currentTarget.style.background = 'rgba(255,255,255,0.025)'; }}
-      onMouseLeave={(e: MouseEvent<HTMLDivElement>) => { e.currentTarget.style.background = 'transparent'; }}
+      onMouseEnter={(e: MouseEvent<HTMLDivElement>) => {
+        e.currentTarget.style.background = 'linear-gradient(90deg, rgba(255,255,255,0.035), rgba(255,255,255,0.015))';
+        e.currentTarget.style.boxShadow = `inset 3px 0 0 ${activeColor}`;
+      }}
+      onMouseLeave={(e: MouseEvent<HTMLDivElement>) => {
+        e.currentTarget.style.background = 'transparent';
+        e.currentTarget.style.boxShadow = 'none';
+      }}
     >
-      <span style={{ color: 'var(--text-3)', fontSize: 12, fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>
-        {index + 1}
+      <span style={{
+        color: 'var(--text-3)', fontSize: 12, fontWeight: 600,
+        fontVariantNumeric: 'tabular-nums',
+      }}>
+        {String(index + 1).padStart(2, '0')}
       </span>
 
       <div style={{ minWidth: 0 }}>
@@ -45,6 +56,7 @@ function TrackItem({ track, index, sortBy }: TrackItemProps) {
           fontWeight: 600, fontSize: 14,
           whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
           color: 'var(--text)',
+          letterSpacing: '-0.1px',
         }}>{track.name}</div>
         <div style={{
           fontSize: 11, color: 'var(--text-3)', marginTop: 2,
@@ -54,15 +66,15 @@ function TrackItem({ track, index, sortBy }: TrackItemProps) {
 
       <div style={{
         fontSize: 13,
-        fontWeight: sortBy === 'artist' ? 600 : 400,
+        fontWeight: sortBy === 'artist' ? 700 : 400,
         color: sortBy === 'artist' ? opt?.color : 'var(--text-2)',
         whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
       }}>{track.artist}</div>
 
       <div style={{
         fontSize: 13,
-        fontWeight: sortBy === 'bpm' ? 700 : 400,
-        color: sortBy === 'bpm' ? opt?.color : 'var(--text-2)',
+        fontWeight: sortBy === 'bpm' ? 700 : 500,
+        color: sortBy === 'bpm' ? opt?.color : track.bpm ? 'var(--text-2)' : 'var(--text-3)',
         fontVariantNumeric: 'tabular-nums',
       }}>{track.bpm || '—'}</div>
 
@@ -73,13 +85,14 @@ function TrackItem({ track, index, sortBy }: TrackItemProps) {
 
       <div style={{
         textAlign: 'right', fontSize: 13,
-        fontWeight: sortBy === 'popularity' ? 700 : 400,
+        fontWeight: sortBy === 'popularity' ? 700 : 500,
         color: sortBy === 'popularity' ? opt?.color : 'var(--text-2)',
+        fontVariantNumeric: 'tabular-nums',
       }}>{track.popularity}</div>
 
       <div style={{
-        textAlign: 'right', fontSize: 11,
-        fontWeight: sortBy === 'durationMs' ? 600 : 400,
+        textAlign: 'right', fontSize: 12,
+        fontWeight: sortBy === 'durationMs' ? 700 : 500,
         color: sortBy === 'durationMs' ? opt?.color : 'var(--text-3)',
         fontVariantNumeric: 'tabular-nums',
       }}>{formatDuration(track.durationMs)}</div>
