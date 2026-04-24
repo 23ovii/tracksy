@@ -16,18 +16,28 @@ interface PlaylistCoverProps {
 }
 
 function PlaylistCover({ playlist, size = 56 }: PlaylistCoverProps) {
+  const radius = size * 0.18;
   return (
     <div style={{
-      width: size, height: size, borderRadius: size * 0.18, flexShrink: 0,
+      width: size, height: size, borderRadius: radius, flexShrink: 0,
       background: `linear-gradient(135deg, ${playlist.color1}, ${playlist.color2})`,
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
       boxShadow: `0 4px 20px ${playlist.color1}44`,
+      overflow: 'hidden',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
     }}>
-      <svg width={size * 0.38} height={size * 0.38} viewBox="0 0 24 24" fill="none">
-        <path d="M9 18V5l12-2v13" stroke="rgba(255,255,255,0.9)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-        <circle cx="6" cy="18" r="3" stroke="rgba(255,255,255,0.9)" strokeWidth="2" />
-        <circle cx="18" cy="16" r="3" stroke="rgba(255,255,255,0.9)" strokeWidth="2" />
-      </svg>
+      {playlist.imageUrl ? (
+        <img
+          src={playlist.imageUrl}
+          alt={playlist.name}
+          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+        />
+      ) : (
+        <svg width={size * 0.38} height={size * 0.38} viewBox="0 0 24 24" fill="none">
+          <path d="M9 18V5l12-2v13" stroke="rgba(255,255,255,0.9)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          <circle cx="6" cy="18" r="3" stroke="rgba(255,255,255,0.9)" strokeWidth="2" />
+          <circle cx="18" cy="16" r="3" stroke="rgba(255,255,255,0.9)" strokeWidth="2" />
+        </svg>
+      )}
     </div>
   );
 }
