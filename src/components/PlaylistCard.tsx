@@ -29,13 +29,12 @@ function PlaylistCard({ playlist, selected, onClick }: PlaylistCardProps) {
         transition: 'transform 0.2s var(--ease-out), border-color 0.18s, box-shadow 0.2s',
         width: '100%',
         position: 'relative',
-        willChange: 'transform',
       }}
       onMouseEnter={(e: MouseEvent<HTMLButtonElement>) => {
         if (!isSelected) {
           e.currentTarget.style.transform = 'translateY(-4px)';
           e.currentTarget.style.borderColor = playlist.color1 + '55';
-          e.currentTarget.style.boxShadow = `0 18px 40px -18px ${playlist.color1}55, 0 1px 0 rgba(255,255,255,0.05) inset`;
+          e.currentTarget.style.boxShadow = `0 1px 0 rgba(255,255,255,0.05) inset`;
           const overlay = e.currentTarget.querySelector('[data-overlay]') as HTMLElement | null;
           if (overlay) overlay.style.opacity = '1';
         }
