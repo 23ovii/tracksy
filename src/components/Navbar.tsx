@@ -22,18 +22,10 @@ function Navbar() {
           display: 'flex', alignItems: 'center', gap: 10,
           textDecoration: 'none',
         }}>
-          <div style={{
-            width: 34, height: 34, borderRadius: 10, background: 'var(--green)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: '0 0 20px rgba(29,185,84,0.4)',
-          }}>
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none">
-              <path d="M9 18V5l12-2v13" stroke="#000" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
-              <circle cx="6" cy="18" r="3" stroke="#000" strokeWidth="2.4" />
-              <circle cx="18" cy="16" r="3" stroke="#000" strokeWidth="2.4" />
-            </svg>
-          </div>
-          <span style={{ fontWeight: 800, fontSize: 16, letterSpacing: '-0.3px', color: 'var(--text)' }}>Tracksy</span>
+          <img src="/tracksy-mark-green.png" alt="Tracksy" style={{ width: 28, height: 28 }} />
+          <span style={{ fontWeight: 800, fontSize: 16, letterSpacing: '-0.3px' }}>
+            <span style={{ color: 'var(--text)' }}>track</span><span style={{ color: 'var(--green)' }}>sy</span>
+          </span>
         </Link>
 
         <nav style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
