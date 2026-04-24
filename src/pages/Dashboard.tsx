@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { CSSProperties, MouseEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth.tsx';
@@ -20,9 +20,10 @@ function PlaylistCover({ playlist, size = 56 }: PlaylistCoverProps) {
     <div style={{
       width: size, height: size, borderRadius: radius, flexShrink: 0,
       background: `linear-gradient(135deg, ${playlist.color1}, ${playlist.color2})`,
-      boxShadow: `0 4px 20px ${playlist.color1}44`,
+      boxShadow: `0 20px 40px -16px ${playlist.color1}99, 0 0 0 1px rgba(255,255,255,0.08) inset`,
       overflow: 'hidden',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
+      position: 'relative',
     }}>
       {playlist.imageUrl ? (
         <img
@@ -37,15 +38,55 @@ function PlaylistCover({ playlist, size = 56 }: PlaylistCoverProps) {
           <circle cx="18" cy="16" r="3" stroke="rgba(255,255,255,0.9)" strokeWidth="2" />
         </svg>
       )}
+      <div aria-hidden style={{
+        position: 'absolute', inset: 0,
+        background: 'linear-gradient(180deg, rgba(0,0,0,0) 55%, rgba(0,0,0,0.25))',
+        pointerEvents: 'none',
+      }} />
     </div>
   );
 }
 
-const CARD_STYLE: CSSProperties = {
-  background: 'var(--surface)',
-  border: '1px solid var(--border)',
-  borderRadius: 16,
+interface AmbientBackdropProps {
+  playlist: Playlist | null;
+}
+
+function AmbientBackdrop({ playlist }: AmbientBackdropProps) {
+  if (!playlist) return null;
+  return (
+    <div aria-hidden style={{
+      position: 'fixed', inset: 0, zIndex: -1, pointerEvents: 'none',
+      animation: 'fadeIn 0.5s var(--ease-out)',
+    }}>
+      <div style={{
+        position: 'absolute', inset: 0,
+        background: `
+          radial-gradient(ellipse 55% 50% at 20% 15%, ${playlist.color1}66, transparent 60%),
+          radial-gradient(ellipse 60% 55% at 80% 85%, ${playlist.color2}55, transparent 60%)
+        `,
+      }} />
+      <div style={{
+        position: 'absolute', inset: 0,
+        background: 'linear-gradient(180deg, rgba(7,10,15,0.5) 0%, rgba(7,10,15,0.78) 40%, rgba(7,10,15,0.92) 100%)',
+      }} />
+    </div>
+  );
+}
+
+const GLASS: CSSProperties = {
+  background: 'rgba(14, 19, 28, 0.88)',
+  border: '1px solid rgba(255,255,255,0.06)',
+  borderRadius: 20,
+  boxShadow: '0 1px 0 rgba(255,255,255,0.04) inset, 0 30px 60px -24px rgba(0,0,0,0.7)',
 };
+
+function formatTotalDuration(ms: number): string {
+  const totalMin = Math.round(ms / 60000);
+  if (totalMin < 60) return `${totalMin} min`;
+  const h = Math.floor(totalMin / 60);
+  const m = totalMin % 60;
+  return m > 0 ? `${h} hr ${m} min` : `${h} hr`;
+}
 
 function Dashboard() {
   const { isAuthenticated } = useAuth();
@@ -64,7 +105,8 @@ function Dashboard() {
     loadPlaylists();
   }, [isAuthenticated, loadPlaylists, navigate]);
 
-  const sorted = sortTracks(tracks, sortBy, sortDir);
+  const sorted = useMemo(() => sortTracks(tracks, sortBy, sortDir), [tracks, sortBy, sortDir]);
+  const totalMs = useMemo(() => tracks.reduce((s, t) => s + t.durationMs, 0), [tracks]);
 
   function pickSort(id: string) {
     if (sortBy === id) setSortDir((d) => d === 'asc' ? 'desc' : 'asc');
@@ -94,102 +136,173 @@ function Dashboard() {
     setSortFeedback(`"${selectedPlaylist!.name}" sorted by ${label} and saved.`);
   }
 
+  const accent = selectedPlaylist?.color1 ?? 'var(--green)';
+  const accent2 = selectedPlaylist?.color2 ?? '#5af5a0';
+
   return (
-    <div style={{ maxWidth: 1140, margin: '0 auto', padding: '28px 28px 60px', animation: 'fadeUp 0.35s ease' }}>
+    <>
+      <AmbientBackdrop playlist={selectedPlaylist} />
 
-      {/* Playlist picker */}
-      <div style={{ ...CARD_STYLE, padding: 24, marginBottom: 16 }}>
-        {isLoading && !selectedPlaylist ? (
-          <p style={{ fontSize: 13, color: 'var(--text-3)' }}>Loading playlists…</p>
-        ) : (
-          <PlaylistSlider playlists={playlists} selected={selectedPlaylist} onSelect={handleSelect} />
-        )}
-      </div>
+      <div style={{
+        maxWidth: 1180, margin: '0 auto', padding: '32px 28px 80px',
+        animation: 'fadeUp 0.45s var(--ease-out)',
+        position: 'relative', zIndex: 1,
+      }}>
 
-      {/* Sorter panel */}
-      {selectedPlaylist ? (
-        <div style={{ ...CARD_STYLE, overflow: 'hidden' }}>
-
-          {/* Header */}
-          <div style={{
-            padding: '18px 24px',
-            borderBottom: '1px solid var(--border)',
-            display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap',
-            background: 'var(--surface2)',
-          }}>
-            <PlaylistCover playlist={selectedPlaylist} size={46} />
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <p style={{ fontSize: 10, fontWeight: 700, color: 'var(--green)', letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: 3 }}>
-                Sorting
-              </p>
-              <h3 style={{
-                fontSize: 17, fontWeight: 800, letterSpacing: '-0.3px',
-                whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-              }}>{selectedPlaylist.name}</h3>
+        {/* Library card */}
+        <div style={{ ...GLASS, padding: 24, marginBottom: 18 }}>
+          {isLoading && !selectedPlaylist ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '28px 4px' }}>
+              <span style={{
+                width: 14, height: 14, borderRadius: '50%',
+                border: '2px solid var(--border2)', borderTopColor: 'var(--green)',
+                animation: 'spin 0.7s linear infinite',
+              }} />
+              <p style={{ fontSize: 13, color: 'var(--text-3)' }}>Loading your library…</p>
             </div>
-            <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexShrink: 0 }}>
-              <button
-                onClick={() => { clearSelection(); setApplied(false); setSortFeedback(''); }}
-                style={{
-                  padding: '8px 16px', borderRadius: 50,
-                  background: 'var(--surface3)', border: '1px solid var(--border2)',
-                  color: 'var(--text-2)', fontFamily: 'inherit', fontSize: 12, cursor: 'pointer',
-                }}
-              >Clear</button>
-              <button
-                onClick={handleApply}
-                disabled={applying || applied}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: 8,
-                  padding: '9px 20px', borderRadius: 50,
-                  background: applied ? '#168a40' : 'var(--green)',
-                  border: 'none',
-                  color: applied ? 'white' : '#000',
-                  fontFamily: 'inherit', fontSize: 13, fontWeight: 700,
-                  cursor: applying || applied ? 'default' : 'pointer',
-                  boxShadow: applied ? 'none' : '0 2px 16px rgba(29,185,84,0.3)',
-                  transition: 'background 0.3s',
-                }}
-              >
-                {applying
-                  ? <><span style={{ display: 'inline-block', animation: 'spin 0.7s linear infinite' }}>↻</span> Applying…</>
-                  : applied ? '✓ Saved to Spotify' : '↑ Apply to Spotify'
-                }
-              </button>
-            </div>
-          </div>
-
-          {/* Progress bar */}
-          <SortProgress
-            active={applying}
-            label={SORT_OPTIONS.find((o) => o.id === sortBy)?.label}
-            onDone={handleDone}
-          />
-
-          {/* Feedback */}
-          {sortFeedback && !applying && (
-            <div style={{
-              padding: '12px 24px',
-              background: 'rgba(29,185,84,0.06)',
-              borderBottom: '1px solid rgba(29,185,84,0.15)',
-              fontSize: 13, color: 'var(--green)', fontWeight: 500,
-            }}>✓ {sortFeedback}</div>
+          ) : (
+            <PlaylistSlider playlists={playlists} selected={selectedPlaylist} onSelect={handleSelect} />
           )}
+        </div>
 
-          <div style={{ display: 'flex' }}>
-            {/* Sort sidebar */}
+        {/* Sorter */}
+        {selectedPlaylist ? (
+          <div style={{ ...GLASS, overflow: 'hidden' }}>
+
+            {/* Now Sorting header */}
             <div style={{
-              width: 196, flexShrink: 0,
-              borderRight: '1px solid var(--border)',
-              padding: '16px 10px',
-              display: 'flex', flexDirection: 'column', gap: 3,
-              background: 'var(--surface)',
+              padding: '26px 28px',
+              borderBottom: '1px solid rgba(255,255,255,0.05)',
+              display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap',
+              position: 'relative', overflow: 'hidden',
+              background: `linear-gradient(135deg, ${accent}14, transparent 55%)`,
             }}>
-              <p style={{
+              {/* Accent line along top */}
+              <div aria-hidden style={{
+                position: 'absolute', top: 0, left: 0, right: 0, height: 1,
+                background: `linear-gradient(90deg, transparent, ${accent}aa, ${accent2}aa, transparent)`,
+              }} />
+
+              <PlaylistCover playlist={selectedPlaylist} size={96} />
+
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                  <span style={{
+                    width: 6, height: 6, borderRadius: '50%',
+                    background: accent,
+                    boxShadow: `0 0 12px ${accent}`,
+                    animation: 'glow 1.6s ease-in-out infinite',
+                  }} />
+                  <p style={{
+                    fontSize: 10, fontWeight: 700,
+                    color: accent,
+                    letterSpacing: '0.24em', textTransform: 'uppercase',
+                  }}>Now Sorting</p>
+                </div>
+                <h3 style={{
+                  fontSize: 'clamp(22px, 2.6vw, 30px)', fontWeight: 900,
+                  letterSpacing: '-0.8px', lineHeight: 1.1,
+                  whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                  marginBottom: 6,
+                }}>{selectedPlaylist.name}</h3>
+                <div style={{
+                  display: 'flex', alignItems: 'center', gap: 10,
+                  fontSize: 12.5, color: 'var(--text-3)',
+                }}>
+                  <span style={{ fontWeight: 600, color: 'var(--text-2)' }}>
+                    {selectedPlaylist.trackCount} tracks
+                  </span>
+                  {totalMs > 0 && (
+                    <>
+                      <span>·</span>
+                      <span>{formatTotalDuration(totalMs)}</span>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexShrink: 0 }}>
+                <button
+                  onClick={() => { clearSelection(); setApplied(false); setSortFeedback(''); }}
+                  style={{
+                    padding: '10px 18px', borderRadius: 50,
+                    background: 'rgba(255,255,255,0.04)',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    color: 'var(--text-2)', fontFamily: 'inherit', fontSize: 12.5, fontWeight: 500,
+                    cursor: 'pointer',
+                    transition: 'border-color 0.2s, color 0.2s, background 0.2s',
+                  }}
+                  onMouseEnter={(e: MouseEvent<HTMLButtonElement>) => {
+                    e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)';
+                    e.currentTarget.style.color = 'var(--text)';
+                  }}
+                  onMouseLeave={(e: MouseEvent<HTMLButtonElement>) => {
+                    e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)';
+                    e.currentTarget.style.color = 'var(--text-2)';
+                  }}
+                >Clear</button>
+                <button
+                  onClick={handleApply}
+                  disabled={applying || applied}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 8,
+                    padding: '11px 22px', borderRadius: 50,
+                    background: applied
+                      ? 'linear-gradient(180deg, #22c962, #159743)'
+                      : `linear-gradient(135deg, ${accent}, ${accent2})`,
+                    border: 'none',
+                    color: '#0a0d12',
+                    fontFamily: 'inherit', fontSize: 13, fontWeight: 800,
+                    letterSpacing: '-0.1px',
+                    cursor: applying || applied ? 'default' : 'pointer',
+                    boxShadow: applied
+                      ? '0 8px 24px rgba(29,185,84,0.35)'
+                      : `0 10px 28px -4px ${accent}77, 0 0 0 1px rgba(255,255,255,0.12) inset`,
+                    transition: 'box-shadow 0.25s, transform 0.2s',
+                  }}
+                  onMouseEnter={(e: MouseEvent<HTMLButtonElement>) => {
+                    if (!applying && !applied) e.currentTarget.style.transform = 'translateY(-1px)';
+                  }}
+                  onMouseLeave={(e: MouseEvent<HTMLButtonElement>) => {
+                    e.currentTarget.style.transform = '';
+                  }}
+                >
+                  {applying ? (
+                    <>
+                      <span style={{ display: 'inline-block', animation: 'spin 0.7s linear infinite' }}>↻</span>
+                      Applying…
+                    </>
+                  ) : applied ? (
+                    <>
+                      <svg width="14" height="14" viewBox="0 0 12 12" fill="none">
+                        <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                      Saved to Spotify
+                    </>
+                  ) : (
+                    <>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M12 19V5" /><path d="M5 12l7-7 7 7" />
+                      </svg>
+                      Apply to Spotify
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Horizontal sort chips */}
+            <div style={{
+              padding: '16px 24px',
+              borderBottom: '1px solid rgba(255,255,255,0.05)',
+              display: 'flex', gap: 8, flexWrap: 'wrap',
+              background: 'rgba(8, 11, 16, 0.4)',
+            }}>
+              <span style={{
                 fontSize: 10, fontWeight: 700, color: 'var(--text-3)',
-                letterSpacing: '0.15em', textTransform: 'uppercase',
-                marginBottom: 6, paddingLeft: 8,
-              }}>Sort by</p>
+                letterSpacing: '0.18em', textTransform: 'uppercase',
+                alignSelf: 'center', marginRight: 6,
+              }}>Sort by</span>
               {SORT_OPTIONS.map((opt) => {
                 const active = sortBy === opt.id;
                 return (
@@ -197,27 +310,32 @@ function Dashboard() {
                     key={opt.id}
                     onClick={() => pickSort(opt.id)}
                     style={{
-                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                      padding: '9px 10px', borderRadius: 10,
-                      background: active ? `${opt.color}18` : 'transparent',
-                      border: `1px solid ${active ? opt.color + '44' : 'transparent'}`,
+                      display: 'inline-flex', alignItems: 'center', gap: 7,
+                      padding: '8px 14px', borderRadius: 50,
+                      background: active ? `${opt.color}20` : 'rgba(255,255,255,0.02)',
+                      border: `1px solid ${active ? opt.color + '66' : 'rgba(255,255,255,0.07)'}`,
                       fontFamily: 'inherit', cursor: 'pointer',
-                      transition: 'background 0.12s, border-color 0.12s',
-                      color: 'var(--text)',
+                      color: active ? opt.color : 'var(--text-2)',
+                      fontSize: 12.5, fontWeight: active ? 700 : 500,
+                      transition: 'background 0.15s, border-color 0.15s, color 0.15s',
+                      boxShadow: active ? `0 0 0 3px ${opt.color}12` : 'none',
                     }}
-                    onMouseEnter={(e: MouseEvent<HTMLButtonElement>) => { if (!active) e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; }}
-                    onMouseLeave={(e: MouseEvent<HTMLButtonElement>) => { if (!active) e.currentTarget.style.background = 'transparent'; }}
+                    onMouseEnter={(e: MouseEvent<HTMLButtonElement>) => {
+                      if (!active) {
+                        e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
+                        e.currentTarget.style.color = 'var(--text)';
+                      }
+                    }}
+                    onMouseLeave={(e: MouseEvent<HTMLButtonElement>) => {
+                      if (!active) {
+                        e.currentTarget.style.background = 'rgba(255,255,255,0.02)';
+                        e.currentTarget.style.color = 'var(--text-2)';
+                      }
+                    }}
                   >
-                    <div>
-                      <div style={{ fontSize: 13, fontWeight: active ? 700 : 500, color: active ? opt.color : 'var(--text-2)', textAlign: 'left' }}>
-                        {opt.label}
-                      </div>
-                      <div style={{ fontSize: 10, color: 'var(--text-3)', textAlign: 'left', marginTop: 1 }}>
-                        {opt.sub}
-                      </div>
-                    </div>
+                    {opt.label}
                     {active && (
-                      <span style={{ fontSize: 13, color: opt.color, fontWeight: 700 }}>
+                      <span style={{ fontSize: 12, fontWeight: 800, marginLeft: 2 }}>
                         {sortDir === 'asc' ? '↑' : '↓'}
                       </span>
                     )}
@@ -226,63 +344,104 @@ function Dashboard() {
               })}
             </div>
 
-            {/* Track list */}
-            <div style={{ flex: 1, overflow: 'hidden' }}>
-              {/* Column headers */}
+            <SortProgress
+              active={applying}
+              label={SORT_OPTIONS.find((o) => o.id === sortBy)?.label}
+              onDone={handleDone}
+              color={accent}
+              colorEnd={accent2}
+            />
+
+            {sortFeedback && !applying && (
               <div style={{
-                display: 'grid',
-                gridTemplateColumns: '40px 1fr 160px 56px 64px 52px 44px',
-                gap: 8, padding: '0 24px', height: 36, alignItems: 'center',
-                borderBottom: '1px solid var(--border)',
-                background: 'var(--surface2)',
-                position: 'sticky', top: 0, zIndex: 1,
+                padding: '12px 24px',
+                background: `${accent}10`,
+                borderBottom: `1px solid ${accent}22`,
+                fontSize: 13, color: accent, fontWeight: 500,
+                display: 'flex', alignItems: 'center', gap: 8,
+                animation: 'fadeIn 0.3s var(--ease-out)',
               }}>
-                {['#', 'Title', 'Artist', 'BPM', 'Energy', 'Pop', '⏱'].map((h, i) => (
-                  <span key={h} style={{
-                    fontSize: 10, fontWeight: 700, color: 'var(--text-3)',
-                    letterSpacing: '0.1em', textTransform: 'uppercase',
-                    textAlign: i > 4 ? 'right' : 'left',
-                  }}>{h}</span>
+                <svg width="14" height="14" viewBox="0 0 12 12" fill="none">
+                  <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                {sortFeedback}
+              </div>
+            )}
+
+            {/* Column headers */}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: '40px 1fr 160px 56px 64px 52px 52px',
+              gap: 8, padding: '0 24px', height: 38, alignItems: 'center',
+              borderBottom: '1px solid rgba(255,255,255,0.05)',
+              background: 'rgba(8, 11, 16, 0.4)',
+              position: 'sticky', top: 0, zIndex: 1,
+            }}>
+              {['#', 'Title', 'Artist', 'BPM', 'Energy', 'Pop', 'Time'].map((h, i) => (
+                <span key={h} style={{
+                  fontSize: 10, fontWeight: 700, color: 'var(--text-3)',
+                  letterSpacing: '0.16em', textTransform: 'uppercase',
+                  textAlign: i > 4 ? 'right' : 'left',
+                }}>{h}</span>
+              ))}
+            </div>
+
+            {isLoading ? (
+              <div style={{
+                padding: '40px 24px', fontSize: 13, color: 'var(--text-3)',
+                display: 'flex', alignItems: 'center', gap: 10,
+              }}>
+                <span style={{
+                  width: 14, height: 14, borderRadius: '50%',
+                  border: '2px solid var(--border2)', borderTopColor: accent,
+                  animation: 'spin 0.7s linear infinite',
+                }} />
+                Loading tracks…
+              </div>
+            ) : (
+              <div key={sortKey} style={{ maxHeight: 480, overflowY: 'auto' }}>
+                {sorted.map((t, i) => (
+                  <TrackItem key={t.id} track={t} index={i} sortBy={sortBy} />
                 ))}
               </div>
-              {isLoading ? (
-                <div style={{ padding: '24px', fontSize: 13, color: 'var(--text-3)' }}>Loading tracks…</div>
-              ) : (
-                <div key={sortKey} style={{ maxHeight: 420, overflowY: 'auto' }}>
-                  {sorted.map((t, i) => (
-                    <TrackItem key={t.id} track={t} index={i} sortBy={sortBy} />
-                  ))}
-                </div>
-              )}
-            </div>
+            )}
           </div>
-        </div>
-      ) : (
-        /* Empty state */
-        <div style={{
-          ...CARD_STYLE,
-          padding: '56px 32px',
-          display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center',
-        }}>
+        ) : (
+          // Empty state
           <div style={{
-            width: 56, height: 56, borderRadius: 16,
-            background: 'var(--surface3)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            marginBottom: 16,
+            ...GLASS, padding: '72px 32px',
+            display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center',
           }}>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" strokeWidth="1.8" strokeLinecap="round">
-              <line x1="3" y1="6" x2="21" y2="6" />
-              <line x1="3" y1="12" x2="15" y2="12" />
-              <line x1="3" y1="18" x2="9" y2="18" />
-            </svg>
+            <div style={{
+              width: 72, height: 72, borderRadius: 20,
+              background: 'linear-gradient(135deg, rgba(29,185,84,0.15), rgba(29,185,84,0.02))',
+              border: '1px solid rgba(29,185,84,0.22)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              marginBottom: 22, position: 'relative',
+              animation: 'floatY 4s ease-in-out infinite',
+            }}>
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--green)" strokeWidth="1.8" strokeLinecap="round">
+                <line x1="3" y1="6" x2="21" y2="6" />
+                <line x1="3" y1="12" x2="15" y2="12" />
+                <line x1="3" y1="18" x2="9" y2="18" />
+              </svg>
+              <span style={{
+                position: 'absolute', top: -4, right: -4,
+                width: 10, height: 10, borderRadius: '50%', background: 'var(--green)',
+                boxShadow: '0 0 12px var(--green)',
+                animation: 'glow 1.8s ease-in-out infinite',
+              }} />
+            </div>
+            <p style={{ fontSize: 18, fontWeight: 800, marginBottom: 8, letterSpacing: '-0.3px' }}>
+              Pick a playlist to start
+            </p>
+            <p style={{ fontSize: 13.5, color: 'var(--text-3)', maxWidth: 360, lineHeight: 1.55 }}>
+              Choose one from your library above, then sort by BPM, energy, popularity or mood — we'll push the new order back to Spotify.
+            </p>
           </div>
-          <p style={{ fontSize: 15, fontWeight: 700, marginBottom: 6 }}>Select a playlist to sort</p>
-          <p style={{ fontSize: 13, color: 'var(--text-3)', maxWidth: 320 }}>
-            Pick one from your library above, then choose a sort order to reorder its tracks.
-          </p>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+    </>
   );
 }
 
