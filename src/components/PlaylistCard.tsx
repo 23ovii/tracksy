@@ -1,4 +1,13 @@
-function PlaylistCard({ playlist, selected, onClick }) {
+import type { MouseEvent } from 'react';
+import type { Playlist } from '../types';
+
+interface PlaylistCardProps {
+  playlist: Playlist;
+  selected: Playlist | null;
+  onClick: () => void;
+}
+
+function PlaylistCard({ playlist, selected, onClick }: PlaylistCardProps) {
   const isSelected = selected?.id === playlist.id;
 
   return (
@@ -18,8 +27,8 @@ function PlaylistCard({ playlist, selected, onClick }) {
         transition: 'border-color 0.2s, box-shadow 0.2s, transform 0.15s',
         width: '100%',
       }}
-      onMouseEnter={(e) => { if (!isSelected) { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.borderColor = 'var(--border2)'; } }}
-      onMouseLeave={(e) => { if (!isSelected) { e.currentTarget.style.transform = ''; e.currentTarget.style.borderColor = 'var(--border)'; } }}
+      onMouseEnter={(e: MouseEvent<HTMLButtonElement>) => { if (!isSelected) { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.borderColor = 'var(--border2)'; } }}
+      onMouseLeave={(e: MouseEvent<HTMLButtonElement>) => { if (!isSelected) { e.currentTarget.style.transform = ''; e.currentTarget.style.borderColor = 'var(--border)'; } }}
     >
       <div style={{
         height: 100,

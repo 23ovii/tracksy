@@ -1,5 +1,6 @@
 import { Link, NavLink } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth.jsx';
+import type { MouseEvent } from 'react';
+import { useAuth } from '../hooks/useAuth.tsx';
 
 function Navbar() {
   const { logout, isAuthenticated } = useAuth();
@@ -57,8 +58,8 @@ function Navbar() {
                 color: 'var(--text-2)', fontFamily: 'inherit', fontSize: 13,
                 cursor: 'pointer', transition: 'border-color 0.15s',
               }}
-              onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--green)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border2)'; }}
+              onMouseEnter={(e: MouseEvent<HTMLButtonElement>) => { e.currentTarget.style.borderColor = 'var(--green)'; }}
+              onMouseLeave={(e: MouseEvent<HTMLButtonElement>) => { e.currentTarget.style.borderColor = 'var(--border2)'; }}
             >
               Sign Out
             </button>

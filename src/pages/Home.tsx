@@ -1,9 +1,15 @@
 import { useEffect, useState } from 'react';
+import type { MouseEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth.jsx';
-import { buildSpotifyAuthUrl } from '../services/auth.js';
+import { useAuth } from '../hooks/useAuth.tsx';
+import { buildSpotifyAuthUrl } from '../services/auth.ts';
 
-const FEATURES = [
+interface Feature {
+  label: string;
+  tag: string;
+}
+
+const FEATURES: Feature[] = [
   { label: 'Playlist Sorter', tag: 'Live' },
   { label: 'Duplicate Finder', tag: 'Soon' },
   { label: 'Playlist Merger', tag: 'Soon' },
@@ -25,7 +31,7 @@ function Home() {
     setError('');
     try {
       window.location.href = await buildSpotifyAuthUrl();
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
       setError(err.message);
       setIsLoading(false);
@@ -86,8 +92,8 @@ function Home() {
               transition: 'transform 0.15s, box-shadow 0.15s',
               opacity: isLoading ? 0.7 : 1,
             }}
-            onMouseEnter={(e) => { if (!isLoading) { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 36px rgba(29,185,84,0.45)'; } }}
-            onMouseLeave={(e) => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '0 4px 28px rgba(29,185,84,0.35)'; }}
+            onMouseEnter={(e: MouseEvent<HTMLButtonElement>) => { if (!isLoading) { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 36px rgba(29,185,84,0.45)'; } }}
+            onMouseLeave={(e: MouseEvent<HTMLButtonElement>) => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '0 4px 28px rgba(29,185,84,0.35)'; }}
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
               <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.65 14.42c-.19.31-.6.41-.91.22-2.49-1.52-5.63-1.87-9.32-1.02-.36.08-.72-.14-.8-.5-.08-.36.14-.72.5-.8 4.04-.92 7.51-.52 10.31 1.19.31.19.41.6.22.91zm1.24-2.77c-.24.38-.75.51-1.13.27-2.85-1.75-7.19-2.26-10.56-1.24-.44.13-.9-.12-1.03-.56-.13-.44.12-.9.56-1.03 3.84-1.17 8.61-.6 11.89 1.43.38.24.51.75.27 1.13zm.11-2.89c-3.42-2.03-9.07-2.22-12.33-1.23-.52.16-1.07-.14-1.23-.66-.16-.52.14-1.07.66-1.23C8.9 6.76 15.12 6.98 19 9.3c.47.28.63.89.35 1.36-.28.47-.89.62-1.35.35v-.15z" />

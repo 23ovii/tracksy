@@ -1,17 +1,18 @@
 import { useState, useCallback } from 'react';
-import { useAuth } from './useAuth.jsx';
+import { useAuth } from './useAuth.tsx';
 import {
   getSpotifyPlaylists,
   getSpotifyPlaylistTracks,
   getAudioFeatures,
   savePlaylistTracks,
-} from '../services/spotify.js';
+} from '../services/spotify.ts';
+import type { Track, Playlist } from '../types';
 
 export function useSpotify() {
   const { token } = useAuth();
-  const [playlists, setPlaylists] = useState([]);
-  const [tracks, setTracks] = useState([]);
-  const [selectedPlaylist, setSelectedPlaylist] = useState(null);
+  const [playlists, setPlaylists] = useState<Playlist[]>([]);
+  const [tracks, setTracks] = useState<Track[]>([]);
+  const [selectedPlaylist, setSelectedPlaylist] = useState<Playlist | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [feedback, setFeedback] = useState('');
 
@@ -19,7 +20,7 @@ export function useSpotify() {
     setIsLoading(true);
     setFeedback('');
     try {
-      setPlaylists(await getSpotifyPlaylists(token));
+      setPlaylists(await getSpotifyPlaylists(token!));
     } catch (error) {
       console.error(error);
       setFeedback('Unable to load Spotify playlists.');
@@ -28,20 +29,19 @@ export function useSpotify() {
     }
   }, [token]);
 
-  const loadPlaylistTracks = useCallback(async (playlist) => {
+  const loadPlaylistTracks = useCallback(async (playlist: Playlist) => {
     setIsLoading(true);
     setFeedback('');
     try {
-      const raw = await getSpotifyPlaylistTracks(token, playlist.id);
+      const raw = await getSpotifyPlaylistTracks(token!, playlist.id);
       setSelectedPlaylist(playlist);
       setTracks(raw);
       setIsLoading(false);
 
-      // Audio features are optional — enrich in the background if available
       const ids = raw.map((t) => t.id).filter((id) => id && !id.startsWith('spotify:local:'));
       if (ids.length) {
         try {
-          const features = await getAudioFeatures(token, ids);
+          const features = await getAudioFeatures(token!, ids);
           setTracks(raw.map((t) => ({
             ...t,
             bpm: features[t.id]?.bpm ?? 0,
@@ -58,8 +58,8 @@ export function useSpotify() {
     }
   }, [token]);
 
-  const applySort = useCallback(async (sortedTracks) => {
-    await savePlaylistTracks(token, selectedPlaylist.id, sortedTracks);
+  const applySort = useCallback(async (sortedTracks: Track[]) => {
+    await savePlaylistTracks(token!, selectedPlaylist!.id, sortedTracks);
   }, [token, selectedPlaylist]);
 
   const clearSelection = useCallback(() => {

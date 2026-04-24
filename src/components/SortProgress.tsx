@@ -1,13 +1,19 @@
 import { useState, useEffect } from 'react';
 
-function SortProgress({ active, label, onDone }) {
+interface SortProgressProps {
+  active: boolean;
+  label: string | undefined;
+  onDone: () => void;
+}
+
+function SortProgress({ active, label, onDone }: SortProgressProps) {
   const [pct, setPct] = useState(0);
 
   useEffect(() => {
     if (!active) { setPct(0); return; }
     const start = Date.now();
     const dur = 1800;
-    let rafId;
+    let rafId: number;
     function tick() {
       const p = Math.min(100, ((Date.now() - start) / dur) * 100);
       setPct(p);

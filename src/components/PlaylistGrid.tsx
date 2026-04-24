@@ -1,9 +1,16 @@
 import { useState } from 'react';
-import PlaylistCard from './PlaylistCard.jsx';
+import PlaylistCard from './PlaylistCard.tsx';
+import type { Playlist } from '../types';
+
+interface PlaylistGridProps {
+  playlists: Playlist[];
+  selected: Playlist | null;
+  onSelect: (playlist: Playlist) => void;
+}
 
 const PAGE_SIZE = 8;
 
-function PlaylistGrid({ playlists, selected, onSelect }) {
+function PlaylistGrid({ playlists, selected, onSelect }: PlaylistGridProps) {
   const [page, setPage] = useState(0);
   const total = Math.ceil(playlists.length / PAGE_SIZE);
   const visible = playlists.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);

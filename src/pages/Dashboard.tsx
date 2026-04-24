@@ -1,14 +1,21 @@
 import { useEffect, useState } from 'react';
+import type { CSSProperties, MouseEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth.jsx';
-import { useSpotify } from '../hooks/useSpotify.jsx';
-import PlaylistGrid from '../components/PlaylistGrid.jsx';
-import PlaylistSlider from '../components/PlaylistSlider.jsx';
-import TrackItem from '../components/TrackItem.jsx';
-import SortProgress from '../components/SortProgress.jsx';
-import { SORT_OPTIONS, sortTracks } from '../utils/playlistUtils.js';
+import { useAuth } from '../hooks/useAuth.tsx';
+import { useSpotify } from '../hooks/useSpotify.tsx';
+import PlaylistGrid from '../components/PlaylistGrid.tsx';
+import PlaylistSlider from '../components/PlaylistSlider.tsx';
+import TrackItem from '../components/TrackItem.tsx';
+import SortProgress from '../components/SortProgress.tsx';
+import { SORT_OPTIONS, sortTracks } from '../utils/playlistUtils.ts';
+import type { Playlist } from '../types';
 
-function PlaylistCover({ playlist, size = 56 }) {
+interface PlaylistCoverProps {
+  playlist: Playlist;
+  size?: number;
+}
+
+function PlaylistCover({ playlist, size = 56 }: PlaylistCoverProps) {
   return (
     <div style={{
       width: size, height: size, borderRadius: size * 0.18, flexShrink: 0,
@@ -25,7 +32,7 @@ function PlaylistCover({ playlist, size = 56 }) {
   );
 }
 
-const CARD_STYLE = {
+const CARD_STYLE: CSSProperties = {
   background: 'var(--surface)',
   border: '1px solid var(--border)',
   borderRadius: 16,
@@ -37,7 +44,7 @@ function Dashboard() {
   const { playlists, tracks, selectedPlaylist, isLoading, loadPlaylists, loadPlaylistTracks, applySort, clearSelection } = useSpotify();
 
   const [sortBy, setSortBy] = useState('name');
-  const [sortDir, setSortDir] = useState('asc');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const [applying, setApplying] = useState(false);
   const [applied, setApplied] = useState(false);
   const [sortFeedback, setSortFeedback] = useState('');
@@ -55,7 +62,7 @@ function Dashboard() {
 
   const sorted = sortTracks(tracks, sortBy, sortDir);
 
-  function pickSort(id) {
+  function pickSort(id: string) {
     if (sortBy === id) setSortDir((d) => d === 'asc' ? 'desc' : 'asc');
     else { setSortBy(id); setSortDir('asc'); }
     setApplied(false);
@@ -63,7 +70,7 @@ function Dashboard() {
     setSortKey((k) => k + 1);
   }
 
-  function handleSelect(playlist) {
+  function handleSelect(playlist: Playlist) {
     loadPlaylistTracks(playlist);
     setApplied(false);
     setSortFeedback('');
@@ -80,7 +87,7 @@ function Dashboard() {
     setApplying(false);
     setApplied(true);
     const label = SORT_OPTIONS.find((o) => o.id === sortBy)?.label;
-    setSortFeedback(`"${selectedPlaylist.name}" sorted by ${label} and saved.`);
+    setSortFeedback(`"${selectedPlaylist!.name}" sorted by ${label} and saved.`);
   }
 
   const Layout = cardLayout === 'grid' ? PlaylistGrid : PlaylistSlider;
@@ -207,8 +214,8 @@ function Dashboard() {
                       transition: 'background 0.12s, border-color 0.12s',
                       color: 'var(--text)',
                     }}
-                    onMouseEnter={(e) => { if (!active) e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; }}
-                    onMouseLeave={(e) => { if (!active) e.currentTarget.style.background = 'transparent'; }}
+                    onMouseEnter={(e: MouseEvent<HTMLButtonElement>) => { if (!active) e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; }}
+                    onMouseLeave={(e: MouseEvent<HTMLButtonElement>) => { if (!active) e.currentTarget.style.background = 'transparent'; }}
                   >
                     <div>
                       <div style={{ fontSize: 13, fontWeight: active ? 700 : 500, color: active ? opt.color : 'var(--text-2)', textAlign: 'left' }}>
