@@ -1,35 +1,27 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 interface SortProgressProps {
   active: boolean;
+  progress: number; // 0–100, controlled by caller
   label: string | undefined;
   onDone: () => void;
   color?: string;
   colorEnd?: string;
+  rateLimitMsg?: string;
 }
 
-function SortProgress({ active, label, onDone, color = '#1db954', colorEnd = '#5af5a0' }: SortProgressProps) {
-  const [pct, setPct] = useState(0);
+function SortProgress({ active, progress, label, onDone, color = '#1db954', colorEnd = '#5af5a0', rateLimitMsg }: SortProgressProps) {
+  const doneFired = useRef(false);
 
   useEffect(() => {
-    if (!active) { setPct(0); return; }
-    const start = Date.now();
-    const dur = 1800;
-    let rafId: number;
-    function tick() {
-      const p = Math.min(100, ((Date.now() - start) / dur) * 100);
-      setPct(p);
-      if (p < 100) {
-        rafId = requestAnimationFrame(tick);
-      } else {
-        setTimeout(onDone, 150);
-      }
+    if (!active) { doneFired.current = false; return; }
+    if (progress >= 100 && !doneFired.current) {
+      doneFired.current = true;
+      setTimeout(onDone, 300);
     }
-    rafId = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(rafId);
-  }, [active]);
+  }, [active, progress, onDone]);
 
-  if (!active && pct === 0) return null;
+  if (!active && progress === 0) return null;
 
   return (
     <div style={{
@@ -40,10 +32,13 @@ function SortProgress({ active, label, onDone, color = '#1db954', colorEnd = '#5
     }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10, fontSize: 12, position: 'relative' }}>
         <span style={{ color, fontWeight: 600, letterSpacing: '-0.1px' }}>
-          Sorting by <strong style={{ fontWeight: 800 }}>{label}</strong>
+          {rateLimitMsg
+            ? <span style={{ color: '#f59e0b' }}>{rateLimitMsg}</span>
+            : <>Sorting by <strong style={{ fontWeight: 800 }}>{label}</strong></>
+          }
         </span>
         <span style={{ color: 'var(--text-3)', fontVariantNumeric: 'tabular-nums' }}>
-          {Math.round(pct)}%
+          {Math.round(progress)}%
         </span>
       </div>
       <div style={{
@@ -52,10 +47,10 @@ function SortProgress({ active, label, onDone, color = '#1db954', colorEnd = '#5
       }}>
         <div style={{
           height: '100%',
-          width: `${pct}%`,
+          width: `${progress}%`,
           background: `linear-gradient(90deg, ${color}, ${colorEnd})`,
           borderRadius: 2,
-          transition: 'width 0.05s linear',
+          transition: 'width 0.2s ease-out',
           boxShadow: `0 0 10px ${color}aa`,
         }} />
       </div>
