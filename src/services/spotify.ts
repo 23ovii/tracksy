@@ -119,18 +119,27 @@ export async function getAudioFeatures(token: string, trackIds: string[]): Promi
   return features;
 }
 
-export async function savePlaylistTracks(token: string, playlistId: string, tracks: Track[]): Promise<void> {
-  const uris = tracks.map((t) =>
-    t.id.startsWith('spotify:') ? t.id : `spotify:track:${t.id}`
-  );
+export async function savePlaylistTracks(
+  token: string,
+  playlistId: string,
+  originalTracks: Track[],
+  sortedTracks: Track[],
+): Promise<void> {
+  const current = originalTracks.map((t) => t.id);
+  const target = sortedTracks.map((t) => t.id);
+  const url = `https://api.spotify.com/v1/playlists/${playlistId}/tracks`;
 
-  await writeSpotify(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, token, 'PUT', {
-    uris: uris.slice(0, 100),
-  });
+  for (let i = 0; i < target.length; i++) {
+    const currentPos = current.indexOf(target[i]);
+    if (currentPos === i) continue;
 
-  for (let i = 100; i < uris.length; i += 100) {
-    await writeSpotify(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, token, 'POST', {
-      uris: uris.slice(i, i + 100),
+    await writeSpotify(url, token, 'PUT', {
+      range_start: currentPos,
+      insert_before: i,
+      range_length: 1,
     });
+
+    current.splice(currentPos, 1);
+    current.splice(i, 0, target[i]);
   }
 }
