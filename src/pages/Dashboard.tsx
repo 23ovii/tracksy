@@ -3,7 +3,7 @@ import type { CSSProperties, MouseEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth.tsx';
 import { useSpotify } from '../hooks/useSpotify.tsx';
-import PlaylistSlider from '../components/PlaylistSlider.tsx';
+import PlaylistCard from '../components/PlaylistCard.tsx';
 import TrackItem from '../components/TrackItem.tsx';
 import SortProgress from '../components/SortProgress.tsx';
 import { SORT_OPTIONS, sortTracks } from '../utils/playlistUtils.ts';
@@ -157,21 +157,52 @@ function Dashboard() {
         position: 'relative', zIndex: 1,
       }}>
 
-        {/* Library card */}
-        <div style={{ ...GLASS, padding: 24, marginBottom: 18 }}>
-          {isLoading && !selectedPlaylist ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '28px 4px' }}>
-              <span style={{
-                width: 14, height: 14, borderRadius: '50%',
-                border: '2px solid var(--border2)', borderTopColor: 'var(--green)',
-                animation: 'spin 0.7s linear infinite',
-              }} />
-              <p style={{ fontSize: 13, color: 'var(--text-3)' }}>Loading your library…</p>
+        {/* Library card — hidden once a playlist is selected */}
+        {!selectedPlaylist && (
+          <div style={{ ...GLASS, padding: 24, marginBottom: 18, animation: 'fadeUp 0.35s var(--ease-out)' }}>
+            <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: 20, padding: '0 4px' }}>
+              <div>
+                <p style={{
+                  fontSize: 10, fontWeight: 700, color: 'var(--green)',
+                  letterSpacing: '0.22em', textTransform: 'uppercase', marginBottom: 5,
+                }}>Your Library</p>
+                <h2 style={{
+                  fontSize: 20, fontWeight: 800, letterSpacing: '-0.5px',
+                  display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 6,
+                }}>
+                  Playlists
+                  <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-3)', letterSpacing: 0 }}>
+                    {playlists.length} total
+                  </span>
+                </h2>
+                <p style={{ fontSize: 12.5, color: 'var(--text-3)', lineHeight: 1.5 }}>
+                  Pick a playlist to sort by BPM, energy, popularity, and more
+                </p>
+              </div>
             </div>
-          ) : (
-            <PlaylistSlider playlists={playlists} selected={selectedPlaylist} onSelect={handleSelect} />
-          )}
-        </div>
+
+            {isLoading ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '28px 4px' }}>
+                <span style={{
+                  width: 14, height: 14, borderRadius: '50%',
+                  border: '2px solid var(--border2)', borderTopColor: 'var(--green)',
+                  animation: 'spin 0.7s linear infinite',
+                }} />
+                <p style={{ fontSize: 13, color: 'var(--text-3)' }}>Loading your library…</p>
+              </div>
+            ) : (
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(155px, 1fr))',
+                gap: 14,
+              }}>
+                {playlists.map((p) => (
+                  <PlaylistCard key={p.id} playlist={p} selected={null} onClick={() => handleSelect(p)} />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Sorter */}
         {selectedPlaylist ? (
@@ -248,7 +279,7 @@ function Dashboard() {
                     e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)';
                     e.currentTarget.style.color = 'var(--text-2)';
                   }}
-                >Clear</button>
+                >← Back</button>
                 <button
                   onClick={handleApply}
                   disabled={applying || applied}
@@ -414,40 +445,7 @@ function Dashboard() {
               </div>
             )}
           </div>
-        ) : (
-          // Empty state
-          <div style={{
-            ...GLASS, padding: '72px 32px',
-            display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center',
-          }}>
-            <div style={{
-              width: 72, height: 72, borderRadius: 20,
-              background: 'linear-gradient(135deg, rgba(29,185,84,0.15), rgba(29,185,84,0.02))',
-              border: '1px solid rgba(29,185,84,0.22)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              marginBottom: 22, position: 'relative',
-              animation: 'floatY 4s ease-in-out infinite',
-            }}>
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--green)" strokeWidth="1.8" strokeLinecap="round">
-                <line x1="3" y1="6" x2="21" y2="6" />
-                <line x1="3" y1="12" x2="15" y2="12" />
-                <line x1="3" y1="18" x2="9" y2="18" />
-              </svg>
-              <span style={{
-                position: 'absolute', top: -4, right: -4,
-                width: 10, height: 10, borderRadius: '50%', background: 'var(--green)',
-                boxShadow: '0 0 12px var(--green)',
-                animation: 'glow 1.8s ease-in-out infinite',
-              }} />
-            </div>
-            <p style={{ fontSize: 18, fontWeight: 800, marginBottom: 8, letterSpacing: '-0.3px' }}>
-              Pick a playlist to start
-            </p>
-            <p style={{ fontSize: 13.5, color: 'var(--text-3)', maxWidth: 360, lineHeight: 1.55 }}>
-              Choose one from your library above, then sort by BPM, energy, popularity or mood — we'll push the new order back to Spotify.
-            </p>
-          </div>
-        )}
+        ) : null}
       </div>
     </>
   );
