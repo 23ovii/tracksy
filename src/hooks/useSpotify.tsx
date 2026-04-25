@@ -64,8 +64,8 @@ export function useSpotify() {
   }, [token]);
 
   const applySort = useCallback(async (sortedTracks: Track[]) => {
-    await savePlaylistTracks(token!, selectedPlaylist!.id, sortedTracks);
-  }, [token, selectedPlaylist]);
+    await savePlaylistTracks(token!, selectedPlaylist!.id, tracks, sortedTracks);
+  }, [token, selectedPlaylist, tracks]);
 
   const clearSelection = useCallback(() => {
     setSelectedPlaylist(null);
