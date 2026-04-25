@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import type { JSX, MouseEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth.tsx';
@@ -64,15 +64,15 @@ const EQ_BARS = [0.55, 0.9, 0.4, 0.75, 0.5, 0.85, 0.6, 0.35, 0.7];
 
 function Home() {
   const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (isAuthenticated) navigate('/dashboard');
-  }, [isAuthenticated, navigate]);
 
   const handleLogin = async () => {
+    if (isAuthenticated) {
+      navigate('/dashboard');
+      return;
+    }
     setIsLoading(true);
     setError('');
     try {

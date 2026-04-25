@@ -1,9 +1,14 @@
 import { Link, NavLink } from 'react-router-dom';
 import type { MouseEvent } from 'react';
 import { useAuth } from '../hooks/useAuth.tsx';
+import { buildSpotifyAuthUrl } from '../services/auth.ts';
 
 function Navbar() {
   const { logout, isAuthenticated } = useAuth();
+
+  const handleLogin = async () => {
+    window.location.href = await buildSpotifyAuthUrl();
+  };
 
   return (
     <header style={{
@@ -44,7 +49,7 @@ function Navbar() {
         </Link>
 
         <nav style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          {[{ to: '/', label: 'Home', end: true }, { to: '/dashboard', label: 'Dashboard', end: false }].map(({ to, label, end }) => (
+          {isAuthenticated && [{ to: '/', label: 'Home', end: true }, { to: '/dashboard', label: 'Dashboard', end: false }].map(({ to, label, end }) => (
             <NavLink
               key={to}
               to={to}
@@ -73,6 +78,30 @@ function Navbar() {
               {label}
             </NavLink>
           ))}
+          {!isAuthenticated && (
+            <button
+              onClick={handleLogin}
+              style={{
+                marginLeft: 4, padding: '7px 18px', borderRadius: 50,
+                border: '1px solid rgba(29,185,84,0.45)', background: 'rgba(29,185,84,0.08)',
+                color: 'var(--green)', fontFamily: 'inherit', fontSize: 13, fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'border-color 0.18s, background 0.18s, transform 0.18s',
+              }}
+              onMouseEnter={(e: MouseEvent<HTMLButtonElement>) => {
+                e.currentTarget.style.borderColor = 'rgba(29,185,84,0.8)';
+                e.currentTarget.style.background = 'rgba(29,185,84,0.16)';
+                e.currentTarget.style.transform = 'translateY(-1px)';
+              }}
+              onMouseLeave={(e: MouseEvent<HTMLButtonElement>) => {
+                e.currentTarget.style.borderColor = 'rgba(29,185,84,0.45)';
+                e.currentTarget.style.background = 'rgba(29,185,84,0.08)';
+                e.currentTarget.style.transform = '';
+              }}
+            >
+              Sign In
+            </button>
+          )}
           {isAuthenticated && (
             <button
               onClick={logout}

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { CSSProperties, MouseEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth.tsx';
@@ -99,6 +99,7 @@ function Dashboard() {
   const [applied, setApplied] = useState(false);
   const [sortFeedback, setSortFeedback] = useState('');
   const [sortKey, setSortKey] = useState(0);
+  const apiPromiseRef = useRef<Promise<void> | null>(null);
 
   useEffect(() => {
     if (!isAuthenticated) { navigate('/'); return; }
@@ -126,14 +127,21 @@ function Dashboard() {
   function handleApply() {
     setApplying(true);
     setSortFeedback('');
-    applySort(sorted).catch(console.error);
+    apiPromiseRef.current = applySort(sorted);
   }
 
-  function handleDone() {
-    setApplying(false);
-    setApplied(true);
-    const label = SORT_OPTIONS.find((o) => o.id === sortBy)?.label;
-    setSortFeedback(`"${selectedPlaylist!.name}" sorted by ${label} and saved.`);
+  async function handleDone() {
+    const playlistName = selectedPlaylist?.name;
+    try {
+      await apiPromiseRef.current;
+      setApplying(false);
+      setApplied(true);
+      const label = SORT_OPTIONS.find((o) => o.id === sortBy)?.label;
+      if (playlistName) setSortFeedback(`"${playlistName}" sorted by ${label} and saved.`);
+    } catch {
+      setApplying(false);
+      setSortFeedback('Failed to save to Spotify. Try again.');
+    }
   }
 
   const accent = selectedPlaylist?.color1 ?? 'var(--green)';
@@ -401,7 +409,7 @@ function Dashboard() {
             ) : (
               <div key={sortKey} style={{ maxHeight: 480, overflowY: 'auto' }}>
                 {sorted.map((t, i) => (
-                  <TrackItem key={t.id} track={t} index={i} sortBy={sortBy} />
+                  <TrackItem key={t.id ?? i} track={t} index={i} sortBy={sortBy} />
                 ))}
               </div>
             )}
