@@ -1,5 +1,4 @@
 import type { MouseEvent } from 'react';
-import MiniWave from './MiniWave.tsx';
 import { SORT_OPTIONS } from '../utils/playlistUtils.ts';
 import type { Track } from '../types';
 
@@ -7,7 +6,6 @@ interface TrackItemProps {
   track: Track;
   index: number;
   sortBy: string;
-  sortKey?: number;
 }
 
 function formatDuration(ms: number): string {
@@ -24,7 +22,7 @@ function TrackItem({ track, index, sortBy }: TrackItemProps) {
     <div
       style={{
         display: 'grid',
-        gridTemplateColumns: '40px 1fr 160px 56px 64px 52px 52px',
+        gridTemplateColumns: '40px 1fr 160px 52px 52px',
         gap: 8,
         padding: '0 24px',
         height: 58,
@@ -70,18 +68,6 @@ function TrackItem({ track, index, sortBy }: TrackItemProps) {
         color: sortBy === 'artist' ? opt?.color : 'var(--text-2)',
         whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
       }}>{track.artist}</div>
-
-      <div style={{
-        fontSize: 13,
-        fontWeight: sortBy === 'bpm' ? 700 : 500,
-        color: sortBy === 'bpm' ? opt?.color : track.bpm ? 'var(--text-2)' : 'var(--text-3)',
-        fontVariantNumeric: 'tabular-nums',
-      }}>{track.bpm || '—'}</div>
-
-      <MiniWave
-        value={track.energy}
-        color={sortBy === 'energy' ? opt?.color : 'var(--border2)'}
-      />
 
       <div style={{
         textAlign: 'right', fontSize: 13,

@@ -47,8 +47,6 @@ function mapTrack(item: any): Track | null {
     durationMs: track.duration_ms ?? 0,
     addedAt: item.added_at ?? '',
     popularity: track.popularity ?? 0,
-    bpm: 0,
-    energy: 0,
   };
 }
 
@@ -71,6 +69,7 @@ async function writeSpotify(
   method: string,
   body: object,
   onRateLimit?: (retryAfterSeconds: number) => void,
+  waitMultiplier = 1,
 ): Promise<void> {
   const response = await fetch(url, {
     method,
@@ -82,10 +81,11 @@ async function writeSpotify(
   });
 
   if (response.status === 429) {
-    const retryAfter = parseInt(response.headers.get('Retry-After') ?? '5', 10);
-    onRateLimit?.(retryAfter);
-    await new Promise((resolve) => setTimeout(resolve, retryAfter * 1000));
-    return writeSpotify(url, token, method, body, onRateLimit);
+    const base = parseInt(response.headers.get('Retry-After') ?? '5', 10);
+    const wait = base * waitMultiplier;
+    onRateLimit?.(wait);
+    await new Promise((resolve) => setTimeout(resolve, wait * 1000));
+    return writeSpotify(url, token, method, body, onRateLimit, waitMultiplier);
   }
 
   if (!response.ok) {
@@ -120,18 +120,6 @@ export async function getSpotifyPlaylistTracks(token: string, playlistId: string
   return items.map(mapTrack).filter((t): t is Track => t !== null);
 }
 
-export async function getAudioFeatures(token: string, trackIds: string[]): Promise<Record<string, { bpm: number; energy: number }>> {
-  const features: Record<string, { bpm: number; energy: number }> = {};
-  for (let i = 0; i < trackIds.length; i += 100) {
-    const ids = trackIds.slice(i, i + 100).join(',');
-    const data = await fetchSpotify(`https://api.spotify.com/v1/audio-features?ids=${ids}`, token);
-    data.audio_features.forEach((f: any) => {
-      if (f) features[f.id] = { bpm: Math.round(f.tempo), energy: f.energy };
-    });
-  }
-  return features;
-}
-
 export async function savePlaylistTracks(
   token: string,
   playlistId: string,
@@ -139,29 +127,49 @@ export async function savePlaylistTracks(
   sortedTracks: Track[],
   onProgress?: (pct: number) => void,
   onRateLimit?: (retryAfterSeconds: number) => void,
-): Promise<void> {
-  const current = originalTracks.map((t) => t.id);
-  const target = sortedTracks.map((t) => t.id);
+): Promise<{ moves: number }> {
   const url = `https://api.spotify.com/v1/playlists/${playlistId}/tracks`;
   let moves = 0;
+  let rateLimitHits = 0;
 
-  const needed = target.filter((id, i) => current.indexOf(id) !== i).length;
+  // Use original position index as identity — handles duplicate track IDs correctly.
+  // indexOf(id) always finds the first duplicate copy, causing position divergence.
+  const originalIndex = new Map<Track, number>();
+  originalTracks.forEach((t, i) => originalIndex.set(t, i));
+
+  const current: number[] = originalTracks.map((_, i) => i);
+  const target: number[] = sortedTracks.map((t) => originalIndex.get(t) ?? -1);
+
+  const needed = target.filter((origIdx, i) => current[i] !== origIdx).length;
+
+  if (needed === 0) {
+    onProgress?.(100);
+    return { moves: 0 };
+  }
 
   for (let i = 0; i < target.length; i++) {
-    const currentPos = current.indexOf(target[i]);
+    const targetOrigIdx = target[i];
+    const currentPos = current.indexOf(targetOrigIdx);
     if (currentPos === i) continue;
+
+    // After 5 rate limit hits, double the wait time; after 10, triple; etc.
+    const multiplier = 1 + Math.floor(rateLimitHits / 5);
 
     await writeSpotify(url, token, 'PUT', {
       range_start: currentPos,
       insert_before: i,
       range_length: 1,
-    }, onRateLimit);
+    }, (wait) => {
+      rateLimitHits++;
+      onRateLimit?.(wait);
+    }, multiplier);
 
     current.splice(currentPos, 1);
-    current.splice(i, 0, target[i]);
+    current.splice(i, 0, targetOrigIdx);
     moves++;
-    onProgress?.(needed > 0 ? Math.round((moves / needed) * 100) : 100);
+    onProgress?.(Math.round((moves / needed) * 100));
   }
 
   onProgress?.(100);
+  return { moves };
 }

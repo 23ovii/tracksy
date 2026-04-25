@@ -6,8 +6,6 @@ export interface Track {
   durationMs: number;
   addedAt: string;
   popularity: number;
-  bpm: number;
-  energy: number;
 }
 
 export interface Playlist {

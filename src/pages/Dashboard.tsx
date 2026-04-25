@@ -101,7 +101,7 @@ function Dashboard() {
   const [sortKey, setSortKey] = useState(0);
   const [applyProgress, setApplyProgress] = useState(0);
   const [rateLimitMsg, setRateLimitMsg] = useState('');
-  const apiPromiseRef = useRef<Promise<void> | null>(null);
+  const apiPromiseRef = useRef<Promise<{ moves: number }> | null>(null);
 
   useEffect(() => {
     if (!isAuthenticated) { navigate('/'); return; }
@@ -148,13 +148,17 @@ function Dashboard() {
   async function handleDone() {
     const playlistName = selectedPlaylist?.name;
     try {
-      await apiPromiseRef.current;
+      const result = await apiPromiseRef.current;
       setApplying(false);
       setApplyProgress(0);
       setRateLimitMsg('');
-      setApplied(true);
       const label = SORT_OPTIONS.find((o) => o.id === sortBy)?.label;
-      if (playlistName) setSortFeedback(`"${playlistName}" sorted by ${label} and saved.`);
+      if (result?.moves === 0) {
+        setSortFeedback(`"${playlistName}" is already in this order.`);
+      } else {
+        setApplied(true);
+        if (playlistName) setSortFeedback(`"${playlistName}" sorted by ${label} and saved.`);
+      }
     } catch {
       setApplying(false);
       setSortFeedback('Failed to save to Spotify. Try again.');
@@ -483,17 +487,17 @@ function Dashboard() {
             {/* Column headers */}
             <div style={{
               display: 'grid',
-              gridTemplateColumns: '40px 1fr 160px 56px 64px 52px 52px',
+              gridTemplateColumns: '40px 1fr 160px 52px 52px',
               gap: 8, padding: '0 24px', height: 38, alignItems: 'center',
               borderBottom: '1px solid rgba(255,255,255,0.05)',
               background: 'rgba(8, 11, 16, 0.4)',
               position: 'sticky', top: 0, zIndex: 1,
             }}>
-              {['#', 'Title', 'Artist', 'BPM', 'Energy', 'Pop', 'Time'].map((h, i) => (
+              {['#', 'Title', 'Artist', 'Pop', 'Time'].map((h, i) => (
                 <span key={h} style={{
                   fontSize: 10, fontWeight: 700, color: 'var(--text-3)',
                   letterSpacing: '0.16em', textTransform: 'uppercase',
-                  textAlign: i > 4 ? 'right' : 'left',
+                  textAlign: i > 2 ? 'right' : 'left',
                 }}>{h}</span>
               ))}
             </div>
@@ -513,7 +517,7 @@ function Dashboard() {
             ) : (
               <div key={sortKey} style={{ maxHeight: 480, overflowY: 'auto' }}>
                 {sorted.map((t, i) => (
-                  <TrackItem key={t.id ?? i} track={t} index={i} sortBy={sortBy} />
+                  <TrackItem key={i} track={t} index={i} sortBy={sortBy} />
                 ))}
               </div>
             )}
