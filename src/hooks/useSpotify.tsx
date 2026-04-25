@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { useAuth } from './useAuth.tsx';
 import {
   getSpotifyPlaylists,
@@ -15,6 +15,7 @@ export function useSpotify() {
   const [selectedPlaylist, setSelectedPlaylist] = useState<Playlist | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [feedback, setFeedback] = useState('');
+  const currentPlaylistIdRef = useRef<string | null>(null);
 
   const loadPlaylists = useCallback(async () => {
     setIsLoading(true);
@@ -30,10 +31,12 @@ export function useSpotify() {
   }, [token]);
 
   const loadPlaylistTracks = useCallback(async (playlist: Playlist) => {
+    currentPlaylistIdRef.current = playlist.id;
     setIsLoading(true);
     setFeedback('');
     try {
       const raw = await getSpotifyPlaylistTracks(token!, playlist.id);
+      if (currentPlaylistIdRef.current !== playlist.id) return;
       setSelectedPlaylist(playlist);
       setTracks(raw);
       setIsLoading(false);
@@ -42,6 +45,7 @@ export function useSpotify() {
       if (ids.length) {
         try {
           const features = await getAudioFeatures(token!, ids);
+          if (currentPlaylistIdRef.current !== playlist.id) return;
           setTracks(raw.map((t) => ({
             ...t,
             bpm: features[t.id]?.bpm ?? 0,
@@ -52,6 +56,7 @@ export function useSpotify() {
         }
       }
     } catch (error) {
+      if (currentPlaylistIdRef.current !== playlist.id) return;
       console.error(error);
       setFeedback('Unable to load track details from Spotify.');
       setIsLoading(false);
