@@ -131,11 +131,18 @@ function Dashboard() {
     setApplyProgress(0);
     setRateLimitMsg('');
     setSortFeedback('');
-    apiPromiseRef.current = applySort(
+    const promise = applySort(
       sorted,
       setApplyProgress,
       (retryAfter) => setRateLimitMsg(`Rate limited by Spotify — retrying in ${retryAfter}s…`),
     );
+    apiPromiseRef.current = promise;
+    promise.catch(() => {
+      setApplying(false);
+      setApplyProgress(0);
+      setRateLimitMsg('');
+      setSortFeedback('Failed to save to Spotify. Try again.');
+    });
   }
 
   async function handleDone() {
@@ -454,7 +461,22 @@ function Dashboard() {
                 <svg width="14" height="14" viewBox="0 0 12 12" fill="none">
                   <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
-                {sortFeedback}
+                <span>
+                  {sortFeedback}
+                  {selectedPlaylist && (
+                    <>
+                      {' — '}
+                      <a
+                        href={`https://open.spotify.com/playlist/${selectedPlaylist.id}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        style={{ color: accent, fontWeight: 700, textDecoration: 'underline', textUnderlineOffset: 3 }}
+                      >
+                        Open in Spotify
+                      </a>
+                    </>
+                  )}
+                </span>
               </div>
             )}
 
