@@ -3,7 +3,6 @@ import { useAuth } from './useAuth.tsx';
 import {
   getSpotifyPlaylists,
   getSpotifyPlaylistTracks,
-  getAudioFeatures,
   savePlaylistTracks,
 } from '../services/spotify.ts';
 import type { Track, Playlist } from '../types';
@@ -39,27 +38,12 @@ export function useSpotify() {
       if (currentPlaylistIdRef.current !== playlist.id) return;
       setSelectedPlaylist(playlist);
       setTracks(raw);
-      setIsLoading(false);
-
-      const ids = raw.map((t) => t.id).filter((id) => id && !id.startsWith('spotify:local:'));
-      if (ids.length) {
-        try {
-          const features = await getAudioFeatures(token!, ids);
-          if (currentPlaylistIdRef.current !== playlist.id) return;
-          setTracks(raw.map((t) => ({
-            ...t,
-            bpm: features[t.id]?.bpm ?? 0,
-            energy: features[t.id]?.energy ?? 0,
-          })));
-        } catch {
-          // Audio features unavailable — tracks still show without BPM/energy
-        }
-      }
     } catch (error) {
       if (currentPlaylistIdRef.current !== playlist.id) return;
       console.error(error);
       setFeedback('Unable to load track details from Spotify.');
-      setIsLoading(false);
+    } finally {
+      if (currentPlaylistIdRef.current === playlist.id) setIsLoading(false);
     }
   }, [token]);
 
@@ -68,7 +52,7 @@ export function useSpotify() {
     onProgress?: (pct: number) => void,
     onRateLimit?: (retryAfterSeconds: number) => void,
   ) => {
-    await savePlaylistTracks(token!, selectedPlaylist!.id, tracks, sortedTracks, onProgress, onRateLimit);
+    return savePlaylistTracks(token!, selectedPlaylist!.id, tracks, sortedTracks, onProgress, onRateLimit);
   }, [token, selectedPlaylist, tracks]);
 
   const clearSelection = useCallback(() => {

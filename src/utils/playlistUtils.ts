@@ -10,8 +10,6 @@ export interface SortOption {
 export const SORT_OPTIONS: SortOption[] = [
   { id: 'name',        label: 'Title',      sub: 'A → Z',         color: '#7a90aa' },
   { id: 'artist',      label: 'Artist',     sub: 'A → Z',         color: '#7a90aa' },
-  { id: 'bpm',         label: 'BPM',        sub: 'Beats per min', color: '#e8622a' },
-  { id: 'energy',      label: 'Energy',     sub: 'Calm → Hype',   color: '#f5a623' },
   { id: 'popularity',  label: 'Popularity', sub: 'Chart rank',    color: '#1db954' },
   { id: 'addedAt',     label: 'Date Added', sub: 'Old → New',     color: '#7a90aa' },
   { id: 'durationMs',  label: 'Duration',   sub: 'Short → Long',  color: '#7a90aa' },
