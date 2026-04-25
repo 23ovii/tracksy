@@ -15,6 +15,7 @@ export function useSpotify() {
   const [isLoading, setIsLoading] = useState(false);
   const [feedback, setFeedback] = useState('');
   const currentPlaylistIdRef = useRef<string | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const loadPlaylists = useCallback(async () => {
     setIsLoading(true);
@@ -52,8 +53,15 @@ export function useSpotify() {
     onProgress?: (pct: number) => void,
     onRateLimit?: (retryAfterSeconds: number) => void,
   ) => {
-    return savePlaylistTracks(token!, selectedPlaylist!.id, tracks, sortedTracks, onProgress, onRateLimit);
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+    return savePlaylistTracks(token!, selectedPlaylist!.id, tracks, sortedTracks, onProgress, onRateLimit, controller.signal);
   }, [token, selectedPlaylist, tracks]);
+
+  const cancelSort = useCallback(() => {
+    abortControllerRef.current?.abort();
+    abortControllerRef.current = null;
+  }, []);
 
   const clearSelection = useCallback(() => {
     setSelectedPlaylist(null);
@@ -70,6 +78,7 @@ export function useSpotify() {
     loadPlaylists,
     loadPlaylistTracks,
     applySort,
+    cancelSort,
     clearSelection,
   };
 }

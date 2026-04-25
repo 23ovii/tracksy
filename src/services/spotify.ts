@@ -56,8 +56,9 @@ async function fetchSpotify(url: string, token: string): Promise<any> {
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    throw new Error(`Spotify API error: ${error.error_description || error.error || response.statusText}`);
+    const body = await response.json().catch(() => null);
+    const msg = body?.error?.message || body?.error_description || response.statusText || `HTTP ${response.status}`;
+    throw new Error(`Spotify API error: ${msg}`);
   }
 
   return response.json();
@@ -70,7 +71,10 @@ async function writeSpotify(
   body: object,
   onRateLimit?: (retryAfterSeconds: number) => void,
   waitMultiplier = 1,
+  signal?: AbortSignal,
 ): Promise<void> {
+  signal?.throwIfAborted();
+
   const response = await fetch(url, {
     method,
     headers: {
@@ -78,19 +82,24 @@ async function writeSpotify(
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(body),
+    signal,
   });
 
   if (response.status === 429) {
     const base = parseInt(response.headers.get('Retry-After') ?? '5', 10);
     const wait = base * waitMultiplier;
     onRateLimit?.(wait);
-    await new Promise((resolve) => setTimeout(resolve, wait * 1000));
-    return writeSpotify(url, token, method, body, onRateLimit, waitMultiplier);
+    await new Promise<void>((resolve, reject) => {
+      const timer = setTimeout(resolve, wait * 1000);
+      signal?.addEventListener('abort', () => { clearTimeout(timer); reject(signal.reason); }, { once: true });
+    });
+    return writeSpotify(url, token, method, body, onRateLimit, waitMultiplier, signal);
   }
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    throw new Error(`Spotify API error: ${error.error?.message || response.statusText}`);
+    const err = await response.json().catch(() => null);
+    const msg = err?.error?.message || response.statusText || `HTTP ${response.status}`;
+    throw new Error(`Spotify API error: ${msg}`);
   }
 }
 
@@ -127,6 +136,7 @@ export async function savePlaylistTracks(
   sortedTracks: Track[],
   onProgress?: (pct: number) => void,
   onRateLimit?: (retryAfterSeconds: number) => void,
+  signal?: AbortSignal,
 ): Promise<{ moves: number }> {
   const url = `https://api.spotify.com/v1/playlists/${playlistId}/tracks`;
   let moves = 0;
@@ -148,6 +158,8 @@ export async function savePlaylistTracks(
   }
 
   for (let i = 0; i < target.length; i++) {
+    signal?.throwIfAborted();
+
     const targetOrigIdx = target[i];
     const currentPos = current.indexOf(targetOrigIdx);
     if (currentPos === i) continue;
@@ -162,7 +174,7 @@ export async function savePlaylistTracks(
     }, (wait) => {
       rateLimitHits++;
       onRateLimit?.(wait);
-    }, multiplier);
+    }, multiplier, signal);
 
     current.splice(currentPos, 1);
     current.splice(i, 0, targetOrigIdx);
