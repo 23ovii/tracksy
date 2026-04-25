@@ -65,7 +65,13 @@ async function fetchSpotify(url: string, token: string): Promise<any> {
   return response.json();
 }
 
-async function writeSpotify(url: string, token: string, method: string, body: object): Promise<void> {
+async function writeSpotify(
+  url: string,
+  token: string,
+  method: string,
+  body: object,
+  onRateLimit?: (retryAfterSeconds: number) => void,
+): Promise<void> {
   const response = await fetch(url, {
     method,
     headers: {
@@ -74,6 +80,13 @@ async function writeSpotify(url: string, token: string, method: string, body: ob
     },
     body: JSON.stringify(body),
   });
+
+  if (response.status === 429) {
+    const retryAfter = parseInt(response.headers.get('Retry-After') ?? '5', 10);
+    onRateLimit?.(retryAfter);
+    await new Promise((resolve) => setTimeout(resolve, retryAfter * 1000));
+    return writeSpotify(url, token, method, body, onRateLimit);
+  }
 
   if (!response.ok) {
     const error = await response.json().catch(() => ({}));
@@ -124,10 +137,15 @@ export async function savePlaylistTracks(
   playlistId: string,
   originalTracks: Track[],
   sortedTracks: Track[],
+  onProgress?: (pct: number) => void,
+  onRateLimit?: (retryAfterSeconds: number) => void,
 ): Promise<void> {
   const current = originalTracks.map((t) => t.id);
   const target = sortedTracks.map((t) => t.id);
   const url = `https://api.spotify.com/v1/playlists/${playlistId}/tracks`;
+  let moves = 0;
+
+  const needed = target.filter((id, i) => current.indexOf(id) !== i).length;
 
   for (let i = 0; i < target.length; i++) {
     const currentPos = current.indexOf(target[i]);
@@ -137,9 +155,13 @@ export async function savePlaylistTracks(
       range_start: currentPos,
       insert_before: i,
       range_length: 1,
-    });
+    }, onRateLimit);
 
     current.splice(currentPos, 1);
     current.splice(i, 0, target[i]);
+    moves++;
+    onProgress?.(needed > 0 ? Math.round((moves / needed) * 100) : 100);
   }
+
+  onProgress?.(100);
 }

@@ -99,6 +99,8 @@ function Dashboard() {
   const [applied, setApplied] = useState(false);
   const [sortFeedback, setSortFeedback] = useState('');
   const [sortKey, setSortKey] = useState(0);
+  const [applyProgress, setApplyProgress] = useState(0);
+  const [rateLimitMsg, setRateLimitMsg] = useState('');
   const apiPromiseRef = useRef<Promise<void> | null>(null);
 
   useEffect(() => {
@@ -126,8 +128,14 @@ function Dashboard() {
 
   function handleApply() {
     setApplying(true);
+    setApplyProgress(0);
+    setRateLimitMsg('');
     setSortFeedback('');
-    apiPromiseRef.current = applySort(sorted);
+    apiPromiseRef.current = applySort(
+      sorted,
+      setApplyProgress,
+      (retryAfter) => setRateLimitMsg(`Rate limited by Spotify — retrying in ${retryAfter}s…`),
+    );
   }
 
   async function handleDone() {
@@ -135,6 +143,8 @@ function Dashboard() {
     try {
       await apiPromiseRef.current;
       setApplying(false);
+      setApplyProgress(0);
+      setRateLimitMsg('');
       setApplied(true);
       const label = SORT_OPTIONS.find((o) => o.id === sortBy)?.label;
       if (playlistName) setSortFeedback(`"${playlistName}" sorted by ${label} and saved.`);
@@ -160,7 +170,7 @@ function Dashboard() {
         {/* Library card — hidden once a playlist is selected */}
         {!selectedPlaylist && (
           <div style={{ ...GLASS, padding: 24, marginBottom: 18, animation: 'fadeUp 0.35s var(--ease-out)' }}>
-            <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: 20, padding: '0 4px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, padding: '0 4px' }}>
               <div>
                 <p style={{
                   fontSize: 10, fontWeight: 700, color: 'var(--green)',
@@ -179,6 +189,45 @@ function Dashboard() {
                   Pick a playlist to sort by BPM, energy, popularity, and more
                 </p>
               </div>
+              <button
+                onClick={() => loadPlaylists()}
+                disabled={isLoading}
+                aria-label="Refresh playlists"
+                style={{
+                  width: 34, height: 34, borderRadius: '50%',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  background: 'rgba(18, 24, 34, 0.9)',
+                  color: 'var(--text-3)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  cursor: isLoading ? 'default' : 'pointer',
+                  opacity: isLoading ? 0.4 : 1,
+                  transition: 'border-color 0.2s, color 0.2s, background 0.2s',
+                  flexShrink: 0,
+                }}
+                onMouseEnter={(e: MouseEvent<HTMLButtonElement>) => {
+                  if (!isLoading) {
+                    e.currentTarget.style.borderColor = 'rgba(29,185,84,0.5)';
+                    e.currentTarget.style.color = 'var(--green)';
+                    e.currentTarget.style.background = 'rgba(29,185,84,0.08)';
+                  }
+                }}
+                onMouseLeave={(e: MouseEvent<HTMLButtonElement>) => {
+                  e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)';
+                  e.currentTarget.style.color = 'var(--text-3)';
+                  e.currentTarget.style.background = 'rgba(18, 24, 34, 0.9)';
+                }}
+              >
+                <svg
+                  width="14" height="14" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"
+                  style={{ animation: isLoading ? 'spin 0.7s linear infinite' : 'none' }}
+                >
+                  <path d="M3 12a9 9 0 0 1 15-6.7L21 8" />
+                  <path d="M21 12a9 9 0 0 1-15 6.7L3 16" />
+                  <path d="M21 3v5h-5" />
+                  <path d="M3 21v-5h5" />
+                </svg>
+              </button>
             </div>
 
             {isLoading ? (
@@ -385,10 +434,12 @@ function Dashboard() {
 
             <SortProgress
               active={applying}
+              progress={applyProgress}
               label={SORT_OPTIONS.find((o) => o.id === sortBy)?.label}
               onDone={handleDone}
               color={accent}
               colorEnd={accent2}
+              rateLimitMsg={rateLimitMsg}
             />
 
             {sortFeedback && !applying && (
