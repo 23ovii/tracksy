@@ -91,7 +91,7 @@ function formatTotalDuration(ms: number): string {
 function Dashboard() {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
-  const { playlists, tracks, selectedPlaylist, isLoading, loadPlaylists, loadPlaylistTracks, applySort, clearSelection } = useSpotify();
+  const { playlists, tracks, selectedPlaylist, isLoading, loadPlaylists, loadPlaylistTracks, applySort, cancelSort, clearSelection } = useSpotify();
 
   const [sortBy, setSortBy] = useState('name');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
@@ -119,6 +119,13 @@ function Dashboard() {
     setSortKey((k) => k + 1);
   }
 
+  function handleBack() {
+    if (applying) cancelSort();
+    clearSelection();
+    setApplied(false);
+    setSortFeedback('');
+  }
+
   function handleSelect(playlist: Playlist) {
     loadPlaylistTracks(playlist);
     setApplied(false);
@@ -137,11 +144,11 @@ function Dashboard() {
       (retryAfter) => setRateLimitMsg(`Rate limited by Spotify — retrying in ${retryAfter}s…`),
     );
     apiPromiseRef.current = promise;
-    promise.catch(() => {
+    promise.catch((err) => {
       setApplying(false);
       setApplyProgress(0);
       setRateLimitMsg('');
-      setSortFeedback('Failed to save to Spotify. Try again.');
+      if (err?.name !== 'AbortError') setSortFeedback('Failed to save to Spotify. Try again.');
     });
   }
 
@@ -322,24 +329,25 @@ function Dashboard() {
 
               <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexShrink: 0 }}>
                 <button
-                  onClick={() => { clearSelection(); setApplied(false); setSortFeedback(''); }}
+                  onClick={handleBack}
                   style={{
                     padding: '10px 18px', borderRadius: 50,
-                    background: 'rgba(255,255,255,0.04)',
-                    border: '1px solid rgba(255,255,255,0.1)',
-                    color: 'var(--text-2)', fontFamily: 'inherit', fontSize: 12.5, fontWeight: 500,
+                    background: applying ? 'rgba(239,68,68,0.08)' : 'rgba(255,255,255,0.04)',
+                    border: `1px solid ${applying ? 'rgba(239,68,68,0.3)' : 'rgba(255,255,255,0.1)'}`,
+                    color: applying ? '#f87171' : 'var(--text-2)',
+                    fontFamily: 'inherit', fontSize: 12.5, fontWeight: 500,
                     cursor: 'pointer',
                     transition: 'border-color 0.2s, color 0.2s, background 0.2s',
                   }}
                   onMouseEnter={(e: MouseEvent<HTMLButtonElement>) => {
-                    e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)';
-                    e.currentTarget.style.color = 'var(--text)';
+                    e.currentTarget.style.borderColor = applying ? 'rgba(239,68,68,0.6)' : 'rgba(255,255,255,0.2)';
+                    e.currentTarget.style.color = applying ? '#fca5a5' : 'var(--text)';
                   }}
                   onMouseLeave={(e: MouseEvent<HTMLButtonElement>) => {
-                    e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)';
-                    e.currentTarget.style.color = 'var(--text-2)';
+                    e.currentTarget.style.borderColor = applying ? 'rgba(239,68,68,0.3)' : 'rgba(255,255,255,0.1)';
+                    e.currentTarget.style.color = applying ? '#f87171' : 'var(--text-2)';
                   }}
-                >← Back</button>
+                >{applying ? '✕ Cancel' : '← Back'}</button>
                 <button
                   onClick={handleApply}
                   disabled={applying || applied}
