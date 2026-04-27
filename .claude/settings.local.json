@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install *)",
+      "Bash(npm run *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(gh pr *)",
+      "Bash(git fetch *)",
+      "Bash(git merge *)",
+      "Bash(git rebase *)",
+      "Bash(curl -s http://127.0.0.1:5173/)",
+      "Bash(pkill -f \"npm run dev\")",
+      "mcp__ide__getDiagnostics",
+      "Bash(git restore *)",
+      "Bash(git checkout *)",
+      "Bash(git pull *)",
+      "Bash(curl -s http://127.0.0.1:5173)",
+      "Bash(git commit *)",
+      "Bash(echo \"Exit code: $?\")",
+      "WebFetch(domain:127.0.0.1)",
+      "Bash(curl -s http://127.0.0.1:5173/dashboard -i)"
+    ]
+  }
+}
