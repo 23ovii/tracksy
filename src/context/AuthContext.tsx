@@ -69,6 +69,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => clearTimeout(refreshTimerRef.current!);
   }, [authState?.refresh_token, authState?.expires_at, applyToken]);
 
+  // Sync auth state across tabs via storage events
+  // Per HTML spec, storage events only fire for other tabs, not the current tab,
+  // so the localStorage write above won't trigger this listener
+  useEffect(() => {
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === STORAGE_KEY) {
+        if (event.newValue) {
+          try {
+            setAuthState(JSON.parse(event.newValue) as AuthState);
+          } catch {
+            setAuthState(null);
+          }
+        } else {
+          setAuthState(null);
+        }
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
   const isAuthenticated = Boolean(
     authState?.access_token && authState.expires_at && authState.expires_at > Date.now()
   );
