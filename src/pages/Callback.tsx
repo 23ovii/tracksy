@@ -9,7 +9,6 @@ function Callback() {
   const [errorMessage, setErrorMessage] = useState('');
   const hasRun = useRef(false);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (hasRun.current) return;
     hasRun.current = true;
@@ -39,7 +38,7 @@ function Callback() {
     }
 
     finalizeAuth();
-  }, []);
+  }, [login, navigate]);
 
   return (
     <section className="mx-auto max-w-3xl rounded-3xl border border-slate-700 bg-white/5 p-10 text-center text-slate-200 shadow-glow">
