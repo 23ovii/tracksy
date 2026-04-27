@@ -1,7 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { CSSProperties, MouseEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth.tsx';
 import { useSpotify } from '../hooks/useSpotify.tsx';
 import PlaylistCard from '../components/PlaylistCard.tsx';
 import TrackItem from '../components/TrackItem.tsx';
@@ -89,8 +87,6 @@ function formatTotalDuration(ms: number): string {
 }
 
 function Dashboard() {
-  const { isAuthenticated } = useAuth();
-  const navigate = useNavigate();
   const { playlists, tracks, selectedPlaylist, isLoading, loadPlaylists, loadPlaylistTracks, applySort, cancelSort, clearSelection } = useSpotify();
 
   const [sortBy, setSortBy] = useState('name');
@@ -104,9 +100,8 @@ function Dashboard() {
   const apiPromiseRef = useRef<Promise<{ moves: number }> | null>(null);
 
   useEffect(() => {
-    if (!isAuthenticated) { navigate('/'); return; }
     loadPlaylists();
-  }, [isAuthenticated, loadPlaylists, navigate]);
+  }, [loadPlaylists]);
 
   const sorted = useMemo(() => sortTracks(tracks, sortBy, sortDir), [tracks, sortBy, sortDir]);
   const totalMs = useMemo(() => tracks.reduce((s, t) => s + t.durationMs, 0), [tracks]);
