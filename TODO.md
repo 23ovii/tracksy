@@ -9,7 +9,7 @@
 - [ ] 
 
 ## ✨ Features to Add
-- [ ] 
+- [ ] Highlight active sort property across all sort options (green styling in header button and track list columns) 
 
 ## 🔧 Improvements / Refactoring
 - [ ] 

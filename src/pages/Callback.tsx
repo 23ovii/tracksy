@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth.tsx';
 import { exchangeSpotifyCode, verifyOAuthState } from '../services/auth.ts';
@@ -7,8 +7,13 @@ function Callback() {
   const navigate = useNavigate();
   const { login } = useAuth();
   const [errorMessage, setErrorMessage] = useState('');
+  const hasRun = useRef(false);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
+    if (hasRun.current) return;
+    hasRun.current = true;
+
     const searchParams = new URLSearchParams(window.location.search);
     const code = searchParams.get('code');
     const state = searchParams.get('state');
