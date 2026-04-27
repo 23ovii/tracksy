@@ -1,5 +1,5 @@
 export default {
-  content: ['./index.html', './src/**/*.{js,jsx}'],
+  content: ['./index.html', './src/**/*.{js,jsx,ts,tsx}'],
   theme: {
     extend: {
       colors: {
@@ -12,6 +12,9 @@ export default {
         spotify: {
           green: '#1db954',
         },
+      },
+      boxShadow: {
+        glow: '0 0 60px rgba(29,185,84,0.25)',
       },
     },
   },
