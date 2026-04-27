@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth.tsx';
-import { exchangeSpotifyCode } from '../services/auth.ts';
+import { exchangeSpotifyCode, verifyOAuthState } from '../services/auth.ts';
 
 function Callback() {
   const navigate = useNavigate();
@@ -9,9 +9,17 @@ function Callback() {
   const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
-    const code = new URLSearchParams(window.location.search).get('code');
+    const searchParams = new URLSearchParams(window.location.search);
+    const code = searchParams.get('code');
+    const state = searchParams.get('state');
+
     if (!code) {
       navigate('/');
+      return;
+    }
+
+    if (!verifyOAuthState(state)) {
+      setErrorMessage('OAuth state mismatch — possible CSRF. Please try signing in again.');
       return;
     }
 
