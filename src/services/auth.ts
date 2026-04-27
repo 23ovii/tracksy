@@ -6,6 +6,7 @@ const CLIENT_ID = import.meta.env.VITE_SPOTIFY_CLIENT_ID;
 const REDIRECT_URI = import.meta.env.VITE_SPOTIFY_REDIRECT_URI || `${window.location.origin}/callback`;
 const SCOPES = 'user-read-private playlist-read-private playlist-read-collaborative playlist-modify-public playlist-modify-private';
 const VERIFIER_KEY = 'tracksy_pkce_verifier';
+const STATE_KEY = 'tracksy_oauth_state';
 
 function randomString(length = 64): string {
   const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
@@ -42,8 +43,10 @@ export async function buildSpotifyAuthUrl(): Promise<string> {
 
   const codeVerifier = randomString(96);
   const codeChallenge = await createCodeChallenge(codeVerifier);
+  const stateValue = randomString(32);
 
   sessionStorage.setItem(VERIFIER_KEY, codeVerifier);
+  sessionStorage.setItem(STATE_KEY, stateValue);
 
   const params = new URLSearchParams({
     client_id: CLIENT_ID,
@@ -52,6 +55,7 @@ export async function buildSpotifyAuthUrl(): Promise<string> {
     scope: SCOPES,
     code_challenge_method: 'S256',
     code_challenge: codeChallenge,
+    state: stateValue,
     show_dialog: 'true',
   });
 
@@ -114,4 +118,15 @@ export async function refreshSpotifyToken(refreshToken: string): Promise<TokenRe
   }
 
   return response.json() as Promise<TokenResponse>;
+}
+
+export function verifyOAuthState(returnedState: string | null): boolean {
+  const storedState = sessionStorage.getItem(STATE_KEY);
+  sessionStorage.removeItem(STATE_KEY);
+
+  if (!storedState || !returnedState) {
+    return false;
+  }
+
+  return storedState === returnedState;
 }
