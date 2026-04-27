@@ -41,16 +41,18 @@ function Callback() {
   }, [login, navigate]);
 
   return (
-    <section className="mx-auto max-w-3xl rounded-3xl border border-slate-700 bg-white/5 p-10 text-center text-slate-200 shadow-glow">
-      <p className="text-sm uppercase tracking-[0.32em] text-spotify-green">OAuth callback</p>
-      <h2 className="mt-6 text-3xl font-semibold text-white">Finishing authentication...</h2>
-      <p className="mt-4 text-slate-400">
-        {errorMessage || 'This page captures the Spotify authorization code and exchanges it for an access token.'}
-      </p>
-      {errorMessage && (
-        <p className="mt-4 rounded-3xl bg-rose-500/10 px-4 py-3 text-sm text-rose-200">{errorMessage}</p>
-      )}
-    </section>
+    <div className="flex w-full justify-center p-6">
+      <section className="w-full max-w-3xl rounded-3xl border border-slate-700 bg-white/5 p-10 text-center text-slate-200 shadow-glow">
+        <p className="text-sm uppercase tracking-[0.32em] text-spotify-green">OAuth callback</p>
+        <h2 className="mt-6 text-3xl font-semibold text-white">Finishing authentication...</h2>
+        <p className="mt-4 text-slate-400">
+          {errorMessage || 'This page captures the Spotify authorization code and exchanges it for an access token.'}
+        </p>
+        {errorMessage && (
+          <p className="mt-4 rounded-3xl bg-rose-500/10 px-4 py-3 text-sm text-rose-200">{errorMessage}</p>
+        )}
+      </section>
+    </div>
   );
 }
 
