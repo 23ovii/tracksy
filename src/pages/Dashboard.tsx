@@ -525,7 +525,7 @@ function Dashboard() {
             ) : (
               <div key={sortKey} style={{ maxHeight: 480, overflowY: 'auto' }}>
                 {sorted.map((t, i) => (
-                  <TrackItem key={i} track={t} index={i} sortBy={sortBy} />
+                  <TrackItem key={`${t.id}-${i}`} track={t} index={i} sortBy={sortBy} />
                 ))}
               </div>
             )}
