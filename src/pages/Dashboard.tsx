@@ -240,17 +240,17 @@ function Dashboard() {
       {undoUntil !== null && !applying && (
         <div style={{
           position: 'fixed', bottom: 32, left: '50%', transform: 'translateX(-50%)',
-          zIndex: 100, minWidth: 320, maxWidth: 480,
-          background: 'rgba(14, 19, 28, 0.88)',
+          zIndex: 100, minWidth: 300, maxWidth: 440,
+          background: 'rgba(14, 19, 28, 0.92)',
           border: '1px solid rgba(255,255,255,0.1)',
-          borderRadius: 14,
+          borderRadius: 12,
           boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.06) inset',
           overflow: 'hidden',
-          animation: 'fadeUp 0.3s var(--ease-out)',
+          animation: 'toastIn 0.3s var(--ease-out)',
           backdropFilter: 'blur(16px)',
           WebkitBackdropFilter: 'blur(16px)',
         }}>
-          <div style={{ padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div style={{ padding: '12px 10px 12px 16px', display: 'flex', alignItems: 'center', gap: 10 }}>
             <span style={{ flex: 1, fontSize: 13, color: 'var(--text)', fontWeight: 500 }}>
               Sorted by{' '}
               <strong style={{ color: accent }}>
@@ -261,10 +261,10 @@ function Dashboard() {
             <button
               onClick={handleUndo}
               style={{
-                padding: '6px 14px',
+                padding: '5px 12px',
                 background: `${accent}18`,
                 border: `1px solid ${accent}44`,
-                borderRadius: 8,
+                borderRadius: 7,
                 color: accent,
                 fontSize: 12,
                 fontWeight: 700,
@@ -274,6 +274,19 @@ function Dashboard() {
               }}
             >
               Undo
+            </button>
+            <button
+              onClick={() => setUndoUntil(null)}
+              aria-label="Dismiss"
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                width: 24, height: 24, flexShrink: 0,
+                background: 'none', border: 'none',
+                color: 'var(--text-3)', fontSize: 18, lineHeight: 1,
+                cursor: 'pointer', borderRadius: 4,
+              }}
+            >
+              ×
             </button>
           </div>
           <div style={{ height: 3, background: 'rgba(255,255,255,0.06)' }}>
