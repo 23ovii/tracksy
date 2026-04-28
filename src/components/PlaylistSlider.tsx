@@ -46,7 +46,7 @@ function PlaylistSlider({ playlists, selected, onSelect }: PlaylistSliderProps) 
         background: 'rgba(18, 24, 34, 0.9)',
         color: disabled ? 'var(--text-3)' : 'var(--text)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        cursor: disabled ? 'default' : 'pointer',
+        cursor: disabled ? 'not-allowed' : 'pointer',
         opacity: disabled ? 0.4 : 1,
         transition: 'opacity 0.2s, border-color 0.2s, background 0.2s',
       }}

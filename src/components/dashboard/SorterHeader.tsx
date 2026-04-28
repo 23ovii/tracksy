@@ -108,7 +108,7 @@ function SorterHeader({ selectedPlaylist, totalMs, applying, applied, accent, ac
             color: '#0a0d12',
             fontFamily: 'inherit', fontSize: 13, fontWeight: 800,
             letterSpacing: '-0.1px',
-            cursor: applying || applied ? 'default' : 'pointer',
+            cursor: applying || applied ? 'not-allowed' : 'pointer',
             boxShadow: applied
               ? '0 8px 24px rgba(29,185,84,0.35)'
               : `0 10px 28px -4px ${accent}77, 0 0 0 1px rgba(255,255,255,0.12) inset`,

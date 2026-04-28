@@ -48,7 +48,7 @@ function LibraryPanel({ playlists, isLoading, onRefresh, onSelect }: LibraryPane
             background: 'rgba(18, 24, 34, 0.9)',
             color: 'var(--text-3)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: isLoading ? 'default' : 'pointer',
+            cursor: isLoading ? 'not-allowed' : 'pointer',
             opacity: isLoading ? 0.4 : 1,
             transition: 'border-color 0.2s, color 0.2s, background 0.2s',
             flexShrink: 0,

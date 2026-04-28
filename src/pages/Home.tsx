@@ -178,7 +178,7 @@ function Home() {
               color: '#000',
               border: 'none', borderRadius: 50, padding: '15px 30px',
               fontFamily: 'inherit', fontSize: 15, fontWeight: 700,
-              cursor: isLoading ? 'default' : 'pointer',
+              cursor: isLoading ? 'not-allowed' : 'pointer',
               boxShadow: '0 6px 28px rgba(29,185,84,0.35), 0 0 0 1px rgba(255,255,255,0.08) inset',
               transition: 'transform 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out)',
               opacity: isLoading ? 0.7 : 1,

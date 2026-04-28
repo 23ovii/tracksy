@@ -17,7 +17,7 @@
   --green-mid: rgba(29,185,84,0.22);
   --text:      #eef2f7;
   --text-2:    #9aa8c0;
-  --text-3:    #556275;
+  --text-3:    #6c7a91;
   --nav-h:     64px;
   --radius:    18px;
   --radius-lg: 24px;
@@ -28,7 +28,7 @@
 html, body, #root { height: 100%; }
 
 body {
-  font-family: Inter, emoji, system-ui, sans-serif;
+  font-family: Inter, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", system-ui, sans-serif;
   background: var(--bg);
   color: var(--text);
   -webkit-font-smoothing: antialiased;
