@@ -41,6 +41,7 @@ function mapTrack(item: any): Track | null {
 
   return {
     id: track.id || track.uri,
+    uri: track.uri as string,
     name: track.name,
     artist: track.artists?.map((a: any) => a.name).join(', ') ?? 'Unknown artist',
     album: track.album?.name ?? '',
@@ -157,11 +158,25 @@ export async function savePlaylistTracks(
     return { moves: 0 };
   }
 
+  // For small playlists where most tracks need moving, replace the whole order
+  // in one PUT instead of issuing N individual reorder requests.
+  if (originalTracks.length <= 100 && needed > originalTracks.length / 2) {
+    signal?.throwIfAborted();
+    await writeSpotify(url, token, 'PUT', { uris: sortedTracks.map((t) => t.uri) }, onRateLimit, 1, signal);
+    onProgress?.(100);
+    return { moves: needed };
+  }
+
+  // slot: origIdx → current position in current[]. Maintained alongside current[]
+  // so lookups are O(1) instead of O(n) indexOf.
+  const slot = new Map<number, number>();
+  current.forEach((origIdx, pos) => slot.set(origIdx, pos));
+
   for (let i = 0; i < target.length; i++) {
     signal?.throwIfAborted();
 
     const targetOrigIdx = target[i];
-    const currentPos = current.indexOf(targetOrigIdx);
+    const currentPos = slot.get(targetOrigIdx)!;
     if (currentPos === i) continue;
 
     // After 5 rate limit hits, double the wait time; after 10, triple; etc.
@@ -178,6 +193,15 @@ export async function savePlaylistTracks(
 
     current.splice(currentPos, 1);
     current.splice(i, 0, targetOrigIdx);
+
+    // Update slot for the affected range in O(distance) — the splice shifts
+    // every entry between currentPos and i by ±1.
+    const lo = Math.min(currentPos, i);
+    const hi = Math.max(currentPos, i);
+    for (let j = lo; j <= hi; j++) {
+      slot.set(current[j], j);
+    }
+
     moves++;
     onProgress?.(Math.round((moves / needed) * 100));
   }
