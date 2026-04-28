@@ -1,0 +1,150 @@
+import type { MouseEvent } from 'react';
+import type { Playlist } from '../../types';
+import PlaylistCover from './PlaylistCover';
+
+interface SorterHeaderProps {
+  selectedPlaylist: Playlist;
+  totalMs: number;
+  applying: boolean;
+  applied: boolean;
+  accent: string;
+  accent2: string;
+  onBack: () => void;
+  onApply: () => void;
+}
+
+function formatTotalDuration(ms: number): string {
+  const totalMin = Math.round(ms / 60000);
+  if (totalMin < 60) return `${totalMin} min`;
+  const h = Math.floor(totalMin / 60);
+  const m = totalMin % 60;
+  return m > 0 ? `${h} hr ${m} min` : `${h} hr`;
+}
+
+function SorterHeader({ selectedPlaylist, totalMs, applying, applied, accent, accent2, onBack, onApply }: SorterHeaderProps) {
+  return (
+    <div style={{
+      padding: '26px 28px',
+      borderBottom: '1px solid rgba(255,255,255,0.05)',
+      display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap',
+      position: 'relative', overflow: 'hidden',
+      background: `linear-gradient(135deg, ${accent}14, transparent 55%)`,
+    }}>
+      {/* Accent line along top */}
+      <div aria-hidden style={{
+        position: 'absolute', top: 0, left: 0, right: 0, height: 1,
+        background: `linear-gradient(90deg, transparent, ${accent}aa, ${accent2}aa, transparent)`,
+      }} />
+
+      <PlaylistCover playlist={selectedPlaylist} size={96} />
+
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+          <span style={{
+            width: 6, height: 6, borderRadius: '50%',
+            background: accent,
+            boxShadow: `0 0 12px ${accent}`,
+            animation: 'glow 1.6s ease-in-out infinite',
+          }} />
+          <p style={{
+            fontSize: 10, fontWeight: 700,
+            color: accent,
+            letterSpacing: '0.24em', textTransform: 'uppercase',
+          }}>Now Sorting</p>
+        </div>
+        <h3 style={{
+          fontSize: 'clamp(22px, 2.6vw, 30px)', fontWeight: 900,
+          letterSpacing: '-0.8px', lineHeight: 1.1,
+          whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+          marginBottom: 6,
+        }}>{selectedPlaylist.name}</h3>
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 10,
+          fontSize: 12.5, color: 'var(--text-3)',
+        }}>
+          <span style={{ fontWeight: 600, color: 'var(--text-2)' }}>
+            {selectedPlaylist.trackCount} tracks
+          </span>
+          {totalMs > 0 && (
+            <>
+              <span>·</span>
+              <span>{formatTotalDuration(totalMs)}</span>
+            </>
+          )}
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexShrink: 0 }}>
+        <button
+          onClick={onBack}
+          style={{
+            padding: '10px 18px', borderRadius: 50,
+            background: applying ? 'rgba(239,68,68,0.08)' : 'rgba(255,255,255,0.04)',
+            border: `1px solid ${applying ? 'rgba(239,68,68,0.3)' : 'rgba(255,255,255,0.1)'}`,
+            color: applying ? '#f87171' : 'var(--text-2)',
+            fontFamily: 'inherit', fontSize: 12.5, fontWeight: 500,
+            cursor: 'pointer',
+            transition: 'border-color 0.2s, color 0.2s, background 0.2s',
+          }}
+          onMouseEnter={(e: MouseEvent<HTMLButtonElement>) => {
+            e.currentTarget.style.borderColor = applying ? 'rgba(239,68,68,0.6)' : 'rgba(255,255,255,0.2)';
+            e.currentTarget.style.color = applying ? '#fca5a5' : 'var(--text)';
+          }}
+          onMouseLeave={(e: MouseEvent<HTMLButtonElement>) => {
+            e.currentTarget.style.borderColor = applying ? 'rgba(239,68,68,0.3)' : 'rgba(255,255,255,0.1)';
+            e.currentTarget.style.color = applying ? '#f87171' : 'var(--text-2)';
+          }}
+        >{applying ? '✕ Cancel' : '← Back'}</button>
+        <button
+          onClick={onApply}
+          disabled={applying || applied}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 8,
+            padding: '11px 22px', borderRadius: 50,
+            background: applied
+              ? 'linear-gradient(180deg, #22c962, #159743)'
+              : `linear-gradient(135deg, ${accent}, ${accent2})`,
+            border: 'none',
+            color: '#0a0d12',
+            fontFamily: 'inherit', fontSize: 13, fontWeight: 800,
+            letterSpacing: '-0.1px',
+            cursor: applying || applied ? 'default' : 'pointer',
+            boxShadow: applied
+              ? '0 8px 24px rgba(29,185,84,0.35)'
+              : `0 10px 28px -4px ${accent}77, 0 0 0 1px rgba(255,255,255,0.12) inset`,
+            transition: 'box-shadow 0.25s, transform 0.2s',
+          }}
+          onMouseEnter={(e: MouseEvent<HTMLButtonElement>) => {
+            if (!applying && !applied) e.currentTarget.style.transform = 'translateY(-1px)';
+          }}
+          onMouseLeave={(e: MouseEvent<HTMLButtonElement>) => {
+            e.currentTarget.style.transform = '';
+          }}
+        >
+          {applying ? (
+            <>
+              <span style={{ display: 'inline-block', animation: 'spin 0.7s linear infinite' }}>↻</span>
+              Applying…
+            </>
+          ) : applied ? (
+            <>
+              <svg width="14" height="14" viewBox="0 0 12 12" fill="none">
+                <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              Saved to Spotify
+            </>
+          ) : (
+            <>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 19V5" /><path d="M5 12l7-7 7 7" />
+              </svg>
+              Apply to Spotify
+            </>
+          )}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+export default SorterHeader;
