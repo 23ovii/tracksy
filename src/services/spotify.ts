@@ -17,7 +17,7 @@ const COLOR_PAIRS: [string, string][] = [
   ['#2472d4', '#103090'],
 ];
 
-function playlistColors(id: string): [string, string] {
+export function playlistColors(id: string): [string, string] {
   let hash = 0;
   for (const ch of id) hash = (hash * 31 + ch.charCodeAt(0)) >>> 0;
   return COLOR_PAIRS[hash % COLOR_PAIRS.length];
