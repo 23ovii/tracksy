@@ -38,6 +38,7 @@
 - [ ] Fix AbortController race condition in applySort - Abort previous request before creating new controller
 - [ ] Prevent spam-clicking Refresh playlists button - Disable button while loading
 - [ ] Add empty playlist state - Show message when playlist has 0 tracks
+- [ ] Cancel sort stays on playlist - When canceling an in-progress sort, show a notification and remain on the current playlist instead of navigating back
 
 ### Dead Code
 - [ ] Wire up removeDuplicateTracks function - Call before sorting and notify user of removed duplicates
@@ -86,7 +87,9 @@
 - [ ] Optimize savePlaylistTracks (O(n²) → O(n)) - Rewrite with Map for O(n) performance
 - [ ] Fix typography & contrast issues - Fix emoji fonts, improve --text-3 contrast, fix disabled button cursors
 - [ ] Mobile responsiveness for track table - Responsive layout for <600px screens
-- [ ] "Undo last sort" toast - 30-second undo window after applying sort
+- [x] "Undo last sort" toast - 30-second undo window after applying sort
+- [ ] Rethink undo toast notification UI - Reconsider layout, sizing, dismiss button placement, and overall visual design
+- [ ] Show actual Spotify order on playlist load - Display tracks in their current Spotify order before any sort is applied, so users can see what they're starting from
 - [ ] Reduce OAuth scope and turn off forced consent - Remove show_dialog parameter, audit scopes
 - [ ] Sync / regenerate stale documentation - Update CLAUDE.md, README.md, todo.txt
 - [ ] Add a minimal CI workflow - GitHub Actions for lint+build+test

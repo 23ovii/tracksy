@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import type { CSSProperties } from 'react';
 import { useSpotify } from '../hooks/useSpotify.tsx';
 import SortProgress from '../components/SortProgress.tsx';
@@ -18,7 +18,7 @@ const GLASS: CSSProperties = {
 };
 
 function Dashboard() {
-  const { playlists, tracks, selectedPlaylist, isLoading, loadPlaylists, loadPlaylistTracks, applySort, cancelSort, clearSelection } = useSpotify();
+  const { playlists, tracks, selectedPlaylist, isLoading, loadPlaylists, loadPlaylistTracks, applySort, undoLastSort, cancelSort, clearSelection } = useSpotify();
 
   const [sortBy, setSortBy] = useState('name');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
@@ -28,11 +28,27 @@ function Dashboard() {
   const [sortKey, setSortKey] = useState(0);
   const [applyProgress, setApplyProgress] = useState(0);
   const [rateLimitMsg, setRateLimitMsg] = useState('');
+  const [undoUntil, setUndoUntil] = useState<number | null>(null);
+  const [undoCountdown, setUndoCountdown] = useState(100);
   const apiPromiseRef = useRef<Promise<{ moves: number }> | null>(null);
+  const isUndoRef = useRef(false);
 
   useEffect(() => {
     loadPlaylists();
   }, [loadPlaylists]);
+
+  useEffect(() => {
+    if (undoUntil === null) return;
+    const id = setInterval(() => {
+      const remaining = undoUntil - Date.now();
+      if (remaining <= 0) {
+        setUndoUntil(null);
+      } else {
+        setUndoCountdown((remaining / 30_000) * 100);
+      }
+    }, 50);
+    return () => clearInterval(id);
+  }, [undoUntil]);
 
   const sorted = useMemo(() => sortTracks(tracks, sortBy, sortDir), [tracks, sortBy, sortDir]);
   const totalMs = useMemo(() => tracks.reduce((s, t) => s + t.durationMs, 0), [tracks]);
@@ -50,6 +66,7 @@ function Dashboard() {
     clearSelection();
     setApplied(false);
     setSortFeedback('');
+    setUndoUntil(null);
   }
 
   function handleSelect(playlist: Playlist) {
@@ -57,6 +74,7 @@ function Dashboard() {
     setApplied(false);
     setSortFeedback('');
     setSortKey((k) => k + 1);
+    setUndoUntil(null);
   }
 
   function handleApply() {
@@ -80,23 +98,56 @@ function Dashboard() {
 
   async function handleDone() {
     const playlistName = selectedPlaylist?.name;
+    const wasUndo = isUndoRef.current;
+    isUndoRef.current = false;
     try {
       const result = await apiPromiseRef.current;
       setApplying(false);
       setApplyProgress(0);
       setRateLimitMsg('');
-      const label = SORT_OPTIONS.find((o) => o.id === sortBy)?.label;
-      if (result?.moves === 0) {
-        setSortFeedback(`"${playlistName}" is already in this order.`);
+      if (wasUndo) {
+        setUndoUntil(null);
+        setApplied(false);
+        setSortFeedback('Reverted.');
+        setTimeout(() => setSortFeedback(''), 3_000);
       } else {
-        setApplied(true);
-        if (playlistName) setSortFeedback(`"${playlistName}" sorted by ${label} and saved.`);
+        const label = SORT_OPTIONS.find((o) => o.id === sortBy)?.label;
+        if (result?.moves === 0) {
+          setSortFeedback(`"${playlistName}" is already in this order.`);
+        } else {
+          setApplied(true);
+          if (playlistName) setSortFeedback(`"${playlistName}" sorted by ${label} and saved.`);
+          setUndoUntil(Date.now() + 30_000);
+          setUndoCountdown(100);
+        }
       }
     } catch {
+      isUndoRef.current = false;
       setApplying(false);
-      setSortFeedback('Failed to save to Spotify. Try again.');
+      setSortFeedback(wasUndo ? 'Failed to undo. Try again.' : 'Failed to save to Spotify. Try again.');
     }
   }
+
+  const handleUndo = useCallback(() => {
+    setUndoUntil(null);
+    setApplying(true);
+    setApplyProgress(0);
+    setRateLimitMsg('');
+    setSortFeedback('');
+    isUndoRef.current = true;
+    const promise = undoLastSort(
+      setApplyProgress,
+      (retryAfter) => setRateLimitMsg(`Rate limited by Spotify — retrying in ${retryAfter}s…`),
+    );
+    apiPromiseRef.current = promise;
+    promise.catch((err) => {
+      isUndoRef.current = false;
+      setApplying(false);
+      setApplyProgress(0);
+      setRateLimitMsg('');
+      if (err?.name !== 'AbortError') setSortFeedback('Failed to undo. Try again.');
+    });
+  }, [undoLastSort]);
 
   const accent = selectedPlaylist?.color1 ?? 'var(--green)';
   const accent2 = selectedPlaylist?.color2 ?? '#5af5a0';
@@ -138,7 +189,7 @@ function Dashboard() {
             <SortProgress
               active={applying}
               progress={applyProgress}
-              label={SORT_OPTIONS.find((o) => o.id === sortBy)?.label}
+              label={isUndoRef.current ? 'original order' : SORT_OPTIONS.find((o) => o.id === sortBy)?.label}
               onDone={handleDone}
               color={accent}
               colorEnd={accent2}
@@ -186,6 +237,68 @@ function Dashboard() {
           </div>
         ) : null}
       </div>
+      {undoUntil !== null && !applying && (
+        <div style={{
+          position: 'fixed', bottom: 32, left: '50%', transform: 'translateX(-50%)',
+          zIndex: 100, minWidth: 300, maxWidth: 440,
+          background: 'rgba(14, 19, 28, 0.92)',
+          border: '1px solid rgba(255,255,255,0.1)',
+          borderRadius: 12,
+          boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.06) inset',
+          overflow: 'hidden',
+          animation: 'toastIn 0.3s var(--ease-out)',
+          backdropFilter: 'blur(16px)',
+          WebkitBackdropFilter: 'blur(16px)',
+        }}>
+          <div style={{ padding: '12px 10px 12px 16px', display: 'flex', alignItems: 'center', gap: 10 }}>
+            <span style={{ flex: 1, fontSize: 13, color: 'var(--text)', fontWeight: 500 }}>
+              Sorted by{' '}
+              <strong style={{ color: accent }}>
+                {SORT_OPTIONS.find((o) => o.id === sortBy)?.label}
+              </strong>
+              . Undo?
+            </span>
+            <button
+              onClick={handleUndo}
+              style={{
+                padding: '5px 12px',
+                background: `${accent}18`,
+                border: `1px solid ${accent}44`,
+                borderRadius: 7,
+                color: accent,
+                fontSize: 12,
+                fontWeight: 700,
+                cursor: 'pointer',
+                flexShrink: 0,
+                letterSpacing: '-0.1px',
+              }}
+            >
+              Undo
+            </button>
+            <button
+              onClick={() => setUndoUntil(null)}
+              aria-label="Dismiss"
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                width: 24, height: 24, flexShrink: 0,
+                background: 'none', border: 'none',
+                color: 'var(--text-3)', fontSize: 18, lineHeight: 1,
+                cursor: 'pointer', borderRadius: 4,
+              }}
+            >
+              ×
+            </button>
+          </div>
+          <div style={{ height: 3, background: 'rgba(255,255,255,0.06)' }}>
+            <div style={{
+              height: '100%',
+              width: `${undoCountdown}%`,
+              background: `linear-gradient(90deg, ${accent}, ${accent2})`,
+              transition: 'width 0.1s linear',
+            }} />
+          </div>
+        </div>
+      )}
     </>
   );
 }
