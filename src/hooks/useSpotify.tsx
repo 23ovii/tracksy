@@ -16,6 +16,8 @@ export function useSpotify() {
   const [feedback, setFeedback] = useState('');
   const currentPlaylistIdRef = useRef<string | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const lastOriginalTracksRef = useRef<Track[]>([]);
+  const lastSortedTracksRef = useRef<Track[]>([]);
 
   const loadPlaylists = useCallback(async () => {
     setIsLoading(true);
@@ -53,10 +55,30 @@ export function useSpotify() {
     onProgress?: (pct: number) => void,
     onRateLimit?: (retryAfterSeconds: number) => void,
   ) => {
+    lastOriginalTracksRef.current = [...tracks];
+    lastSortedTracksRef.current = [...sortedTracks];
     const controller = new AbortController();
     abortControllerRef.current = controller;
     return savePlaylistTracks(token!, selectedPlaylist!.id, tracks, sortedTracks, onProgress, onRateLimit, controller.signal);
   }, [token, selectedPlaylist, tracks]);
+
+  const undoLastSort = useCallback(async (
+    onProgress?: (pct: number) => void,
+    onRateLimit?: (retryAfterSeconds: number) => void,
+  ) => {
+    if (!lastOriginalTracksRef.current.length) throw new Error('No sort to undo.');
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+    return savePlaylistTracks(
+      token!,
+      selectedPlaylist!.id,
+      lastSortedTracksRef.current,
+      lastOriginalTracksRef.current,
+      onProgress,
+      onRateLimit,
+      controller.signal,
+    );
+  }, [token, selectedPlaylist]);
 
   const cancelSort = useCallback(() => {
     abortControllerRef.current?.abort();
@@ -78,6 +100,7 @@ export function useSpotify() {
     loadPlaylists,
     loadPlaylistTracks,
     applySort,
+    undoLastSort,
     cancelSort,
     clearSelection,
   };
