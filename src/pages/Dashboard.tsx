@@ -39,18 +39,15 @@ function Dashboard() {
 
   useEffect(() => {
     if (undoUntil === null) return;
-    let raf: number;
-    function tick() {
-      const remaining = undoUntil! - Date.now();
+    const id = setInterval(() => {
+      const remaining = undoUntil - Date.now();
       if (remaining <= 0) {
         setUndoUntil(null);
-        return;
+      } else {
+        setUndoCountdown((remaining / 30_000) * 100);
       }
-      setUndoCountdown((remaining / 30_000) * 100);
-      raf = requestAnimationFrame(tick);
-    }
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
+    }, 50);
+    return () => clearInterval(id);
   }, [undoUntil]);
 
   const sorted = useMemo(() => sortTracks(tracks, sortBy, sortDir), [tracks, sortBy, sortDir]);
