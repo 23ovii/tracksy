@@ -115,3 +115,21 @@ button:focus-visible, a:focus-visible {
   0%,100% { transform: scaleY(0.55); }
   50%     { transform: scaleY(1); }
 }
+
+/* Track row responsive grid */
+.track-row {
+  display: grid;
+  grid-template-columns: 40px 1fr 160px 52px 52px;
+  gap: 8px;
+}
+
+.track-artist-subline { display: none; }
+
+@media (max-width: 640px) {
+  .track-row {
+    grid-template-columns: 40px 1fr 52px;
+  }
+  .track-artist { display: none; }
+  .track-pop    { display: none; }
+  .track-artist-subline { display: block; }
+}

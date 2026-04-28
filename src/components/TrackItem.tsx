@@ -20,10 +20,8 @@ function TrackItem({ track, index, sortBy }: TrackItemProps) {
 
   return (
     <div
+      className="track-row"
       style={{
-        display: 'grid',
-        gridTemplateColumns: '40px 1fr 160px 52px 52px',
-        gap: 8,
         padding: '0 24px',
         height: 58,
         alignItems: 'center',
@@ -60,16 +58,20 @@ function TrackItem({ track, index, sortBy }: TrackItemProps) {
           fontSize: 11, color: 'var(--text-3)', marginTop: 2,
           whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
         }}>{track.album}</div>
+        <div className="track-artist-subline" style={{
+          fontSize: 11, color: 'var(--text-3)', marginTop: 1,
+          whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+        }}>{track.artist}</div>
       </div>
 
-      <div style={{
+      <div className="track-artist" style={{
         fontSize: 13,
         fontWeight: sortBy === 'artist' ? 700 : 400,
         color: sortBy === 'artist' ? opt?.color : 'var(--text-2)',
         whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
       }}>{track.artist}</div>
 
-      <div style={{
+      <div className="track-pop" style={{
         textAlign: 'right', fontSize: 13,
         fontWeight: sortBy === 'popularity' ? 700 : 500,
         color: sortBy === 'popularity' ? opt?.color : 'var(--text-2)',
