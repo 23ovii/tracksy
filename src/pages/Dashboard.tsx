@@ -8,7 +8,10 @@ import AmbientBackdrop from '../components/dashboard/AmbientBackdrop';
 import LibraryPanel from '../components/dashboard/LibraryPanel';
 import SorterHeader from '../components/dashboard/SorterHeader';
 import SortChips from '../components/dashboard/SortChips';
+import PresetsRow from '../components/dashboard/PresetsRow';
 import TrackTable from '../components/dashboard/TrackTable';
+import { listPresets, savePreset, deletePreset } from '../services/presets';
+import type { SortPreset } from '../services/presets';
 
 const GLASS: CSSProperties = {
   background: 'rgba(14, 19, 28, 0.88)',
@@ -30,8 +33,42 @@ function Dashboard() {
   const [rateLimitMsg, setRateLimitMsg] = useState('');
   const [undoUntil, setUndoUntil] = useState<number | null>(null);
   const [undoCountdown, setUndoCountdown] = useState(100);
+  const [presets, setPresets] = useState<SortPreset[]>(() => listPresets());
+  const [toast, setToast] = useState<{ msg: string; key: number } | null>(null);
   const apiPromiseRef = useRef<Promise<{ moves: number }> | null>(null);
   const isUndoRef = useRef(false);
+  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  function showToast(msg: string) {
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    setToast({ msg, key: Date.now() });
+    toastTimerRef.current = setTimeout(() => setToast(null), 2_500);
+  }
+
+  function handleSavePreset(name: string) {
+    try {
+      const preset: SortPreset = { id: crypto.randomUUID(), name, sortBy, sortDir, createdAt: Date.now() };
+      savePreset(preset);
+      setPresets(listPresets());
+      showToast('Preset saved');
+    } catch (err: any) {
+      showToast(err?.message ?? 'Could not save preset.');
+    }
+  }
+
+  function handleDeletePreset(id: string) {
+    deletePreset(id);
+    setPresets(listPresets());
+    showToast('Preset deleted');
+  }
+
+  function handleLoadPreset(preset: SortPreset) {
+    setSortBy(preset.sortBy);
+    setSortDir(preset.sortDir);
+    setApplied(false);
+    setSortFeedback('');
+    setSortKey((k) => k + 1);
+  }
 
   useEffect(() => {
     loadPlaylists();
@@ -186,6 +223,13 @@ function Dashboard() {
 
             <SortChips sortBy={sortBy} sortDir={sortDir} onPick={pickSort} />
 
+            <PresetsRow
+              presets={presets}
+              onLoad={handleLoadPreset}
+              onDelete={handleDeletePreset}
+              onSave={handleSavePreset}
+            />
+
             <SortProgress
               active={applying}
               progress={applyProgress}
@@ -297,6 +341,29 @@ function Dashboard() {
               transition: 'width 0.1s linear',
             }} />
           </div>
+        </div>
+      )}
+
+      {toast && (
+        <div
+          key={toast.key}
+          style={{
+            position: 'fixed', bottom: undoUntil !== null ? 96 : 32,
+            left: '50%', transform: 'translateX(-50%)',
+            zIndex: 101,
+            background: 'rgba(14, 19, 28, 0.92)',
+            border: '1px solid rgba(255,255,255,0.1)',
+            borderRadius: 10,
+            boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+            padding: '9px 18px',
+            fontSize: 13, color: 'var(--text)', fontWeight: 500,
+            backdropFilter: 'blur(16px)',
+            WebkitBackdropFilter: 'blur(16px)',
+            animation: 'toastIn 0.25s var(--ease-out)',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          {toast.msg}
         </div>
       )}
     </>
