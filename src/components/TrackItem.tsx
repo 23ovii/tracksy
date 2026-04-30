@@ -6,6 +6,7 @@ interface TrackItemProps {
   track: Track;
   index: number;
   sortBy: string;
+  delta?: number;
 }
 
 function formatDuration(ms: number): string {
@@ -14,13 +15,13 @@ function formatDuration(ms: number): string {
   return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
-function TrackItem({ track, index, sortBy }: TrackItemProps) {
+function TrackItem({ track, index, sortBy, delta }: TrackItemProps) {
   const opt = SORT_OPTIONS.find((o) => o.id === sortBy);
   const activeColor = opt?.color ?? 'var(--text-2)';
 
   return (
     <div
-      className="track-row"
+      className={delta !== undefined ? 'track-row track-row--delta' : 'track-row'}
       style={{
         padding: '0 24px',
         height: 58,
@@ -77,6 +78,32 @@ function TrackItem({ track, index, sortBy }: TrackItemProps) {
         color: sortBy === 'popularity' ? opt?.color : 'var(--text-2)',
         fontVariantNumeric: 'tabular-nums',
       }}>{track.popularity}</div>
+
+      {delta !== undefined && (
+        <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
+          {delta > 0 ? (
+            <span style={{
+              color: '#4ade80', background: 'rgba(74,222,128,0.12)',
+              padding: '2px 5px', borderRadius: 4,
+              fontSize: 11, fontWeight: 700, fontVariantNumeric: 'tabular-nums',
+              fontFamily: 'monospace', display: 'inline-block', minWidth: 32, textAlign: 'center',
+            }}>↑{delta}</span>
+          ) : delta < 0 ? (
+            <span style={{
+              color: '#f87171', background: 'rgba(248,113,113,0.12)',
+              padding: '2px 5px', borderRadius: 4,
+              fontSize: 11, fontWeight: 700, fontVariantNumeric: 'tabular-nums',
+              fontFamily: 'monospace', display: 'inline-block', minWidth: 32, textAlign: 'center',
+            }}>↓{Math.abs(delta)}</span>
+          ) : (
+            <span style={{
+              color: 'var(--text-3)', fontSize: 11, fontFamily: 'monospace',
+              display: 'inline-block', minWidth: 32, textAlign: 'center',
+              padding: '2px 5px',
+            }}>—</span>
+          )}
+        </div>
+      )}
 
       <div style={{
         textAlign: 'right', fontSize: 12,
