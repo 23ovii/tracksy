@@ -7,14 +7,62 @@ interface TrackTableProps {
   sortKey: number;
   isLoading: boolean;
   accent: string;
+  diffMap?: Map<string, number>;
+  showPreview: boolean;
+  onTogglePreview: () => void;
 }
 
-function TrackTable({ sorted, sortBy, sortKey, isLoading, accent }: TrackTableProps) {
+function TrackTable({ sorted, sortBy, sortKey, isLoading, accent, diffMap, showPreview, onTogglePreview }: TrackTableProps) {
+  const hasDiff = diffMap && diffMap.size > 0;
+
+  let nUp = 0, nDown = 0, nUnchanged = 0;
+  if (hasDiff) {
+    for (const delta of diffMap.values()) {
+      if (delta > 0) nUp++;
+      else if (delta < 0) nDown++;
+      else nUnchanged++;
+    }
+  }
+
+  const withDelta = showPreview && hasDiff;
+
   return (
     <>
+      {hasDiff && (
+        <div style={{
+          padding: '8px 24px',
+          borderBottom: '1px solid rgba(255,255,255,0.05)',
+          display: 'flex', alignItems: 'center', gap: 12,
+          background: 'rgba(8,11,16,0.3)',
+        }}>
+          <span style={{
+            flex: 1,
+            fontSize: 11, color: 'var(--text-3)',
+            fontFamily: 'monospace', letterSpacing: '-0.01em',
+          }}>
+            <span style={{ color: '#4ade80' }}>↑ {nUp}</span>
+            <span style={{ color: 'var(--text-3)' }}> moved up · </span>
+            <span style={{ color: '#f87171' }}>↓ {nDown}</span>
+            <span style={{ color: 'var(--text-3)' }}> moved down · </span>
+            <span>— {nUnchanged} unchanged</span>
+          </span>
+          <button
+            onClick={onTogglePreview}
+            style={{
+              background: 'none', border: '1px solid rgba(255,255,255,0.1)',
+              borderRadius: 5, padding: '3px 9px',
+              fontSize: 11, color: 'var(--text-3)', cursor: 'pointer',
+              whiteSpace: 'nowrap', letterSpacing: '-0.01em',
+            }}
+          >
+            {showPreview ? 'Hide preview' : 'Show preview'}
+          </button>
+        </div>
+      )}
+
       {/* Column headers */}
       <div
-        className="track-row"
+        className={withDelta ? 'track-row track-row--delta' : 'track-row'}
         style={{
           padding: '0 24px', height: 38, alignItems: 'center',
           borderBottom: '1px solid rgba(255,255,255,0.05)',
@@ -26,6 +74,9 @@ function TrackTable({ sorted, sortBy, sortKey, isLoading, accent }: TrackTablePr
         <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-3)', letterSpacing: '0.16em', textTransform: 'uppercase' }}>Title</span>
         <span className="track-artist" style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-3)', letterSpacing: '0.16em', textTransform: 'uppercase' }}>Artist</span>
         <span className="track-pop" style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-3)', letterSpacing: '0.16em', textTransform: 'uppercase', textAlign: 'right' }}>Pop</span>
+        {withDelta && (
+          <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-3)', letterSpacing: '0.16em', textTransform: 'uppercase', textAlign: 'center' }}>Δ</span>
+        )}
         <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-3)', letterSpacing: '0.16em', textTransform: 'uppercase', textAlign: 'right' }}>Time</span>
       </div>
 
@@ -44,7 +95,13 @@ function TrackTable({ sorted, sortBy, sortKey, isLoading, accent }: TrackTablePr
       ) : (
         <div key={sortKey} style={{ maxHeight: 480, overflowY: 'auto' }}>
           {sorted.map((t, i) => (
-            <TrackItem key={`${t.id}-${i}`} track={t} index={i} sortBy={sortBy} />
+            <TrackItem
+              key={`${t.id}-${i}`}
+              track={t}
+              index={i}
+              sortBy={sortBy}
+              delta={withDelta ? diffMap!.get(t.id) : undefined}
+            />
           ))}
         </div>
       )}

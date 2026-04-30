@@ -88,8 +88,32 @@ function Dashboard() {
     return () => clearInterval(id);
   }, [undoUntil]);
 
+  const [showPreview, setShowPreview] = useState<boolean>(() => {
+    try { return localStorage.getItem('tracksy_show_preview') !== 'false'; } catch (_) { return true; }
+  });
+
+  function togglePreview() {
+    setShowPreview((v) => {
+      const next = !v;
+      try { localStorage.setItem('tracksy_show_preview', String(next)); } catch (_) { /* ignore */ }
+      return next;
+    });
+  }
+
   const sorted = useMemo(() => sortTracks(tracks, sortBy, sortDir), [tracks, sortBy, sortDir]);
   const totalMs = useMemo(() => tracks.reduce((s, t) => s + t.durationMs, 0), [tracks]);
+
+  const diffMap = useMemo(() => {
+    if (!tracks.length || !sorted.length) return new Map<string, number>();
+    const originalPos = new Map<string, number>();
+    tracks.forEach((t, i) => originalPos.set(t.id, i));
+    const map = new Map<string, number>();
+    sorted.forEach((t, to) => {
+      const from = originalPos.get(t.id) ?? to;
+      map.set(t.id, from - to);
+    });
+    return map;
+  }, [tracks, sorted]);
 
   function pickSort(id: string) {
     if (sortBy === id) setSortDir((d) => d === 'asc' ? 'desc' : 'asc');
@@ -278,6 +302,9 @@ function Dashboard() {
               sortKey={sortKey}
               isLoading={isLoading}
               accent={accent}
+              diffMap={diffMap}
+              showPreview={showPreview}
+              onTogglePreview={togglePreview}
             />
           </div>
         ) : null}

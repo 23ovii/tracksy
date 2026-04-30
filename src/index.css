@@ -127,11 +127,18 @@ button:focus-visible, a:focus-visible {
   gap: 8px;
 }
 
+.track-row--delta {
+  grid-template-columns: 40px 1fr 160px 52px 56px 52px;
+}
+
 .track-artist-subline { display: none; }
 
 @media (max-width: 640px) {
   .track-row {
     grid-template-columns: 40px 1fr 52px;
+  }
+  .track-row--delta {
+    grid-template-columns: 40px 1fr 56px 52px;
   }
   .track-artist { display: none; }
   .track-pop    { display: none; }
