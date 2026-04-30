@@ -1,6 +1,6 @@
 # Tracksy
 
-Sort your Spotify playlists by BPM, energy, popularity, and more — then save the new order back to Spotify.
+Sort your Spotify playlists by title, artist, popularity, date added, or duration — then save the new order back to Spotify.
 
 ## Setup
 
