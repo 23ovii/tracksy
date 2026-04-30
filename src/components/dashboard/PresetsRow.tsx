@@ -1,6 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
 import type { MouseEvent, KeyboardEvent } from 'react';
 import type { SortPreset } from '../../services/presets';
+import { SORT_OPTIONS } from '../../utils/playlistUtils';
+
+const PAGE = 5;
 
 interface PresetsRowProps {
   presets: SortPreset[];
@@ -12,6 +15,7 @@ interface PresetsRowProps {
 function PresetsRow({ presets, onLoad, onDelete, onSave }: PresetsRowProps) {
   const [adding, setAdding] = useState(false);
   const [name, setName] = useState('');
+  const [expanded, setExpanded] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -29,8 +33,7 @@ function PresetsRow({ presets, onLoad, onDelete, onSave }: PresetsRowProps) {
 
   function handleSave() {
     const trimmed = name.trim();
-    if (!trimmed) { setAdding(false); setName(''); return; }
-    onSave(trimmed);
+    if (trimmed) onSave(trimmed);
     setAdding(false);
     setName('');
   }
@@ -39,6 +42,9 @@ function PresetsRow({ presets, onLoad, onDelete, onSave }: PresetsRowProps) {
     if (e.key === 'Enter') handleSave();
     if (e.key === 'Escape') { setAdding(false); setName(''); }
   }
+
+  const shown = expanded ? presets : presets.slice(0, PAGE);
+  const hidden = presets.length - PAGE;
 
   return (
     <div style={{
@@ -53,32 +59,54 @@ function PresetsRow({ presets, onLoad, onDelete, onSave }: PresetsRowProps) {
         alignSelf: 'center', marginRight: 4, flexShrink: 0,
       }}>Presets</span>
 
-      {presets.map((preset) => (
+      {shown.map((preset) => (
         <PresetChip key={preset.id} preset={preset} onLoad={onLoad} onDelete={onDelete} />
       ))}
 
+      {!expanded && hidden > 0 && (
+        <button
+          onClick={() => setExpanded(true)}
+          style={{
+            padding: '5px 10px', borderRadius: 50,
+            background: 'rgba(255,255,255,0.02)',
+            border: '1px solid rgba(255,255,255,0.09)',
+            color: 'var(--text-3)', fontSize: 11.5, fontWeight: 600,
+            fontFamily: 'inherit', cursor: 'pointer',
+            transition: 'color 0.15s, border-color 0.15s',
+          }}
+          onMouseEnter={(e: MouseEvent<HTMLButtonElement>) => {
+            e.currentTarget.style.color = 'var(--text-2)';
+            e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)';
+          }}
+          onMouseLeave={(e: MouseEvent<HTMLButtonElement>) => {
+            e.currentTarget.style.color = 'var(--text-3)';
+            e.currentTarget.style.borderColor = 'rgba(255,255,255,0.09)';
+          }}
+        >
+          +{hidden} more
+        </button>
+      )}
+
       {adding ? (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-          <input
-            ref={inputRef}
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            onKeyDown={handleKeyDown}
-            onBlur={handleSave}
-            placeholder="Preset name"
-            maxLength={40}
-            style={{
-              background: 'rgba(255,255,255,0.05)',
-              border: '1px solid rgba(255,255,255,0.15)',
-              borderRadius: 50,
-              padding: '5px 12px',
-              fontSize: 12, color: 'var(--text)',
-              fontFamily: 'inherit',
-              outline: 'none',
-              width: 140,
-            }}
-          />
-        </div>
+        <input
+          ref={inputRef}
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          onKeyDown={handleKeyDown}
+          onBlur={() => { setAdding(false); setName(''); }}
+          placeholder="Preset name"
+          maxLength={40}
+          style={{
+            background: 'rgba(255,255,255,0.05)',
+            border: '1px solid rgba(255,255,255,0.15)',
+            borderRadius: 50,
+            padding: '5px 12px',
+            fontSize: 12, color: 'var(--text)',
+            fontFamily: 'inherit',
+            outline: 'none',
+            width: 140,
+          }}
+        />
       ) : (
         <SaveChip onClick={() => setAdding(true)} />
       )}
@@ -119,9 +147,12 @@ function PresetChip({ preset, onLoad, onDelete }: {
   onDelete: (id: string) => void;
 }) {
   const [hovered, setHovered] = useState(false);
+  const label = SORT_OPTIONS.find((o) => o.id === preset.sortBy)?.label ?? preset.sortBy;
+  const dir = preset.sortDir === 'asc' ? '↑' : '↓';
 
   return (
     <div
+      title={`${label} ${dir}`}
       style={{
         display: 'inline-flex', alignItems: 'center',
         borderRadius: 50,
@@ -135,16 +166,19 @@ function PresetChip({ preset, onLoad, onDelete }: {
     >
       <button
         onClick={() => onLoad(preset)}
-        title={`${preset.sortBy} ${preset.sortDir}`}
         style={{
           padding: '5px 8px 5px 12px',
           background: 'none', border: 'none',
           color: 'var(--text-2)', fontSize: 12, fontWeight: 500,
           fontFamily: 'inherit', cursor: 'pointer',
           whiteSpace: 'nowrap',
+          display: 'flex', alignItems: 'center', gap: 5,
         }}
       >
         {preset.name}
+        <span style={{ fontSize: 10, color: 'var(--text-3)', fontWeight: 600 }}>
+          {label} {dir}
+        </span>
       </button>
       <button
         onClick={(e) => { e.stopPropagation(); onDelete(preset.id); }}

@@ -47,7 +47,8 @@ function Dashboard() {
 
   function handleSavePreset(name: string) {
     try {
-      const preset: SortPreset = { id: crypto.randomUUID(), name, sortBy, sortDir, createdAt: Date.now() };
+      const id = Date.now().toString(36) + Math.random().toString(36).slice(2);
+      const preset: SortPreset = { id, name, sortBy, sortDir, createdAt: Date.now() };
       savePreset(preset);
       setPresets(listPresets());
       showToast('Preset saved');
