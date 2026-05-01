@@ -3,7 +3,7 @@ import type { CSSProperties } from 'react';
 import { useSpotify } from '../hooks/useSpotify.tsx';
 import SortProgress from '../components/SortProgress.tsx';
 import { SORT_OPTIONS, sortTracks } from '../utils/playlistUtils.ts';
-import type { Playlist } from '../types';
+import type { Playlist, Track } from '../types';
 import AmbientBackdrop from '../components/dashboard/AmbientBackdrop';
 import LibraryPanel from '../components/dashboard/LibraryPanel';
 import SorterHeader from '../components/dashboard/SorterHeader';
@@ -16,6 +16,7 @@ import { getHistory, pushHistory, clearHistory } from '../services/sortHistory';
 import type { HistoryEntry } from '../services/sortHistory';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import { useShortcutsOverlay } from '../context/ShortcutsOverlayContext';
+import { buildTrackOccurrenceKeys } from '../utils/trackIdentity';
 
 const GLASS: CSSProperties = {
   background: 'var(--glass-bg)',
@@ -47,6 +48,7 @@ function Dashboard() {
   const isUndoRef = useRef(false);
   const isRestoreRef = useRef(false);
   const preApplyTrackIdsRef = useRef<string[]>([]);
+  const preApplyTrackKeysRef = useRef<string[]>([]);
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { open: overlayOpen, toggle: toggleOverlay } = useShortcutsOverlay();
 
@@ -104,13 +106,13 @@ function Dashboard() {
   }, [selectedPlaylist]);
 
   const [showPreview, setShowPreview] = useState<boolean>(() => {
-    try { return localStorage.getItem('tracksy_show_preview') !== 'false'; } catch (_) { return true; }
+    try { return localStorage.getItem('tracksy_show_preview') !== 'false'; } catch { return true; }
   });
 
   function togglePreview() {
     setShowPreview((v) => {
       const next = !v;
-      try { localStorage.setItem('tracksy_show_preview', String(next)); } catch (_) { /* ignore */ }
+      try { localStorage.setItem('tracksy_show_preview', String(next)); } catch { /* ignore */ }
       return next;
     });
   }
@@ -119,13 +121,13 @@ function Dashboard() {
   const totalMs = useMemo(() => tracks.reduce((s, t) => s + t.durationMs, 0), [tracks]);
 
   const diffMap = useMemo(() => {
-    if (!tracks.length || !sorted.length) return new Map<string, number>();
-    const originalPos = new Map<string, number>();
-    tracks.forEach((t, i) => originalPos.set(t.id, i));
-    const map = new Map<string, number>();
+    if (!tracks.length || !sorted.length) return new Map<Track, number>();
+    const originalPos = new Map<Track, number>();
+    tracks.forEach((t, i) => originalPos.set(t, i));
+    const map = new Map<Track, number>();
     sorted.forEach((t, to) => {
-      const from = originalPos.get(t.id) ?? to;
-      map.set(t.id, from - to);
+      const from = originalPos.get(t) ?? to;
+      map.set(t, from - to);
     });
     return map;
   }, [tracks, sorted]);
@@ -194,7 +196,9 @@ function Dashboard() {
   }
 
   function handleApply() {
-    preApplyTrackIdsRef.current = getCurrentOrder().map((t) => t.id);
+    const currentOrder = getCurrentOrder();
+    preApplyTrackIdsRef.current = currentOrder.map((t) => t.id);
+    preApplyTrackKeysRef.current = buildTrackOccurrenceKeys(currentOrder);
     setApplying(true);
     setApplyProgress(0);
     setRateLimitMsg('');
@@ -250,17 +254,19 @@ function Dashboard() {
               sortLabel: label ?? sortBy,
               trackIdsBefore: preApplyTrackIdsRef.current,
               trackIdsAfter: sorted.map((t) => t.id),
+              trackKeysBefore: preApplyTrackKeysRef.current,
+              trackKeysAfter: buildTrackOccurrenceKeys(sorted),
             };
             pushHistory(entry);
             setSortHistory(getHistory(selectedPlaylist.id));
           }
         }
       }
-    } catch {
+    } catch (err: any) {
       isUndoRef.current = false;
       isRestoreRef.current = false;
       setApplying(false);
-      setSortFeedback(wasUndo || wasRestore ? 'Failed to revert. Try again.' : 'Failed to save to Spotify. Try again.');
+      setSortFeedback(err?.message ?? (wasUndo || wasRestore ? 'Failed to revert. Try again.' : 'Failed to save to Spotify. Try again.'));
     }
   }
 
@@ -293,7 +299,7 @@ function Dashboard() {
     setSortFeedback('');
     isRestoreRef.current = true;
     const promise = restoreOrder(
-      entry.trackIdsBefore,
+      entry.trackKeysBefore ?? entry.trackIdsBefore,
       setApplyProgress,
       (retryAfter) => setRateLimitMsg(`Rate limited by Spotify — retrying in ${retryAfter}s…`),
     );
@@ -303,7 +309,7 @@ function Dashboard() {
       setApplying(false);
       setApplyProgress(0);
       setRateLimitMsg('');
-      if (err?.name !== 'AbortError') setSortFeedback('Failed to restore. Try again.');
+      if (err?.name !== 'AbortError') setSortFeedback(err?.message ?? 'Failed to restore. Try again.');
     });
   }, [restoreOrder]);
 

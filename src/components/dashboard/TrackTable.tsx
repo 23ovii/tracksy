@@ -8,7 +8,7 @@ interface TrackTableProps {
   sortKey: number;
   isLoading: boolean;
   accent: string;
-  diffMap?: Map<string, number>;
+  diffMap?: Map<Track, number>;
   showPreview: boolean;
   onTogglePreview: () => void;
   showFilter?: boolean;
@@ -157,7 +157,7 @@ function TrackTable({
               track={t}
               index={i}
               sortBy={sortBy}
-              delta={withDelta ? diffMap!.get(t.id) : undefined}
+              delta={withDelta ? diffMap!.get(t) : undefined}
             />
           ))}
         </div>
