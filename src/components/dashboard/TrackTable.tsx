@@ -86,7 +86,7 @@ function TrackTable({
             type="text"
             value={filterQuery ?? ''}
             onChange={(e) => onFilterChange?.(e.target.value)}
-            onKeyDown={(e) => { if (e.key === 'Escape') { e.stopPropagation(); onFilterClose?.(); } }}
+            onKeyDown={undefined}
             placeholder="Filter by title or artist…"
             style={{
               flex: 1, background: 'none', border: 'none', outline: 'none',

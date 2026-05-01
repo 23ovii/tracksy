@@ -67,11 +67,8 @@ export default function ShortcutsOverlay() {
       onClick={(e) => { if (e.target === backdropRef.current) setOpen(false); }}
       style={{
         position: 'fixed', inset: 0, zIndex: 1000,
-        background: 'rgba(7, 10, 15, 0.72)',
-        backdropFilter: 'blur(8px)',
-        WebkitBackdropFilter: 'blur(8px)',
+        background: 'rgba(5, 8, 12, 0.86)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        animation: 'fadeIn 0.15s var(--ease-out)',
       }}
     >
       <div style={{
@@ -81,7 +78,8 @@ export default function ShortcutsOverlay() {
         boxShadow: '0 32px 80px -16px rgba(0,0,0,0.85), 0 1px 0 rgba(255,255,255,0.06) inset',
         width: '100%', maxWidth: 420, margin: 16,
         overflow: 'hidden',
-        animation: 'scaleIn 0.18s var(--ease-out)',
+        animation: 'scaleIn 0.14s ease-out',
+        willChange: 'transform',
       }}>
         <div style={{
           padding: '18px 24px 14px',

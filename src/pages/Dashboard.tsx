@@ -144,7 +144,7 @@ function Dashboard() {
       ),
       d: () => { if (selectedPlaylist) setSortDir((dir) => { setApplied(false); setSortFeedback(''); setSortKey((k) => k + 1); return dir === 'asc' ? 'desc' : 'asc'; }); },
       enter: () => { if (selectedPlaylist && !applying && !applied) handleApply(); },
-      escape: () => { if (selectedPlaylist) handleBack(); },
+      escape: () => { if (showFilter) { closeFilter(); return; } if (selectedPlaylist) handleBack(); },
       '/': () => {
         if (!selectedPlaylist) return;
         if (showFilter) filterInputRef.current?.focus();
@@ -154,6 +154,7 @@ function Dashboard() {
     },
     (e: KeyboardEvent) => {
       if (overlayOpen) return true;
+      if (e.key === 'Escape' && showFilter) return false;
       const t = e.target as HTMLElement;
       return t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable;
     },

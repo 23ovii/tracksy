@@ -1,5 +1,6 @@
 import type { MouseEvent } from 'react';
 import { SORT_OPTIONS } from '../../utils/playlistUtils';
+import { useShortcutsOverlay } from '../../context/ShortcutsOverlayContext';
 
 interface SortChipsProps {
   sortBy: string;
@@ -8,11 +9,12 @@ interface SortChipsProps {
 }
 
 function SortChips({ sortBy, sortDir, onPick }: SortChipsProps) {
+  const { toggle: toggleShortcuts } = useShortcutsOverlay();
   return (
     <div style={{
       padding: '16px 24px',
       borderBottom: '1px solid rgba(255,255,255,0.05)',
-      display: 'flex', gap: 8, flexWrap: 'wrap',
+      display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center',
       background: 'rgba(8, 11, 16, 0.4)',
     }}>
       <span style={{
@@ -59,6 +61,32 @@ function SortChips({ sortBy, sortDir, onPick }: SortChipsProps) {
           </button>
         );
       })}
+
+      <button
+        onClick={toggleShortcuts}
+        aria-label="Keyboard shortcuts"
+        title="Keyboard shortcuts (?)"
+        style={{
+          marginLeft: 'auto', width: 26, height: 26, borderRadius: 6,
+          border: '1px solid rgba(255,255,255,0.08)', background: 'transparent',
+          color: 'var(--text-3)', fontFamily: 'inherit', fontSize: 12, fontWeight: 700,
+          cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          flexShrink: 0,
+          transition: 'border-color 0.15s, color 0.15s, background 0.15s',
+        }}
+        onMouseEnter={(e: MouseEvent<HTMLButtonElement>) => {
+          e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)';
+          e.currentTarget.style.color = 'var(--text-2)';
+          e.currentTarget.style.background = 'rgba(255,255,255,0.04)';
+        }}
+        onMouseLeave={(e: MouseEvent<HTMLButtonElement>) => {
+          e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)';
+          e.currentTarget.style.color = 'var(--text-3)';
+          e.currentTarget.style.background = 'transparent';
+        }}
+      >
+        ?
+      </button>
     </div>
   );
 }
