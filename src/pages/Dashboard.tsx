@@ -225,7 +225,11 @@ function Dashboard() {
       if (wasUndo || wasRestore) {
         setUndoUntil(null);
         setApplied(false);
-        setSortFeedback('Reverted.');
+        if (result?.moves === 0) {
+          setSortFeedback('Already in this order.');
+        } else {
+          setSortFeedback('Reverted.');
+        }
         setTimeout(() => setSortFeedback(''), 3_000);
       } else {
         const label = SORT_OPTIONS.find((o) => o.id === sortBy)?.label;

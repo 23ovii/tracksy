@@ -85,10 +85,21 @@ export function useSpotify() {
     onProgress?: (pct: number) => void,
     onRateLimit?: (retryAfterSeconds: number) => void,
   ) => {
-    const trackMap = new Map(tracks.map((t) => [t.id, t]));
+    // Build per-ID queues so that duplicate tracks (same ID, different objects)
+    // are matched by occurrence order rather than all mapping to the same object.
+    const queues = new Map<string, Track[]>();
+    for (const t of tracks) {
+      const q = queues.get(t.id) ?? [];
+      q.push(t);
+      queues.set(t.id, q);
+    }
+    const consumed = new Map<string, number>();
     const restoredTracks = targetIds.flatMap((id) => {
-      const t = trackMap.get(id);
-      return t ? [t] : [];
+      const q = queues.get(id);
+      if (!q) return [];
+      const idx = consumed.get(id) ?? 0;
+      consumed.set(id, idx + 1);
+      return idx < q.length ? [q[idx]] : [];
     });
     lastOriginalTracksRef.current = [...tracks];
     lastSortedTracksRef.current = restoredTracks;
