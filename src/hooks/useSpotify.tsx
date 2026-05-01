@@ -80,6 +80,23 @@ export function useSpotify() {
     );
   }, [token, selectedPlaylist]);
 
+  const restoreOrder = useCallback(async (
+    targetIds: string[],
+    onProgress?: (pct: number) => void,
+    onRateLimit?: (retryAfterSeconds: number) => void,
+  ) => {
+    const trackMap = new Map(tracks.map((t) => [t.id, t]));
+    const restoredTracks = targetIds.flatMap((id) => {
+      const t = trackMap.get(id);
+      return t ? [t] : [];
+    });
+    lastOriginalTracksRef.current = [...tracks];
+    lastSortedTracksRef.current = restoredTracks;
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+    return savePlaylistTracks(token!, selectedPlaylist!.id, tracks, restoredTracks, onProgress, onRateLimit, controller.signal);
+  }, [token, selectedPlaylist, tracks]);
+
   const cancelSort = useCallback(() => {
     abortControllerRef.current?.abort();
     abortControllerRef.current = null;
@@ -101,6 +118,7 @@ export function useSpotify() {
     loadPlaylistTracks,
     applySort,
     undoLastSort,
+    restoreOrder,
     cancelSort,
     clearSelection,
   };
