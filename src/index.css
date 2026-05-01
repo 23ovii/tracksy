@@ -119,6 +119,10 @@ button:focus-visible, a:focus-visible {
   0%,100% { transform: scaleY(0.55); }
   50%     { transform: scaleY(1); }
 }
+@keyframes scaleIn {
+  from { transform: scale(0.96) translateY(6px); }
+  to   { transform: scale(1) translateY(0); }
+}
 
 /* Track row responsive grid */
 .track-row {

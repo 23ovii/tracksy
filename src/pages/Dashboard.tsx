@@ -12,6 +12,8 @@ import PresetsRow from '../components/dashboard/PresetsRow';
 import TrackTable from '../components/dashboard/TrackTable';
 import { listPresets, savePreset, deletePreset } from '../services/presets';
 import type { SortPreset } from '../services/presets';
+import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
+import { useShortcutsOverlay } from '../context/ShortcutsOverlayContext';
 
 const GLASS: CSSProperties = {
   background: 'rgba(14, 19, 28, 0.88)',
@@ -35,9 +37,13 @@ function Dashboard() {
   const [undoCountdown, setUndoCountdown] = useState(100);
   const [presets, setPresets] = useState<SortPreset[]>(() => listPresets());
   const [toast, setToast] = useState<{ msg: string; key: number } | null>(null);
+  const [showFilter, setShowFilter] = useState(false);
+  const [filterQuery, setFilterQuery] = useState('');
+  const filterInputRef = useRef<HTMLInputElement>(null);
   const apiPromiseRef = useRef<Promise<{ moves: number }> | null>(null);
   const isUndoRef = useRef(false);
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const { open: overlayOpen, toggle: toggleOverlay } = useShortcutsOverlay();
 
   function showToast(msg: string) {
     if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
@@ -114,6 +120,45 @@ function Dashboard() {
     });
     return map;
   }, [tracks, sorted]);
+
+  const displayed = useMemo(() => {
+    if (!filterQuery.trim()) return sorted;
+    const q = filterQuery.toLowerCase();
+    return sorted.filter((t) => t.name.toLowerCase().includes(q) || t.artist.toLowerCase().includes(q));
+  }, [sorted, filterQuery]);
+
+  function openFilter() {
+    setShowFilter(true);
+    setTimeout(() => filterInputRef.current?.focus(), 40);
+  }
+
+  function closeFilter() {
+    setShowFilter(false);
+    setFilterQuery('');
+  }
+
+  useKeyboardShortcuts(
+    {
+      ...Object.fromEntries(
+        SORT_OPTIONS.map((opt, i) => [String(i + 1), () => { if (selectedPlaylist) pickSort(opt.id); }]),
+      ),
+      d: () => { if (selectedPlaylist) setSortDir((dir) => { setApplied(false); setSortFeedback(''); setSortKey((k) => k + 1); return dir === 'asc' ? 'desc' : 'asc'; }); },
+      enter: () => { if (selectedPlaylist && !applying && !applied) handleApply(); },
+      escape: () => { if (showFilter) { closeFilter(); return; } if (selectedPlaylist) handleBack(); },
+      '/': () => {
+        if (!selectedPlaylist) return;
+        if (showFilter) filterInputRef.current?.focus();
+        else openFilter();
+      },
+      '?': toggleOverlay,
+    },
+    (e: KeyboardEvent) => {
+      if (overlayOpen) return true;
+      if (e.key === 'Escape' && showFilter) return false;
+      const t = e.target as HTMLElement;
+      return t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable;
+    },
+  );
 
   function pickSort(id: string) {
     if (sortBy === id) setSortDir((d) => d === 'asc' ? 'desc' : 'asc');
@@ -297,7 +342,7 @@ function Dashboard() {
             )}
 
             <TrackTable
-              sorted={sorted}
+              sorted={displayed}
               sortBy={sortBy}
               sortKey={sortKey}
               isLoading={isLoading}
@@ -305,6 +350,11 @@ function Dashboard() {
               diffMap={diffMap}
               showPreview={showPreview}
               onTogglePreview={togglePreview}
+              showFilter={showFilter}
+              filterQuery={filterQuery}
+              filterInputRef={filterInputRef}
+              onFilterChange={setFilterQuery}
+              onFilterClose={closeFilter}
             />
           </div>
         ) : null}
