@@ -53,7 +53,7 @@ function SorterHeader({
     <>
       <div style={{
         padding: '26px 28px',
-        borderBottom: '1px solid rgba(255,255,255,0.05)',
+        borderBottom: '1px solid var(--border)',
         display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap',
         position: 'relative', overflow: 'hidden',
         background: `linear-gradient(135deg, ${accent}14, transparent 55%)`,
@@ -108,8 +108,8 @@ function SorterHeader({
               onClick={() => setDrawerOpen(true)}
               style={{
                 padding: '10px 16px', borderRadius: 50,
-                background: 'rgba(255,255,255,0.04)',
-                border: '1px solid rgba(255,255,255,0.1)',
+                background: 'var(--chip-bg-inactive)',
+                border: '1px solid var(--border2)',
                 color: 'var(--text-2)',
                 fontFamily: 'inherit', fontSize: 12.5, fontWeight: 500,
                 cursor: 'pointer',
@@ -117,11 +117,11 @@ function SorterHeader({
                 transition: 'border-color 0.2s, color 0.2s',
               }}
               onMouseEnter={(e: MouseEvent<HTMLButtonElement>) => {
-                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)';
+                e.currentTarget.style.borderColor = 'var(--border2)';
                 e.currentTarget.style.color = 'var(--text)';
               }}
               onMouseLeave={(e: MouseEvent<HTMLButtonElement>) => {
-                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)';
+                e.currentTarget.style.borderColor = 'var(--border2)';
                 e.currentTarget.style.color = 'var(--text-2)';
               }}
             >
@@ -143,20 +143,20 @@ function SorterHeader({
             onClick={onBack}
             style={{
               padding: '10px 18px', borderRadius: 50,
-              background: applying ? 'rgba(239,68,68,0.08)' : 'rgba(255,255,255,0.04)',
-              border: `1px solid ${applying ? 'rgba(239,68,68,0.3)' : 'rgba(255,255,255,0.1)'}`,
-              color: applying ? '#f87171' : 'var(--text-2)',
+              background: applying ? 'rgba(239,68,68,0.08)' : 'var(--chip-bg-inactive)',
+              border: `1px solid ${applying ? 'rgba(239,68,68,0.3)' : 'var(--border2)'}`,
+              color: applying ? 'var(--error-text)' : 'var(--text-2)',
               fontFamily: 'inherit', fontSize: 12.5, fontWeight: 500,
               cursor: 'pointer',
               transition: 'border-color 0.2s, color 0.2s, background 0.2s',
             }}
             onMouseEnter={(e: MouseEvent<HTMLButtonElement>) => {
-              e.currentTarget.style.borderColor = applying ? 'rgba(239,68,68,0.6)' : 'rgba(255,255,255,0.2)';
-              e.currentTarget.style.color = applying ? '#fca5a5' : 'var(--text)';
+              e.currentTarget.style.borderColor = applying ? 'rgba(239,68,68,0.6)' : 'var(--border2)';
+              e.currentTarget.style.color = applying ? 'var(--error-text)' : 'var(--text)';
             }}
             onMouseLeave={(e: MouseEvent<HTMLButtonElement>) => {
-              e.currentTarget.style.borderColor = applying ? 'rgba(239,68,68,0.3)' : 'rgba(255,255,255,0.1)';
-              e.currentTarget.style.color = applying ? '#f87171' : 'var(--text-2)';
+              e.currentTarget.style.borderColor = applying ? 'rgba(239,68,68,0.3)' : 'var(--border2)';
+              e.currentTarget.style.color = applying ? 'var(--error-text)' : 'var(--text-2)';
             }}
           >{applying ? '✕ Cancel' : '← Back'}</button>
           <button
@@ -215,23 +215,25 @@ function SorterHeader({
             onClick={() => setDrawerOpen(false)}
             style={{
               position: 'fixed', inset: 0, zIndex: 200,
-              background: 'rgba(0,0,0,0.45)',
+              background: 'var(--modal-backdrop)',
               animation: 'fadeIn 0.2s ease',
             }}
           />
           <div style={{
             position: 'fixed', top: 0, right: 0, bottom: 0,
             width: 340, zIndex: 201,
-            background: 'rgba(10, 13, 20, 0.98)',
-            borderLeft: '1px solid rgba(255,255,255,0.08)',
-            boxShadow: '-20px 0 60px rgba(0,0,0,0.6)',
+            background: 'var(--glass-bg)',
+            borderLeft: '1px solid var(--border2)',
+            boxShadow: '-20px 0 60px rgba(0,0,0,0.3)',
             display: 'flex', flexDirection: 'column',
             animation: 'slideInRight 0.25s var(--ease-out)',
+            backdropFilter: 'blur(16px)',
+            WebkitBackdropFilter: 'blur(16px)',
           }}>
             {/* Header */}
             <div style={{
               padding: '20px 20px 16px',
-              borderBottom: '1px solid rgba(255,255,255,0.06)',
+              borderBottom: '1px solid var(--border)',
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
             }}>
               <div>
@@ -247,8 +249,8 @@ function SorterHeader({
                 aria-label="Close history"
                 style={{
                   width: 28, height: 28,
-                  background: 'rgba(255,255,255,0.05)',
-                  border: '1px solid rgba(255,255,255,0.08)',
+                  background: 'var(--chip-bg-inactive)',
+                  border: '1px solid var(--border)',
                   borderRadius: 6,
                   color: 'var(--text-3)', fontSize: 16, lineHeight: 1,
                   cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -263,7 +265,7 @@ function SorterHeader({
                   key={entry.id}
                   style={{
                     padding: '14px 20px',
-                    borderBottom: i < reversed.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none',
+                    borderBottom: i < reversed.length - 1 ? '1px solid var(--border)' : 'none',
                     display: 'flex', alignItems: 'center', gap: 12,
                   }}
                 >
@@ -312,7 +314,7 @@ function SorterHeader({
             {/* Footer */}
             <div style={{
               padding: '14px 20px',
-              borderTop: '1px solid rgba(255,255,255,0.06)',
+              borderTop: '1px solid var(--border)',
               textAlign: 'center',
             }}>
               <button

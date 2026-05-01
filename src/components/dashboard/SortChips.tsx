@@ -13,9 +13,9 @@ function SortChips({ sortBy, sortDir, onPick }: SortChipsProps) {
   return (
     <div style={{
       padding: '16px 24px',
-      borderBottom: '1px solid rgba(255,255,255,0.05)',
+      borderBottom: '1px solid var(--border)',
       display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center',
-      background: 'rgba(8, 11, 16, 0.4)',
+      background: 'var(--bg-inset)',
     }}>
       <span style={{
         fontSize: 10, fontWeight: 700, color: 'var(--text-3)',
@@ -31,8 +31,8 @@ function SortChips({ sortBy, sortDir, onPick }: SortChipsProps) {
             style={{
               display: 'inline-flex', alignItems: 'center', gap: 7,
               padding: '8px 14px', borderRadius: 50,
-              background: active ? `${opt.color}20` : 'rgba(255,255,255,0.02)',
-              border: `1px solid ${active ? opt.color + '66' : 'rgba(255,255,255,0.07)'}`,
+              background: active ? `${opt.color}20` : 'var(--chip-bg-inactive)',
+              border: `1px solid ${active ? opt.color + '66' : 'var(--border)'}`,
               fontFamily: 'inherit', cursor: 'pointer',
               color: active ? opt.color : 'var(--text-2)',
               fontSize: 12.5, fontWeight: active ? 700 : 500,
@@ -41,13 +41,13 @@ function SortChips({ sortBy, sortDir, onPick }: SortChipsProps) {
             }}
             onMouseEnter={(e: MouseEvent<HTMLButtonElement>) => {
               if (!active) {
-                e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
+                e.currentTarget.style.background = 'var(--chip-bg-hover)';
                 e.currentTarget.style.color = 'var(--text)';
               }
             }}
             onMouseLeave={(e: MouseEvent<HTMLButtonElement>) => {
               if (!active) {
-                e.currentTarget.style.background = 'rgba(255,255,255,0.02)';
+                e.currentTarget.style.background = 'var(--chip-bg-inactive)';
                 e.currentTarget.style.color = 'var(--text-2)';
               }
             }}
@@ -68,19 +68,19 @@ function SortChips({ sortBy, sortDir, onPick }: SortChipsProps) {
         title="Keyboard shortcuts (?)"
         style={{
           marginLeft: 'auto', width: 26, height: 26, borderRadius: 6,
-          border: '1px solid rgba(255,255,255,0.08)', background: 'transparent',
+          border: '1px solid var(--border)', background: 'transparent',
           color: 'var(--text-3)', fontFamily: 'inherit', fontSize: 12, fontWeight: 700,
           cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
           flexShrink: 0,
           transition: 'border-color 0.15s, color 0.15s, background 0.15s',
         }}
         onMouseEnter={(e: MouseEvent<HTMLButtonElement>) => {
-          e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)';
+          e.currentTarget.style.borderColor = 'var(--border2)';
           e.currentTarget.style.color = 'var(--text-2)';
-          e.currentTarget.style.background = 'rgba(255,255,255,0.04)';
+          e.currentTarget.style.background = 'var(--chip-bg-hover)';
         }}
         onMouseLeave={(e: MouseEvent<HTMLButtonElement>) => {
-          e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)';
+          e.currentTarget.style.borderColor = 'var(--border)';
           e.currentTarget.style.color = 'var(--text-3)';
           e.currentTarget.style.background = 'transparent';
         }}

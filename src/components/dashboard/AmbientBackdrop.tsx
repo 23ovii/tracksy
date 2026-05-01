@@ -20,7 +20,7 @@ function AmbientBackdrop({ playlist }: AmbientBackdropProps) {
       }} />
       <div style={{
         position: 'absolute', inset: 0,
-        background: 'linear-gradient(180deg, rgba(7,10,15,0.5) 0%, rgba(7,10,15,0.78) 40%, rgba(7,10,15,0.92) 100%)',
+        background: 'var(--ambient-overlay)',
       }} />
     </div>
   );

@@ -2,27 +2,72 @@
 
 *,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+/* ── Non-themed structural vars ── */
 :root {
+  --green:        #1db954;
+  --green-bright: #5af5a0;
+  --nav-h:        64px;
+  --radius:       18px;
+  --radius-lg:    24px;
+  --ease-out:     cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ── Dark theme (default) ── */
+:root, .theme-dark {
   --bg:        #070a0f;
   --bg-2:      #0b1017;
+  --bg-inset:  rgba(8, 11, 16, 0.4);
   --surface:        rgba(16, 21, 30, 0.72);
   --surface-solid:  #0f141a;
   --surface2:       rgba(22, 29, 41, 0.62);
   --surface3:       rgba(32, 42, 58, 0.72);
+  --glass-bg:       rgba(14, 19, 28, 0.88);
   --border:    rgba(255,255,255,0.06);
   --border2:   rgba(255,255,255,0.12);
-  --green:     #1db954;
-  --green-bright: #5af5a0;
   --green-dim: rgba(29,185,84,0.10);
   --green-mid: rgba(29,185,84,0.22);
   --text:      #eef2f7;
   --text-2:    #9aa8c0;
   --text-3:    #6c7a91;
-  --nav-h:     64px;
-  --radius:    18px;
-  --radius-lg: 24px;
-  --ease-out:  cubic-bezier(0.16, 1, 0.3, 1);
+  --nav-bg:    rgba(7, 10, 15, 0.82);
+  --nav-border: rgba(255,255,255,0.05);
   --shadow-card: 0 1px 0 rgba(255,255,255,0.04) inset, 0 24px 60px -28px rgba(0,0,0,0.65);
+  --card-shadow: 0 12px 30px -20px rgba(0,0,0,0.6), 0 1px 0 rgba(255,255,255,0.03) inset;
+  --track-hover-bg: linear-gradient(90deg, rgba(255,255,255,0.035), rgba(255,255,255,0.015));
+  --chip-bg-inactive: rgba(255,255,255,0.02);
+  --chip-bg-hover: rgba(255,255,255,0.05);
+  --ambient-overlay: linear-gradient(180deg, rgba(7,10,15,0.5) 0%, rgba(7,10,15,0.78) 40%, rgba(7,10,15,0.92) 100%);
+  --error-text: #fca5a5;
+  --modal-backdrop: rgba(5, 8, 12, 0.86);
+}
+
+/* ── Light theme ── */
+.theme-light {
+  --bg:        #f7f8fa;
+  --bg-2:      #eef1f5;
+  --bg-inset:  rgba(0, 0, 0, 0.03);
+  --surface:        rgba(255,255,255,0.85);
+  --surface-solid:  #ffffff;
+  --surface2:       rgba(245,247,251,0.85);
+  --surface3:       rgba(232,237,244,0.85);
+  --glass-bg:       rgba(255,255,255,0.92);
+  --border:    rgba(0,0,0,0.08);
+  --border2:   rgba(0,0,0,0.16);
+  --green-dim: rgba(29,185,84,0.08);
+  --green-mid: rgba(29,185,84,0.16);
+  --text:      #0f141a;
+  --text-2:    #4a5568;
+  --text-3:    #6c7a91;
+  --nav-bg:    rgba(247, 248, 250, 0.92);
+  --nav-border: rgba(0,0,0,0.07);
+  --shadow-card: 0 1px 0 rgba(255,255,255,0.8) inset, 0 4px 20px -8px rgba(0,0,0,0.14);
+  --card-shadow: 0 4px 16px -8px rgba(0,0,0,0.12), 0 1px 0 rgba(255,255,255,0.7) inset;
+  --track-hover-bg: linear-gradient(90deg, rgba(0,0,0,0.025), rgba(0,0,0,0.01));
+  --chip-bg-inactive: rgba(0,0,0,0.02);
+  --chip-bg-hover: rgba(0,0,0,0.04);
+  --ambient-overlay: linear-gradient(180deg, rgba(247,248,250,0.5) 0%, rgba(247,248,250,0.78) 40%, rgba(247,248,250,0.92) 100%);
+  --error-text: #b91c1c;
+  --modal-backdrop: rgba(0, 0, 0, 0.4);
 }
 
 html, body, #root { height: 100%; }
@@ -41,7 +86,7 @@ body {
   isolation: isolate;
 }
 
-/* Ambient mesh gradient — static, no filter, GPU-cheap */
+/* Ambient mesh gradient */
 #root::before {
   content: '';
   position: fixed; inset: -10%;
@@ -53,7 +98,14 @@ body {
   pointer-events: none;
 }
 
-/* Grain overlay — kept lightweight, no blend mode */
+.theme-light #root::before {
+  background:
+    radial-gradient(ellipse 55% 40% at 15% 5%,   rgba(124, 58, 237, 0.07), transparent 60%),
+    radial-gradient(ellipse 45% 35% at 85% 10%,  rgba(29, 185, 84, 0.07),  transparent 60%),
+    radial-gradient(ellipse 60% 45% at 50% 100%, rgba(30, 64, 175, 0.07),  transparent 60%);
+}
+
+/* Grain overlay — dark only */
 #root::after {
   content: '';
   position: fixed; inset: 0;
@@ -61,6 +113,10 @@ body {
   opacity: 0.035;
   z-index: -1;
   pointer-events: none;
+}
+
+.theme-light #root::after {
+  display: none;
 }
 
 button:focus-visible, a:focus-visible {
@@ -73,8 +129,11 @@ button:focus-visible, a:focus-visible {
 ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.18); }
 
+.theme-light ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); }
+.theme-light ::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.22); }
+
 .glass {
-  background: rgba(14, 19, 28, 0.88);
+  background: var(--glass-bg);
   border: 1px solid var(--border);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);

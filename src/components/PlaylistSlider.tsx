@@ -42,8 +42,8 @@ function PlaylistSlider({ playlists, selected, onSelect }: PlaylistSliderProps) 
       aria-label={dir === -1 ? 'Previous' : 'Next'}
       style={{
         width: 34, height: 34, borderRadius: 50,
-        border: '1px solid rgba(255,255,255,0.1)',
-        background: 'rgba(18, 24, 34, 0.9)',
+        border: '1px solid var(--border2)',
+        background: 'var(--surface2)',
         color: disabled ? 'var(--text-3)' : 'var(--text)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         cursor: disabled ? 'not-allowed' : 'pointer',
@@ -57,8 +57,8 @@ function PlaylistSlider({ playlists, selected, onSelect }: PlaylistSliderProps) 
         }
       }}
       onMouseLeave={(e: MouseEvent<HTMLButtonElement>) => {
-        e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)';
-        e.currentTarget.style.background = 'rgba(18, 24, 34, 0.7)';
+        e.currentTarget.style.borderColor = 'var(--border2)';
+        e.currentTarget.style.background = 'var(--surface2)';
       }}
     >
       <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

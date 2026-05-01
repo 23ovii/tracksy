@@ -3,10 +3,10 @@ import type { Playlist } from '../../types';
 import PlaylistCard from '../PlaylistCard';
 
 const GLASS: CSSProperties = {
-  background: 'rgba(14, 19, 28, 0.88)',
-  border: '1px solid rgba(255,255,255,0.06)',
+  background: 'var(--glass-bg)',
+  border: '1px solid var(--border)',
   borderRadius: 20,
-  boxShadow: '0 1px 0 rgba(255,255,255,0.04) inset, 0 30px 60px -24px rgba(0,0,0,0.7)',
+  boxShadow: 'var(--shadow-card)',
 };
 
 interface LibraryPanelProps {
@@ -44,8 +44,8 @@ function LibraryPanel({ playlists, isLoading, onRefresh, onSelect }: LibraryPane
           aria-label="Refresh playlists"
           style={{
             width: 34, height: 34, borderRadius: '50%',
-            border: '1px solid rgba(255,255,255,0.1)',
-            background: 'rgba(18, 24, 34, 0.9)',
+            border: '1px solid var(--border2)',
+            background: 'var(--surface2)',
             color: 'var(--text-3)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             cursor: isLoading ? 'not-allowed' : 'pointer',
@@ -61,9 +61,9 @@ function LibraryPanel({ playlists, isLoading, onRefresh, onSelect }: LibraryPane
             }
           }}
           onMouseLeave={(e: MouseEvent<HTMLButtonElement>) => {
-            e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)';
+            e.currentTarget.style.borderColor = 'var(--border2)';
             e.currentTarget.style.color = 'var(--text-3)';
-            e.currentTarget.style.background = 'rgba(18, 24, 34, 0.9)';
+            e.currentTarget.style.background = 'var(--surface2)';
           }}
         >
           <svg
