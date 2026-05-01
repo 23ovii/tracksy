@@ -25,7 +25,7 @@ const GLASS: CSSProperties = {
 };
 
 function Dashboard() {
-  const { playlists, tracks, selectedPlaylist, isLoading, loadPlaylists, loadPlaylistTracks, applySort, undoLastSort, restoreOrder, cancelSort, clearSelection } = useSpotify();
+  const { playlists, tracks, selectedPlaylist, isLoading, loadPlaylists, loadPlaylistTracks, applySort, undoLastSort, restoreOrder, cancelSort, clearSelection, getCurrentOrder } = useSpotify();
 
   const [sortBy, setSortBy] = useState('name');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
@@ -46,6 +46,7 @@ function Dashboard() {
   const apiPromiseRef = useRef<Promise<{ moves: number }> | null>(null);
   const isUndoRef = useRef(false);
   const isRestoreRef = useRef(false);
+  const preApplyTrackIdsRef = useRef<string[]>([]);
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { open: overlayOpen, toggle: toggleOverlay } = useShortcutsOverlay();
 
@@ -193,6 +194,7 @@ function Dashboard() {
   }
 
   function handleApply() {
+    preApplyTrackIdsRef.current = getCurrentOrder().map((t) => t.id);
     setApplying(true);
     setApplyProgress(0);
     setRateLimitMsg('');
@@ -246,7 +248,7 @@ function Dashboard() {
               playlistId: selectedPlaylist.id,
               appliedAt: Date.now(),
               sortLabel: label ?? sortBy,
-              trackIdsBefore: tracks.map((t) => t.id),
+              trackIdsBefore: preApplyTrackIdsRef.current,
               trackIdsAfter: sorted.map((t) => t.id),
             };
             pushHistory(entry);

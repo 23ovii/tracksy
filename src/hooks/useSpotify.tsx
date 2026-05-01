@@ -140,6 +140,11 @@ export function useSpotify() {
     lastSortedTracksRef.current = [];
   }, []);
 
+  const getCurrentOrder = useCallback(
+    () => (currentSpotifyOrderRef.current.length > 0 ? currentSpotifyOrderRef.current : tracks),
+    [tracks],
+  );
+
   return {
     playlists,
     tracks,
@@ -153,5 +158,6 @@ export function useSpotify() {
     restoreOrder,
     cancelSort,
     clearSelection,
+    getCurrentOrder,
   };
 }
