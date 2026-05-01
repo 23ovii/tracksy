@@ -25,7 +25,7 @@ function PresetsRow({ presets, onLoad, onDelete, onSave }: PresetsRowProps) {
   const visible = presets.length > 0 || adding;
   if (!visible) {
     return (
-      <div style={{ padding: '10px 24px', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+      <div style={{ padding: '10px 24px', borderBottom: '1px solid var(--border)' }}>
         <SaveChip onClick={() => setAdding(true)} />
       </div>
     );
@@ -49,9 +49,9 @@ function PresetsRow({ presets, onLoad, onDelete, onSave }: PresetsRowProps) {
   return (
     <div style={{
       padding: '10px 24px',
-      borderBottom: '1px solid rgba(255,255,255,0.04)',
+      borderBottom: '1px solid var(--border)',
       display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap',
-      background: 'rgba(8, 11, 16, 0.25)',
+      background: 'var(--bg-inset)',
     }}>
       <span style={{
         fontSize: 10, fontWeight: 700, color: 'var(--text-3)',
@@ -68,19 +68,19 @@ function PresetsRow({ presets, onLoad, onDelete, onSave }: PresetsRowProps) {
           onClick={() => setExpanded(true)}
           style={{
             padding: '5px 10px', borderRadius: 50,
-            background: 'rgba(255,255,255,0.02)',
-            border: '1px solid rgba(255,255,255,0.09)',
+            background: 'var(--chip-bg-inactive)',
+            border: '1px solid var(--border2)',
             color: 'var(--text-3)', fontSize: 11.5, fontWeight: 600,
             fontFamily: 'inherit', cursor: 'pointer',
             transition: 'color 0.15s, border-color 0.15s',
           }}
           onMouseEnter={(e: MouseEvent<HTMLButtonElement>) => {
             e.currentTarget.style.color = 'var(--text-2)';
-            e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)';
+            e.currentTarget.style.borderColor = 'var(--border2)';
           }}
           onMouseLeave={(e: MouseEvent<HTMLButtonElement>) => {
             e.currentTarget.style.color = 'var(--text-3)';
-            e.currentTarget.style.borderColor = 'rgba(255,255,255,0.09)';
+            e.currentTarget.style.borderColor = 'var(--border2)';
           }}
         >
           +{hidden} more
@@ -97,8 +97,8 @@ function PresetsRow({ presets, onLoad, onDelete, onSave }: PresetsRowProps) {
           placeholder="Preset name"
           maxLength={40}
           style={{
-            background: 'rgba(255,255,255,0.05)',
-            border: '1px solid rgba(255,255,255,0.15)',
+            background: 'var(--chip-bg-hover)',
+            border: '1px solid var(--border2)',
             borderRadius: 50,
             padding: '5px 12px',
             fontSize: 12, color: 'var(--text)',
@@ -121,19 +121,19 @@ function SaveChip({ onClick }: { onClick: () => void }) {
       style={{
         display: 'inline-flex', alignItems: 'center', gap: 5,
         padding: '5px 10px', borderRadius: 50,
-        background: 'rgba(255,255,255,0.02)',
-        border: '1px dashed rgba(255,255,255,0.12)',
+        background: 'var(--chip-bg-inactive)',
+        border: '1px dashed var(--border2)',
         color: 'var(--text-3)', fontSize: 11.5, fontWeight: 600,
         fontFamily: 'inherit', cursor: 'pointer',
         transition: 'color 0.15s, border-color 0.15s',
       }}
       onMouseEnter={(e: MouseEvent<HTMLButtonElement>) => {
         e.currentTarget.style.color = 'var(--text-2)';
-        e.currentTarget.style.borderColor = 'rgba(255,255,255,0.25)';
+        e.currentTarget.style.borderColor = 'var(--border2)';
       }}
       onMouseLeave={(e: MouseEvent<HTMLButtonElement>) => {
         e.currentTarget.style.color = 'var(--text-3)';
-        e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)';
+        e.currentTarget.style.borderColor = 'var(--border2)';
       }}
     >
       + Save current sort
@@ -156,8 +156,8 @@ function PresetChip({ preset, onLoad, onDelete }: {
       style={{
         display: 'inline-flex', alignItems: 'center',
         borderRadius: 50,
-        background: hovered ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.03)',
-        border: '1px solid rgba(255,255,255,0.09)',
+        background: hovered ? 'var(--chip-bg-hover)' : 'var(--chip-bg-inactive)',
+        border: '1px solid var(--border2)',
         transition: 'background 0.15s',
         overflow: 'hidden',
       }}

@@ -26,7 +26,7 @@ function SortProgress({ active, progress, label, onDone, color = '#1db954', colo
   return (
     <div style={{
       padding: '14px 24px',
-      borderBottom: '1px solid rgba(255,255,255,0.05)',
+      borderBottom: '1px solid var(--border)',
       background: `linear-gradient(90deg, ${color}12, ${color}04)`,
       position: 'relative', overflow: 'hidden',
     }}>
@@ -42,7 +42,7 @@ function SortProgress({ active, progress, label, onDone, color = '#1db954', colo
         </span>
       </div>
       <div style={{
-        height: 4, background: 'rgba(255,255,255,0.06)',
+        height: 4, background: 'var(--border)',
         borderRadius: 2, overflow: 'hidden', position: 'relative',
       }}>
         <div style={{

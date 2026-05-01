@@ -3,6 +3,9 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      (function(){var t=localStorage.getItem('tracksy_theme')||'system';var d=t==='dark'||(t==='system'&&matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.classList.add(d?'theme-dark':'theme-light');})();
+    </script>
     <link rel="icon" type="image/png" href="/tracksy-icon-green.png" />
     <title>Tracksy • Spotify Playlist Sorter</title>
     <meta name="description" content="Sort your Spotify playlists by BPM, energy, popularity, and more." />

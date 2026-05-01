@@ -204,8 +204,8 @@ function Home() {
           <div style={{
             maxWidth: 520,
             padding: '12px 16px', borderRadius: 12,
-            border: '1px solid rgba(239,68,68,0.4)', background: 'rgba(239,68,68,0.15)',
-            fontSize: 13, color: '#fca5a5',
+            border: '1px solid rgba(239,68,68,0.4)', background: 'rgba(239,68,68,0.12)',
+            fontSize: 13, color: 'var(--error-text)',
           }}>{error}</div>
         )}
 
@@ -220,8 +220,8 @@ function Home() {
             return (
               <div key={f.label} style={{
                 position: 'relative',
-                background: 'rgba(18, 24, 34, 0.85)',
-                border: '1px solid rgba(255,255,255,0.06)',
+                background: 'var(--surface2)',
+                border: '1px solid var(--border)',
                 borderRadius: 16,
                 padding: '18px 20px',
                 transition: 'transform 0.22s var(--ease-out), border-color 0.22s, background 0.22s',
@@ -233,13 +233,13 @@ function Home() {
                 const el = e.currentTarget as HTMLDivElement;
                 el.style.transform = 'translateY(-3px)';
                 el.style.borderColor = `${f.accent}55`;
-                el.style.background = 'rgba(22, 29, 41, 0.95)';
+                el.style.background = 'var(--surface3)';
               }}
               onMouseLeave={(e) => {
                 const el = e.currentTarget as HTMLDivElement;
                 el.style.transform = '';
-                el.style.borderColor = 'rgba(255,255,255,0.06)';
-                el.style.background = 'rgba(18, 24, 34, 0.85)';
+                el.style.borderColor = 'var(--border)';
+                el.style.background = 'var(--surface2)';
               }}>
                 {/* Accent bar */}
                 <div aria-hidden style={{
@@ -261,7 +261,7 @@ function Home() {
                   <span style={{
                     fontSize: 10, fontWeight: 700, letterSpacing: '0.06em',
                     color: isLive ? f.accent : 'var(--text-3)',
-                    background: isLive ? `${f.accent}18` : 'rgba(255,255,255,0.04)',
+                    background: isLive ? `${f.accent}18` : 'var(--border)',
                     borderRadius: 50, padding: '3px 8px',
                   }}>{f.tag.toUpperCase()}</span>
                 </div>

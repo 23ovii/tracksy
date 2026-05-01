@@ -1,7 +1,86 @@
 import { Link, NavLink } from 'react-router-dom';
-import type { MouseEvent } from 'react';
+import type { JSX, MouseEvent } from 'react';
 import { useAuth } from '../hooks/useAuth.tsx';
 import { buildSpotifyAuthUrl } from '../services/auth.ts';
+import { useTheme } from '../hooks/useTheme.ts';
+import type { Theme } from '../hooks/useTheme.ts';
+
+const SunIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="4" />
+    <line x1="12" y1="2" x2="12" y2="4" />
+    <line x1="12" y1="20" x2="12" y2="22" />
+    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+    <line x1="2" y1="12" x2="4" y2="12" />
+    <line x1="20" y1="12" x2="22" y2="12" />
+    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+  </svg>
+);
+
+const MonitorIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="2" y="3" width="20" height="14" rx="2" />
+    <line x1="8" y1="21" x2="16" y2="21" />
+    <line x1="12" y1="17" x2="12" y2="21" />
+  </svg>
+);
+
+const MoonIcon = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+  </svg>
+);
+
+const THEME_OPTIONS: { value: Theme; label: string; Icon: () => JSX.Element }[] = [
+  { value: 'light',  label: 'Light',  Icon: SunIcon },
+  { value: 'system', label: 'System', Icon: MonitorIcon },
+  { value: 'dark',   label: 'Dark',   Icon: MoonIcon },
+];
+
+function ThemeToggle() {
+  const { theme, setTheme } = useTheme();
+
+  return (
+    <div
+      role="group"
+      aria-label="Theme"
+      style={{
+        display: 'inline-flex',
+        border: '1px solid var(--border2)',
+        borderRadius: 50,
+        background: 'var(--bg-inset)',
+        padding: 3,
+        gap: 2,
+      }}
+    >
+      {THEME_OPTIONS.map(({ value, label, Icon }) => {
+        const active = theme === value;
+        return (
+          <button
+            key={value}
+            onClick={() => setTheme(value)}
+            aria-label={label}
+            title={label}
+            style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              width: 26, height: 26, borderRadius: 50,
+              border: 'none',
+              background: active ? 'var(--glass-bg)' : 'transparent',
+              boxShadow: active ? '0 1px 4px rgba(0,0,0,0.2)' : 'none',
+              color: active ? 'var(--text)' : 'var(--text-3)',
+              cursor: 'pointer',
+              transition: 'background 0.18s, color 0.18s, box-shadow 0.18s',
+            }}
+          >
+            <Icon />
+          </button>
+        );
+      })}
+    </div>
+  );
+}
 
 function Navbar() {
   const { logout, isAuthenticated } = useAuth();
@@ -13,8 +92,8 @@ function Navbar() {
   return (
     <header style={{
       height: 'var(--nav-h)',
-      borderBottom: '1px solid rgba(255,255,255,0.05)',
-      background: 'rgba(7, 10, 15, 0.82)',
+      borderBottom: '1px solid var(--nav-border)',
+      background: 'var(--nav-bg)',
       backdropFilter: 'blur(14px)',
       WebkitBackdropFilter: 'blur(14px)',
       position: 'sticky', top: 0, zIndex: 200,
@@ -48,7 +127,7 @@ function Navbar() {
           }}>BETA</span>
         </Link>
 
-        <nav style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+        <nav style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           {isAuthenticated && [{ to: '/', label: 'Home', end: true }, { to: '/dashboard', label: 'Dashboard', end: false }].map(({ to, label, end }) => (
             <NavLink
               key={to}
@@ -57,7 +136,7 @@ function Navbar() {
               style={({ isActive }) => ({
                 position: 'relative',
                 padding: '8px 16px', borderRadius: 50,
-                background: isActive ? 'rgba(255,255,255,0.07)' : 'transparent',
+                background: isActive ? 'var(--border)' : 'transparent',
                 color: isActive ? 'var(--text)' : 'var(--text-2)',
                 fontSize: 13, fontWeight: isActive ? 600 : 500,
                 textDecoration: 'none',
@@ -67,7 +146,7 @@ function Navbar() {
               onMouseEnter={(e: MouseEvent<HTMLAnchorElement>) => {
                 e.currentTarget.style.transform = 'translateY(-1px)';
                 e.currentTarget.style.color = 'var(--text)';
-                e.currentTarget.style.boxShadow = '0 0 0 1px rgba(255,255,255,0.12)';
+                e.currentTarget.style.boxShadow = '0 0 0 1px var(--border2)';
               }}
               onMouseLeave={(e: MouseEvent<HTMLAnchorElement>) => {
                 e.currentTarget.style.transform = '';
@@ -78,6 +157,9 @@ function Navbar() {
               {label}
             </NavLink>
           ))}
+
+          <ThemeToggle />
+
           {!isAuthenticated && (
             <button
               onClick={handleLogin}
@@ -106,8 +188,8 @@ function Navbar() {
             <button
               onClick={logout}
               style={{
-                marginLeft: 10, padding: '7px 16px', borderRadius: 50,
-                border: '1px solid rgba(255,255,255,0.1)', background: 'transparent',
+                marginLeft: 4, padding: '7px 16px', borderRadius: 50,
+                border: '1px solid var(--border2)', background: 'transparent',
                 color: 'var(--text-2)', fontFamily: 'inherit', fontSize: 13,
                 cursor: 'pointer',
                 transition: 'border-color 0.18s, color 0.18s, background 0.18s',
@@ -118,7 +200,7 @@ function Navbar() {
                 e.currentTarget.style.background = 'rgba(29,185,84,0.06)';
               }}
               onMouseLeave={(e: MouseEvent<HTMLButtonElement>) => {
-                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)';
+                e.currentTarget.style.borderColor = 'var(--border2)';
                 e.currentTarget.style.color = 'var(--text-2)';
                 e.currentTarget.style.background = 'transparent';
               }}

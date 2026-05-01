@@ -26,14 +26,14 @@ function TrackItem({ track, index, sortBy, delta }: TrackItemProps) {
         padding: '0 24px',
         height: 58,
         alignItems: 'center',
-        borderBottom: '1px solid rgba(255,255,255,0.04)',
+        borderBottom: '1px solid var(--border)',
         transition: 'background 0.18s, box-shadow 0.18s',
         animation: index < 20 ? `trackIn 0.24s var(--ease-out) ${index * 0.02}s both` : 'none',
         cursor: 'default',
         position: 'relative',
       }}
       onMouseEnter={(e: MouseEvent<HTMLDivElement>) => {
-        e.currentTarget.style.background = 'linear-gradient(90deg, rgba(255,255,255,0.035), rgba(255,255,255,0.015))';
+        e.currentTarget.style.background = 'var(--track-hover-bg)';
         e.currentTarget.style.boxShadow = `inset 3px 0 0 ${activeColor}`;
       }}
       onMouseLeave={(e: MouseEvent<HTMLDivElement>) => {

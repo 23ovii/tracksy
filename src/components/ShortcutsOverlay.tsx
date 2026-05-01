@@ -29,9 +29,9 @@ function Kbd({ children }: { children: string }) {
     <kbd style={{
       display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
       minWidth: 24, height: 22, padding: '0 6px',
-      background: 'rgba(255,255,255,0.06)',
-      border: '1px solid rgba(255,255,255,0.14)',
-      borderBottom: '2px solid rgba(255,255,255,0.08)',
+      background: 'var(--border)',
+      border: '1px solid var(--border2)',
+      borderBottom: '2px solid var(--border2)',
       borderRadius: 5,
       fontFamily: 'inherit', fontSize: 11, fontWeight: 600,
       color: 'var(--text-2)', letterSpacing: '0.02em',
@@ -45,7 +45,6 @@ export default function ShortcutsOverlay() {
   const { open, setOpen } = useShortcutsOverlay();
   const backdropRef = useRef<HTMLDivElement>(null);
 
-  // Capture-phase listener intercepts Esc and ? before Dashboard's bubble-phase handlers
   useEffect(() => {
     if (!open) return;
     function handler(e: KeyboardEvent) {
@@ -67,23 +66,25 @@ export default function ShortcutsOverlay() {
       onClick={(e) => { if (e.target === backdropRef.current) setOpen(false); }}
       style={{
         position: 'fixed', inset: 0, zIndex: 1000,
-        background: 'rgba(5, 8, 12, 0.86)',
+        background: 'var(--modal-backdrop)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}
     >
       <div style={{
-        background: 'rgba(14, 19, 28, 0.97)',
-        border: '1px solid rgba(255,255,255,0.1)',
+        background: 'var(--glass-bg)',
+        border: '1px solid var(--border2)',
         borderRadius: 18,
-        boxShadow: '0 32px 80px -16px rgba(0,0,0,0.85), 0 1px 0 rgba(255,255,255,0.06) inset',
+        boxShadow: 'var(--shadow-card)',
         width: '100%', maxWidth: 420, margin: 16,
         overflow: 'hidden',
         animation: 'scaleIn 0.14s ease-out',
         willChange: 'transform',
+        backdropFilter: 'blur(16px)',
+        WebkitBackdropFilter: 'blur(16px)',
       }}>
         <div style={{
           padding: '18px 24px 14px',
-          borderBottom: '1px solid rgba(255,255,255,0.06)',
+          borderBottom: '1px solid var(--border)',
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         }}>
           <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)' }}>Keyboard shortcuts</span>

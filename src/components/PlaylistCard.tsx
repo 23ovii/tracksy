@@ -15,8 +15,8 @@ function PlaylistCard({ playlist, selected, onClick }: PlaylistCardProps) {
       onClick={onClick}
       style={{
         color: 'var(--text)',
-        background: isSelected ? 'rgba(32, 42, 58, 0.9)' : 'rgba(18, 24, 34, 0.85)',
-        border: `1px solid ${isSelected ? playlist.color1 + '88' : 'rgba(255,255,255,0.06)'}`,
+        background: isSelected ? 'var(--surface3)' : 'var(--surface2)',
+        border: `1px solid ${isSelected ? playlist.color1 + '88' : 'var(--border)'}`,
         borderRadius: 16,
         padding: 0,
         cursor: 'pointer',
@@ -25,7 +25,7 @@ function PlaylistCard({ playlist, selected, onClick }: PlaylistCardProps) {
         overflow: 'hidden',
         boxShadow: isSelected
           ? `0 0 0 1px ${playlist.color1}44, 0 18px 40px -16px ${playlist.color1}66, 0 2px 0 rgba(255,255,255,0.04) inset`
-          : '0 12px 30px -20px rgba(0,0,0,0.6), 0 1px 0 rgba(255,255,255,0.03) inset',
+          : 'var(--card-shadow)',
         transition: 'transform 0.2s var(--ease-out), border-color 0.18s, box-shadow 0.2s',
         width: '100%',
         position: 'relative',
@@ -34,7 +34,7 @@ function PlaylistCard({ playlist, selected, onClick }: PlaylistCardProps) {
         if (!isSelected) {
           e.currentTarget.style.transform = 'translateY(-4px)';
           e.currentTarget.style.borderColor = playlist.color1 + '55';
-          e.currentTarget.style.boxShadow = `0 1px 0 rgba(255,255,255,0.05) inset`;
+          e.currentTarget.style.boxShadow = 'var(--card-shadow)';
           const overlay = e.currentTarget.querySelector('[data-overlay]') as HTMLElement | null;
           if (overlay) overlay.style.opacity = '1';
         }
@@ -42,8 +42,8 @@ function PlaylistCard({ playlist, selected, onClick }: PlaylistCardProps) {
       onMouseLeave={(e: MouseEvent<HTMLButtonElement>) => {
         if (!isSelected) {
           e.currentTarget.style.transform = '';
-          e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)';
-          e.currentTarget.style.boxShadow = '0 12px 30px -20px rgba(0,0,0,0.6), 0 1px 0 rgba(255,255,255,0.03) inset';
+          e.currentTarget.style.borderColor = 'var(--border)';
+          e.currentTarget.style.boxShadow = 'var(--card-shadow)';
           const overlay = e.currentTarget.querySelector('[data-overlay]') as HTMLElement | null;
           if (overlay) overlay.style.opacity = '0';
         }

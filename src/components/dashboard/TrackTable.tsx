@@ -40,9 +40,9 @@ function TrackTable({
       {hasDiff && (
         <div style={{
           padding: '8px 24px',
-          borderBottom: '1px solid rgba(255,255,255,0.05)',
+          borderBottom: '1px solid var(--border)',
           display: 'flex', alignItems: 'center', gap: 12,
-          background: 'rgba(8,11,16,0.3)',
+          background: 'var(--bg-inset)',
         }}>
           <span style={{
             flex: 1,
@@ -58,7 +58,7 @@ function TrackTable({
           <button
             onClick={onTogglePreview}
             style={{
-              background: 'none', border: '1px solid rgba(255,255,255,0.1)',
+              background: 'none', border: '1px solid var(--border2)',
               borderRadius: 5, padding: '3px 9px',
               fontSize: 11, color: 'var(--text-3)', cursor: 'pointer',
               whiteSpace: 'nowrap', letterSpacing: '-0.01em',
@@ -72,8 +72,8 @@ function TrackTable({
       {showFilter && (
         <div style={{
           padding: '8px 24px',
-          borderBottom: '1px solid rgba(255,255,255,0.05)',
-          background: 'rgba(8,11,16,0.3)',
+          borderBottom: '1px solid var(--border)',
+          background: 'var(--bg-inset)',
           display: 'flex', alignItems: 'center', gap: 8,
           animation: 'fadeIn 0.15s var(--ease-out)',
         }}>
@@ -107,7 +107,7 @@ function TrackTable({
             onClick={onFilterClose}
             aria-label="Close filter"
             style={{
-              background: 'none', border: '1px solid rgba(255,255,255,0.08)',
+              background: 'none', border: '1px solid var(--border)',
               borderRadius: 4, padding: '2px 8px',
               fontSize: 11, color: 'var(--text-3)', cursor: 'pointer',
             }}
@@ -122,8 +122,8 @@ function TrackTable({
         className={withDelta ? 'track-row track-row--delta' : 'track-row'}
         style={{
           padding: '0 24px', height: 38, alignItems: 'center',
-          borderBottom: '1px solid rgba(255,255,255,0.05)',
-          background: 'rgba(8, 11, 16, 0.4)',
+          borderBottom: '1px solid var(--border)',
+          background: 'var(--bg-inset)',
           position: 'sticky', top: 0, zIndex: 1,
         }}
       >

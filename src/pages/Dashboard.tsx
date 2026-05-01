@@ -18,10 +18,10 @@ import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import { useShortcutsOverlay } from '../context/ShortcutsOverlayContext';
 
 const GLASS: CSSProperties = {
-  background: 'rgba(14, 19, 28, 0.88)',
-  border: '1px solid rgba(255,255,255,0.06)',
+  background: 'var(--glass-bg)',
+  border: '1px solid var(--border)',
   borderRadius: 20,
-  boxShadow: '0 1px 0 rgba(255,255,255,0.04) inset, 0 30px 60px -24px rgba(0,0,0,0.7)',
+  boxShadow: 'var(--shadow-card)',
 };
 
 function Dashboard() {
@@ -423,10 +423,10 @@ function Dashboard() {
         <div style={{
           position: 'fixed', bottom: 32, left: '50%', transform: 'translateX(-50%)',
           zIndex: 100, minWidth: 300, maxWidth: 440,
-          background: 'rgba(14, 19, 28, 0.92)',
-          border: '1px solid rgba(255,255,255,0.1)',
+          background: 'var(--glass-bg)',
+          border: '1px solid var(--border2)',
           borderRadius: 12,
-          boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.06) inset',
+          boxShadow: 'var(--shadow-card)',
           overflow: 'hidden',
           animation: 'toastIn 0.3s var(--ease-out)',
           backdropFilter: 'blur(16px)',
@@ -471,7 +471,7 @@ function Dashboard() {
               ×
             </button>
           </div>
-          <div style={{ height: 3, background: 'rgba(255,255,255,0.06)' }}>
+          <div style={{ height: 3, background: 'var(--border)' }}>
             <div style={{
               height: '100%',
               width: `${undoCountdown}%`,
@@ -489,10 +489,10 @@ function Dashboard() {
             position: 'fixed', bottom: undoUntil !== null ? 96 : 32,
             left: '50%', transform: 'translateX(-50%)',
             zIndex: 101,
-            background: 'rgba(14, 19, 28, 0.92)',
-            border: '1px solid rgba(255,255,255,0.1)',
+            background: 'var(--glass-bg)',
+            border: '1px solid var(--border2)',
             borderRadius: 10,
-            boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+            boxShadow: 'var(--shadow-card)',
             padding: '9px 18px',
             fontSize: 13, color: 'var(--text)', fontWeight: 500,
             backdropFilter: 'blur(16px)',
