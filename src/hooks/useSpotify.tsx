@@ -85,10 +85,17 @@ export function useSpotify() {
     onProgress?: (pct: number) => void,
     onRateLimit?: (retryAfterSeconds: number) => void,
   ) => {
-    // Build per-ID queues so that duplicate tracks (same ID, different objects)
-    // are matched by occurrence order rather than all mapping to the same object.
+    // `tracks` is the original loaded order and is never updated after sorts.
+    // Use lastSortedTracksRef (what was actually last sent to Spotify) as the
+    // baseline so the diff is computed against the real current Spotify state.
+    const baseline = lastSortedTracksRef.current.length > 0
+      ? lastSortedTracksRef.current
+      : tracks;
+
+    // Queue-based matching so duplicate track IDs map to distinct objects by
+    // occurrence order rather than all collapsing to one object.
     const queues = new Map<string, Track[]>();
-    for (const t of tracks) {
+    for (const t of baseline) {
       const q = queues.get(t.id) ?? [];
       q.push(t);
       queues.set(t.id, q);
@@ -101,11 +108,12 @@ export function useSpotify() {
       consumed.set(id, idx + 1);
       return idx < q.length ? [q[idx]] : [];
     });
-    lastOriginalTracksRef.current = [...tracks];
-    lastSortedTracksRef.current = restoredTracks;
+
+    lastOriginalTracksRef.current = [...baseline];
+    lastSortedTracksRef.current = [...restoredTracks];
     const controller = new AbortController();
     abortControllerRef.current = controller;
-    return savePlaylistTracks(token!, selectedPlaylist!.id, tracks, restoredTracks, onProgress, onRateLimit, controller.signal);
+    return savePlaylistTracks(token!, selectedPlaylist!.id, baseline, restoredTracks, onProgress, onRateLimit, controller.signal);
   }, [token, selectedPlaylist, tracks]);
 
   const cancelSort = useCallback(() => {
