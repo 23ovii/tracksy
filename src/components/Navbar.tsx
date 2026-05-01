@@ -2,9 +2,11 @@ import { Link, NavLink } from 'react-router-dom';
 import type { MouseEvent } from 'react';
 import { useAuth } from '../hooks/useAuth.tsx';
 import { buildSpotifyAuthUrl } from '../services/auth.ts';
+import { useShortcutsOverlay } from '../context/ShortcutsOverlayContext.tsx';
 
 function Navbar() {
   const { logout, isAuthenticated } = useAuth();
+  const { toggle: toggleShortcuts } = useShortcutsOverlay();
 
   const handleLogin = async () => {
     window.location.href = await buildSpotifyAuthUrl();
@@ -49,6 +51,31 @@ function Navbar() {
         </Link>
 
         <nav style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <button
+            onClick={toggleShortcuts}
+            aria-label="Keyboard shortcuts"
+            title="Keyboard shortcuts (?)"
+            style={{
+              width: 32, height: 32, borderRadius: 8,
+              border: '1px solid rgba(255,255,255,0.1)', background: 'transparent',
+              color: 'var(--text-3)', fontFamily: 'inherit', fontSize: 14, fontWeight: 700,
+              cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              transition: 'border-color 0.18s, color 0.18s, background 0.18s',
+              marginRight: 4,
+            }}
+            onMouseEnter={(e: MouseEvent<HTMLButtonElement>) => {
+              e.currentTarget.style.borderColor = 'rgba(255,255,255,0.24)';
+              e.currentTarget.style.color = 'var(--text-2)';
+              e.currentTarget.style.background = 'rgba(255,255,255,0.04)';
+            }}
+            onMouseLeave={(e: MouseEvent<HTMLButtonElement>) => {
+              e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)';
+              e.currentTarget.style.color = 'var(--text-3)';
+              e.currentTarget.style.background = 'transparent';
+            }}
+          >
+            ?
+          </button>
           {isAuthenticated && [{ to: '/', label: 'Home', end: true }, { to: '/dashboard', label: 'Dashboard', end: false }].map(({ to, label, end }) => (
             <NavLink
               key={to}
