@@ -103,7 +103,7 @@ function SorterHeader({
         </div>
 
         <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexShrink: 0 }}>
-          {historyEntries.length > 0 && (
+          {historyEntries.length > 0 && !applying && (
             <button
               onClick={() => setDrawerOpen(true)}
               style={{
