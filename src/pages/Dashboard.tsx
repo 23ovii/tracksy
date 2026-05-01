@@ -12,6 +12,8 @@ import PresetsRow from '../components/dashboard/PresetsRow';
 import TrackTable from '../components/dashboard/TrackTable';
 import { listPresets, savePreset, deletePreset } from '../services/presets';
 import type { SortPreset } from '../services/presets';
+import { getHistory, pushHistory, clearHistory } from '../services/sortHistory';
+import type { HistoryEntry } from '../services/sortHistory';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import { useShortcutsOverlay } from '../context/ShortcutsOverlayContext';
 
@@ -23,7 +25,7 @@ const GLASS: CSSProperties = {
 };
 
 function Dashboard() {
-  const { playlists, tracks, selectedPlaylist, isLoading, loadPlaylists, loadPlaylistTracks, applySort, undoLastSort, cancelSort, clearSelection } = useSpotify();
+  const { playlists, tracks, selectedPlaylist, isLoading, loadPlaylists, loadPlaylistTracks, applySort, undoLastSort, restoreOrder, cancelSort, clearSelection, getCurrentOrder } = useSpotify();
 
   const [sortBy, setSortBy] = useState('name');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
@@ -37,11 +39,14 @@ function Dashboard() {
   const [undoCountdown, setUndoCountdown] = useState(100);
   const [presets, setPresets] = useState<SortPreset[]>(() => listPresets());
   const [toast, setToast] = useState<{ msg: string; key: number } | null>(null);
+  const [sortHistory, setSortHistory] = useState<HistoryEntry[]>([]);
   const [showFilter, setShowFilter] = useState(false);
   const [filterQuery, setFilterQuery] = useState('');
   const filterInputRef = useRef<HTMLInputElement>(null);
   const apiPromiseRef = useRef<Promise<{ moves: number }> | null>(null);
   const isUndoRef = useRef(false);
+  const isRestoreRef = useRef(false);
+  const preApplyTrackIdsRef = useRef<string[]>([]);
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { open: overlayOpen, toggle: toggleOverlay } = useShortcutsOverlay();
 
@@ -93,6 +98,10 @@ function Dashboard() {
     }, 50);
     return () => clearInterval(id);
   }, [undoUntil]);
+
+  useEffect(() => {
+    setSortHistory(selectedPlaylist ? getHistory(selectedPlaylist.id) : []);
+  }, [selectedPlaylist]);
 
   const [showPreview, setShowPreview] = useState<boolean>(() => {
     try { return localStorage.getItem('tracksy_show_preview') !== 'false'; } catch (_) { return true; }
@@ -185,6 +194,7 @@ function Dashboard() {
   }
 
   function handleApply() {
+    preApplyTrackIdsRef.current = getCurrentOrder().map((t) => t.id);
     setApplying(true);
     setApplyProgress(0);
     setRateLimitMsg('');
@@ -206,16 +216,22 @@ function Dashboard() {
   async function handleDone() {
     const playlistName = selectedPlaylist?.name;
     const wasUndo = isUndoRef.current;
+    const wasRestore = isRestoreRef.current;
     isUndoRef.current = false;
+    isRestoreRef.current = false;
     try {
       const result = await apiPromiseRef.current;
       setApplying(false);
       setApplyProgress(0);
       setRateLimitMsg('');
-      if (wasUndo) {
+      if (wasUndo || wasRestore) {
         setUndoUntil(null);
         setApplied(false);
-        setSortFeedback('Reverted.');
+        if (result?.moves === 0) {
+          setSortFeedback('Already in this order.');
+        } else {
+          setSortFeedback('Reverted.');
+        }
         setTimeout(() => setSortFeedback(''), 3_000);
       } else {
         const label = SORT_OPTIONS.find((o) => o.id === sortBy)?.label;
@@ -226,12 +242,25 @@ function Dashboard() {
           if (playlistName) setSortFeedback(`"${playlistName}" sorted by ${label} and saved.`);
           setUndoUntil(Date.now() + 30_000);
           setUndoCountdown(100);
+          if (selectedPlaylist) {
+            const entry: HistoryEntry = {
+              id: Date.now().toString(36) + Math.random().toString(36).slice(2),
+              playlistId: selectedPlaylist.id,
+              appliedAt: Date.now(),
+              sortLabel: label ?? sortBy,
+              trackIdsBefore: preApplyTrackIdsRef.current,
+              trackIdsAfter: sorted.map((t) => t.id),
+            };
+            pushHistory(entry);
+            setSortHistory(getHistory(selectedPlaylist.id));
+          }
         }
       }
     } catch {
       isUndoRef.current = false;
+      isRestoreRef.current = false;
       setApplying(false);
-      setSortFeedback(wasUndo ? 'Failed to undo. Try again.' : 'Failed to save to Spotify. Try again.');
+      setSortFeedback(wasUndo || wasRestore ? 'Failed to revert. Try again.' : 'Failed to save to Spotify. Try again.');
     }
   }
 
@@ -255,6 +284,34 @@ function Dashboard() {
       if (err?.name !== 'AbortError') setSortFeedback('Failed to undo. Try again.');
     });
   }, [undoLastSort]);
+
+  const handleRestore = useCallback((entry: HistoryEntry) => {
+    setUndoUntil(null);
+    setApplying(true);
+    setApplyProgress(0);
+    setRateLimitMsg('');
+    setSortFeedback('');
+    isRestoreRef.current = true;
+    const promise = restoreOrder(
+      entry.trackIdsBefore,
+      setApplyProgress,
+      (retryAfter) => setRateLimitMsg(`Rate limited by Spotify — retrying in ${retryAfter}s…`),
+    );
+    apiPromiseRef.current = promise;
+    promise.catch((err) => {
+      isRestoreRef.current = false;
+      setApplying(false);
+      setApplyProgress(0);
+      setRateLimitMsg('');
+      if (err?.name !== 'AbortError') setSortFeedback('Failed to restore. Try again.');
+    });
+  }, [restoreOrder]);
+
+  function handleClearHistory() {
+    if (!selectedPlaylist) return;
+    clearHistory(selectedPlaylist.id);
+    setSortHistory([]);
+  }
 
   const accent = selectedPlaylist?.color1 ?? 'var(--green)';
   const accent2 = selectedPlaylist?.color2 ?? '#5af5a0';
@@ -287,8 +344,11 @@ function Dashboard() {
               applied={applied}
               accent={accent}
               accent2={accent2}
+              historyEntries={sortHistory}
               onBack={handleBack}
               onApply={handleApply}
+              onRestore={handleRestore}
+              onClearHistory={handleClearHistory}
             />
 
             <SortChips sortBy={sortBy} sortDir={sortDir} onPick={pickSort} />
