@@ -82,9 +82,14 @@ export function sortTracks(tracks: Track[], by: string, dir: 'asc' | 'desc' = 'a
       if (aArtistCount !== bArtistCount) return bArtistCount - aArtistCount;
       if (aArtist !== bArtist) return (artistFirstSeen.get(aArtist) ?? 0) - (artistFirstSeen.get(bArtist) ?? 0);
 
-      // Same artist — rank albums by track count, most first; tie → first appearance in playlist
+      // Same artist — single-track albums sink to the bottom of the artist's section
       const aAlbumSize = albumTracks.get(normalAlbum(a))?.length ?? 0;
       const bAlbumSize = albumTracks.get(normalAlbum(b))?.length ?? 0;
+      const aAlbumAlone = aAlbumSize === 1;
+      const bAlbumAlone = bAlbumSize === 1;
+      if (aAlbumAlone !== bAlbumAlone) return aAlbumAlone ? 1 : -1;
+
+      // Rank albums by track count, most first; tie → first appearance in playlist
       if (aAlbumSize !== bAlbumSize) return bAlbumSize - aAlbumSize;
       const aAlbum = normalAlbum(a);
       const bAlbum = normalAlbum(b);
