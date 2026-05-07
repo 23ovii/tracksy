@@ -1,7 +1,8 @@
+import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import Footer from '../components/Footer';
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
     <div>
       <h2 style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)', marginBottom: 10 }}>
@@ -12,7 +13,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
-function P({ children }: { children: React.ReactNode }) {
+function P({ children }: { children: ReactNode }) {
   return (
     <p style={{ fontSize: 14, color: 'var(--text-2)', lineHeight: 1.7, margin: 0 }}>
       {children}
@@ -20,7 +21,7 @@ function P({ children }: { children: React.ReactNode }) {
   );
 }
 
-function Ul({ items }: { items: React.ReactNode[] }) {
+function Ul({ items }: { items: ReactNode[] }) {
   return (
     <ul style={{ margin: 0, paddingLeft: 20, display: 'flex', flexDirection: 'column', gap: 4 }}>
       {items.map((item, i) => (
@@ -47,7 +48,7 @@ function Privacy() {
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 36 }}>
             <Section title="The Short Version">
-              <P>Tracksy uses anonymous analytics to understand how people use the app and fix bugs. We don't collect personal information, we don't use cookies, and you can opt out anytime in Settings.</P>
+              <P>Tracksy uses anonymous analytics to understand how people use the app and fix bugs. We don&apos;t collect personal information, we don&apos;t use cookies, and you can opt out anytime in Settings.</P>
             </Section>
 
             <Section title="What Data We Collect">
@@ -82,8 +83,8 @@ function Privacy() {
 
             <Section title="Your Rights">
               <Ul items={[
-                <span>Opt out: Disable analytics anytime in <Link to="/settings" style={{ color: 'var(--green)', textDecoration: 'none' }}>Settings</Link></span>,
-                <span>Data deletion: Contact us via <a href="https://github.com/23ovii/tracksy/issues" target="_blank" rel="noreferrer" style={{ color: 'var(--green)', textDecoration: 'none' }}>GitHub Issues</a> to request data deletion</span>,
+                <span key="opt-out">Opt out: Disable analytics anytime in <Link to="/settings" style={{ color: 'var(--green)', textDecoration: 'none' }}>Settings</Link></span>,
+                <span key="deletion">Data deletion: Contact us via <a href="https://github.com/23ovii/tracksy/issues" target="_blank" rel="noreferrer" style={{ color: 'var(--green)', textDecoration: 'none' }}>GitHub Issues</a> to request data deletion</span>,
                 'Transparency: This is open-source — you can see exactly what we track in the code',
               ]} />
             </Section>
@@ -96,7 +97,7 @@ function Privacy() {
             </Section>
 
             <Section title="Changes to This Policy">
-              <P>We'll update this page if our privacy practices change. Check back occasionally.</P>
+              <P>We&apos;ll update this page if our privacy practices change. Check back occasionally.</P>
             </Section>
 
             <Section title="Contact">
