@@ -35,10 +35,10 @@ const MoonIcon = () => (
   </svg>
 );
 
-const GearIcon = () => (
-  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="12" r="3" />
-    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+const UserIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+    <circle cx="12" cy="7" r="4" />
   </svg>
 );
 
@@ -129,11 +129,19 @@ function WipeModal({ onClose, onConfirm }: { onClose: () => void; onConfirm: () 
             <h2 id="wipe-modal-title" style={{ margin: '0 0 12px', fontSize: 18, fontWeight: 700, color: 'var(--text)' }}>
               Disconnect &amp; wipe data?
             </h2>
-            <p style={{ margin: '0 0 20px', fontSize: 14, lineHeight: 1.6, color: 'var(--text-2)' }}>
-              This signs you out and clears all locally cached data: presets, sort history,
-              audio-features cache, snapshot diffs, and theme preference. You&apos;ll start fresh
-              next time you sign in.
+            <p style={{ margin: '0 0 16px', fontSize: 14, lineHeight: 1.6, color: 'var(--text-2)' }}>
+              This signs you out and clears all locally cached data:
             </p>
+            <ul style={{ margin: '0 0 16px', paddingLeft: 20, fontSize: 14, lineHeight: 1.8, color: 'var(--text-2)' }}>
+              <li>Presets &amp; sort history</li>
+              <li>Audio-features cache &amp; snapshot diffs</li>
+              <li>Theme preference</li>
+              <li>Analytics opt-out preference</li>
+            </ul>
+            <div style={{ margin: '0 0 20px', padding: '10px 14px', borderRadius: 8, background: 'var(--surface2)', border: '1px solid var(--border)' }}>
+              <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-3)', marginBottom: 6, letterSpacing: '0.05em', textTransform: 'uppercase' }}>Current theme</div>
+              <ThemeToggle />
+            </div>
             <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
               <button
                 onClick={onClose}
@@ -226,7 +234,14 @@ function WipeModal({ onClose, onConfirm }: { onClose: () => void; onConfirm: () 
   );
 }
 
-function AccountMenu({ onSignOut, onWipe }: { onSignOut: () => void; onWipe: () => void }) {
+interface AccountMenuProps {
+  avatarUrl: string | null;
+  displayName: string | null;
+  onSignOut: () => void;
+  onWipe: () => void;
+}
+
+function AccountMenu({ avatarUrl, displayName, onSignOut, onWipe }: AccountMenuProps) {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -250,27 +265,31 @@ function AccountMenu({ onSignOut, onWipe }: { onSignOut: () => void; onWipe: () 
         aria-haspopup="menu"
         style={{
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          width: 34, height: 34, borderRadius: 50,
-          border: '1px solid var(--border2)', background: open ? 'var(--border)' : 'transparent',
-          color: 'var(--text-2)', cursor: 'pointer',
-          transition: 'border-color 0.18s, color 0.18s, background 0.18s',
+          width: 34, height: 34, borderRadius: 50, padding: 0,
+          border: open ? '2px solid var(--green)' : '2px solid var(--border2)',
+          background: 'var(--surface2)',
+          overflow: 'hidden',
+          cursor: 'pointer',
+          transition: 'border-color 0.18s',
         }}
         onMouseEnter={(e: MouseEvent<HTMLButtonElement>) => {
-          if (!open) {
-            e.currentTarget.style.borderColor = 'rgba(29,185,84,0.5)';
-            e.currentTarget.style.color = 'var(--green)';
-            e.currentTarget.style.background = 'rgba(29,185,84,0.06)';
-          }
+          if (!open) e.currentTarget.style.borderColor = 'rgba(29,185,84,0.6)';
         }}
         onMouseLeave={(e: MouseEvent<HTMLButtonElement>) => {
-          if (!open) {
-            e.currentTarget.style.borderColor = 'var(--border2)';
-            e.currentTarget.style.color = 'var(--text-2)';
-            e.currentTarget.style.background = 'transparent';
-          }
+          if (!open) e.currentTarget.style.borderColor = 'var(--border2)';
         }}
       >
-        <GearIcon />
+        {avatarUrl ? (
+          <img
+            src={avatarUrl}
+            alt={displayName ?? 'Account'}
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+          />
+        ) : (
+          <span style={{ color: 'var(--text-3)', display: 'flex' }}>
+            <UserIcon />
+          </span>
+        )}
       </button>
 
       {open && (
@@ -278,7 +297,7 @@ function AccountMenu({ onSignOut, onWipe }: { onSignOut: () => void; onWipe: () 
           role="menu"
           style={{
             position: 'absolute', top: 'calc(100% + 8px)', right: 0,
-            minWidth: 200,
+            minWidth: 220,
             background: 'var(--surface)',
             border: '1px solid var(--border)',
             borderRadius: 10,
@@ -287,6 +306,22 @@ function AccountMenu({ onSignOut, onWipe }: { onSignOut: () => void; onWipe: () 
             zIndex: 300,
           }}
         >
+          {displayName && (
+            <>
+              <div style={{ padding: '10px 16px 8px', fontSize: 12, fontWeight: 600, color: 'var(--text-3)', letterSpacing: '0.01em' }}>
+                {displayName}
+              </div>
+              <div style={{ height: 1, background: 'var(--border)' }} />
+            </>
+          )}
+
+          <div style={{ padding: '10px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <span style={{ fontSize: 13, color: 'var(--text-2)', fontWeight: 500 }}>Theme</span>
+            <ThemeToggle />
+          </div>
+
+          <div style={{ height: 1, background: 'var(--border)' }} />
+
           <button
             role="menuitem"
             onClick={() => { setOpen(false); onSignOut(); }}
@@ -309,7 +344,9 @@ function AccountMenu({ onSignOut, onWipe }: { onSignOut: () => void; onWipe: () 
           >
             Sign out
           </button>
+
           <div style={{ height: 1, background: 'var(--border)' }} />
+
           <button
             role="menuitem"
             onClick={() => { setOpen(false); onWipe(); }}
@@ -337,7 +374,7 @@ function AccountMenu({ onSignOut, onWipe }: { onSignOut: () => void; onWipe: () 
 }
 
 function Navbar() {
-  const { logout, isAuthenticated } = useAuth();
+  const { logout, isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
   const [showWipeModal, setShowWipeModal] = useState(false);
 
@@ -357,9 +394,8 @@ function Navbar() {
     navigate('/');
   };
 
-  const handleWipeModalClose = () => {
-    setShowWipeModal(false);
-  };
+  const avatarUrl = user?.images?.[0]?.url ?? null;
+  const displayName = user?.display_name ?? null;
 
   return (
     <>
@@ -431,7 +467,7 @@ function Navbar() {
               </NavLink>
             ))}
 
-            <ThemeToggle />
+            {!isAuthenticated && <ThemeToggle />}
 
             {!isAuthenticated && (
               <button
@@ -458,14 +494,19 @@ function Navbar() {
               </button>
             )}
             {isAuthenticated && (
-              <AccountMenu onSignOut={handleSignOut} onWipe={() => setShowWipeModal(true)} />
+              <AccountMenu
+                avatarUrl={avatarUrl}
+                displayName={displayName}
+                onSignOut={handleSignOut}
+                onWipe={() => setShowWipeModal(true)}
+              />
             )}
           </nav>
         </div>
       </header>
 
       {showWipeModal && (
-        <WipeModal onClose={handleWipeModalClose} onConfirm={handleWipeConfirm} />
+        <WipeModal onClose={() => setShowWipeModal(false)} onConfirm={handleWipeConfirm} />
       )}
     </>
   );
