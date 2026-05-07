@@ -365,13 +365,14 @@ function Dashboard() {
               onClearHistory={handleClearHistory}
             />
 
-            <SortChips sortBy={sortBy} sortDir={sortDir} onPick={pickSort} />
+            <SortChips sortBy={sortBy} sortDir={sortDir} onPick={pickSort} disabled={applying} />
 
             <PresetsRow
               presets={presets}
               onLoad={handleLoadPreset}
               onDelete={handleDeletePreset}
               onSave={handleSavePreset}
+              disabled={applying}
             />
 
             <SortProgress

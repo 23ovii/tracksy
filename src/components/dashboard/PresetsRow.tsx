@@ -10,9 +10,10 @@ interface PresetsRowProps {
   onLoad: (preset: SortPreset) => void;
   onDelete: (id: string) => void;
   onSave: (name: string) => void;
+  disabled?: boolean;
 }
 
-function PresetsRow({ presets, onLoad, onDelete, onSave }: PresetsRowProps) {
+function PresetsRow({ presets, onLoad, onDelete, onSave, disabled = false }: PresetsRowProps) {
   const [adding, setAdding] = useState(false);
   const [name, setName] = useState('');
   const [expanded, setExpanded] = useState(false);
@@ -25,7 +26,7 @@ function PresetsRow({ presets, onLoad, onDelete, onSave }: PresetsRowProps) {
   const visible = presets.length > 0 || adding;
   if (!visible) {
     return (
-      <div style={{ padding: '10px 24px', borderBottom: '1px solid var(--border)' }}>
+      <div style={{ padding: '10px 24px', borderBottom: '1px solid var(--border)', opacity: disabled ? 0.5 : 1, pointerEvents: disabled ? 'none' : 'auto' }}>
         <SaveChip onClick={() => setAdding(true)} />
       </div>
     );
@@ -52,6 +53,8 @@ function PresetsRow({ presets, onLoad, onDelete, onSave }: PresetsRowProps) {
       borderBottom: '1px solid var(--border)',
       display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap',
       background: 'var(--bg-inset)',
+      opacity: disabled ? 0.5 : 1,
+      pointerEvents: disabled ? 'none' : 'auto',
     }}>
       <span style={{
         fontSize: 10, fontWeight: 700, color: 'var(--text-3)',
