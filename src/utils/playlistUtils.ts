@@ -75,9 +75,9 @@ export function sortTracks(tracks: Track[], by: string, dir: 'asc' | 'desc' = 'a
       const aAlbumSize = albumTracks.get(normalAlbum(a))?.length ?? 0;
       const bAlbumSize = albumTracks.get(normalAlbum(b))?.length ?? 0;
 
-      // Tracks from a single-song album OR a single-song artist sink to the very bottom
-      const aAlone = aArtistCount === 1 || aAlbumSize === 1;
-      const bAlone = bArtistCount === 1 || bAlbumSize === 1;
+      // Albums with fewer than 3 tracks, or artists with only 1 song, sink to the very bottom
+      const aAlone = aArtistCount === 1 || aAlbumSize < 3;
+      const bAlone = bArtistCount === 1 || bAlbumSize < 3;
       if (aAlone !== bAlone) return aAlone ? 1 : -1;
       if (aAlone && bAlone) return (originalIndex.get(a) ?? 0) - (originalIndex.get(b) ?? 0);
 
