@@ -53,7 +53,7 @@ function SortChips({ sortBy, sortDir, onPick }: SortChipsProps) {
             }}
           >
             {opt.label}
-            {active && (
+            {active && opt.id !== 'discography' && (
               <span style={{ fontSize: 12, fontWeight: 800, marginLeft: 2 }}>
                 {sortDir === 'asc' ? '↑' : '↓'}
               </span>

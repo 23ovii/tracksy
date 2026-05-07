@@ -45,6 +45,8 @@ function mapTrack(item: any): Track | null {
     name: track.name,
     artist: track.artists?.map((a: any) => a.name).join(', ') ?? 'Unknown artist',
     album: track.album?.name ?? '',
+    albumYear: parseInt(track.album?.release_date?.slice(0, 4) ?? '0', 10),
+    trackNumber: track.track_number ?? 0,
     durationMs: track.duration_ms ?? 0,
     addedAt: item.added_at ?? '',
     popularity: track.popularity ?? 0,
