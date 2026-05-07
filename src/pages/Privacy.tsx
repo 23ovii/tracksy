@@ -51,9 +51,22 @@ function Privacy() {
           <h1 style={{ fontSize: 32, fontWeight: 800, letterSpacing: '-0.8px', color: 'var(--text)', marginBottom: 8 }}>
             Privacy Policy
           </h1>
-          <p style={{ fontSize: 14, color: 'var(--text-3)', marginBottom: 48 }}>
+          <p style={{ fontSize: 14, color: 'var(--text-3)', marginBottom: 16 }}>
             Last updated: May 7, 2026
           </p>
+          <div style={{
+            display: 'inline-flex', alignItems: 'center', gap: 8,
+            padding: '7px 14px',
+            background: 'rgba(29,185,84,0.08)',
+            border: '1px solid rgba(29,185,84,0.2)',
+            borderRadius: 8,
+            marginBottom: 48,
+          }}>
+            <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', color: 'var(--green)', textTransform: 'uppercase' }}>Beta</span>
+            <span style={{ fontSize: 13, color: 'var(--text-3)' }}>
+              Tracksy is under active development — features and data practices may change.
+            </span>
+          </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 36 }}>
             <Section title="The Short Version">
