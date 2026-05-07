@@ -5,6 +5,8 @@ export interface HistoryEntry {
   sortLabel: string;
   trackIdsBefore: string[];
   trackIdsAfter: string[];
+  trackKeysBefore?: string[];
+  trackKeysAfter?: string[];
 }
 
 const STORAGE_KEY = 'tracksy_sort_history_v1';

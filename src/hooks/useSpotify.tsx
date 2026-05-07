@@ -6,6 +6,7 @@ import {
   savePlaylistTracks,
 } from '../services/spotify.ts';
 import type { Track, Playlist } from '../types';
+import { restoreTracksFromKeys } from '../utils/trackIdentity.ts';
 
 export function useSpotify() {
   const { token } = useAuth();
@@ -90,7 +91,7 @@ export function useSpotify() {
   }, [token, selectedPlaylist]);
 
   const restoreOrder = useCallback(async (
-    targetIds: string[],
+    targetKeys: string[],
     onProgress?: (pct: number) => void,
     onRateLimit?: (retryAfterSeconds: number) => void,
   ) => {
@@ -100,22 +101,10 @@ export function useSpotify() {
       ? currentSpotifyOrderRef.current
       : tracks;
 
-    // Queue-based matching so duplicate track IDs map to distinct objects by
-    // occurrence order rather than all collapsing to one object.
-    const queues = new Map<string, Track[]>();
-    for (const t of baseline) {
-      const q = queues.get(t.id) ?? [];
-      q.push(t);
-      queues.set(t.id, q);
+    const restoredTracks = restoreTracksFromKeys(baseline, targetKeys);
+    if (!restoredTracks) {
+      throw new Error('This playlist changed since that history entry was saved. Reload the playlist before restoring.');
     }
-    const consumed = new Map<string, number>();
-    const restoredTracks = targetIds.flatMap((id) => {
-      const q = queues.get(id);
-      if (!q) return [];
-      const idx = consumed.get(id) ?? 0;
-      consumed.set(id, idx + 1);
-      return idx < q.length ? [q[idx]] : [];
-    });
 
     lastOriginalTracksRef.current = [...baseline];
     lastSortedTracksRef.current = [...restoredTracks];
