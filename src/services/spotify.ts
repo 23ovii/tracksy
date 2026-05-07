@@ -1,4 +1,4 @@
-import type { Track, Playlist } from '../types';
+import type { Track, Playlist, SpotifyUser } from '../types';
 
 const COLOR_PAIRS: [string, string][] = [
   ['#e8622a', '#e84080'],
@@ -65,6 +65,15 @@ async function fetchSpotify(url: string, token: string): Promise<any> {
   }
 
   return response.json();
+}
+
+export async function getSpotifyCurrentUser(token: string): Promise<SpotifyUser> {
+  const data = await fetchSpotify('https://api.spotify.com/v1/me', token);
+  return {
+    id: data.id,
+    display_name: data.display_name ?? null,
+    images: data.images ?? [],
+  };
 }
 
 async function writeSpotify(

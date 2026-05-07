@@ -1,7 +1,8 @@
 import { createContext, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { refreshSpotifyToken } from '../services/auth.ts';
-import type { TokenResponse, AuthContextValue } from '../types';
+import { getSpotifyCurrentUser } from '../services/spotify.ts';
+import type { TokenResponse, AuthContextValue, SpotifyUser } from '../types';
 
 interface AuthState {
   access_token: string;
@@ -27,6 +28,7 @@ function readSavedAuth(): AuthState | null {
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [authState, setAuthState] = useState<AuthState | null>(readSavedAuth);
+  const [user, setUser] = useState<SpotifyUser | null>(null);
   const refreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -95,18 +97,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     authState?.access_token && authState.expires_at && authState.expires_at > Date.now()
   );
 
+  useEffect(() => {
+    if (!isAuthenticated || !authState?.access_token) {
+      setUser(null);
+      return;
+    }
+    getSpotifyCurrentUser(authState.access_token)
+      .then(setUser)
+      .catch(() => setUser(null));
+  }, [isAuthenticated, authState?.access_token]);
+
   const value = useMemo<AuthContextValue>(
     () => ({
       token: authState?.access_token ?? null,
       refreshToken: authState?.refresh_token ?? null,
       expiresAt: authState?.expires_at ?? null,
       isAuthenticated,
+      user,
       login: applyToken,
       logout() {
         setAuthState(null);
       },
     }),
-    [authState, isAuthenticated, applyToken]
+    [authState, isAuthenticated, user, applyToken]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
