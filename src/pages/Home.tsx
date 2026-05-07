@@ -102,12 +102,7 @@ function Home() {
 
   return (
     <>
-    <div style={{
-      minHeight: 'calc(100vh - var(--nav-h))',
-      display: 'flex', flexDirection: 'column',
-      position: 'relative',
-      overflow: 'hidden',
-    }}>
+    <div style={{ position: 'relative' }}>
 
       {/* Decorative floating equalizer — top right */}
       <div aria-hidden style={{
@@ -130,7 +125,8 @@ function Home() {
       </div>
 
       <div style={{
-        flex: 1, display: 'flex', alignItems: 'center',
+        minHeight: 'calc(100vh - var(--nav-h))',
+        display: 'flex', alignItems: 'center',
         padding: '32px 28px 40px',
       }}>
       <div style={{
