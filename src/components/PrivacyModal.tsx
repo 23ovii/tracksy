@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { MouseEvent } from 'react';
 import { getAnalyticsDisabled, setAnalyticsDisabled } from '../services/analytics';
 
@@ -8,13 +8,56 @@ interface PrivacyModalProps {
 
 function PrivacyModal({ onClose }: PrivacyModalProps) {
   const [disabled, setDisabled] = useState(() => getAnalyticsDisabled());
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const lastFocusedElement = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
-    function handleKey(e: KeyboardEvent) {
-      if (e.key === 'Escape') onClose();
+    // Store the element that was focused before opening the modal
+    lastFocusedElement.current = document.activeElement as HTMLElement;
+
+    // Move focus into the dialog
+    if (dialogRef.current) {
+      dialogRef.current.focus();
     }
+
+    function handleKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') {
+        onClose();
+        return;
+      }
+
+      // Focus trap: keep focus within dialog
+      if (e.key === 'Tab' && dialogRef.current) {
+        const focusableElements = dialogRef.current.querySelectorAll(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        const firstElement = focusableElements[0] as HTMLElement;
+        const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
+
+        if (e.shiftKey) {
+          // Shift+Tab on first element loops to last
+          if (document.activeElement === firstElement) {
+            e.preventDefault();
+            lastElement.focus();
+          }
+        } else {
+          // Tab on last element loops to first
+          if (document.activeElement === lastElement) {
+            e.preventDefault();
+            firstElement.focus();
+          }
+        }
+      }
+    }
+
     window.addEventListener('keydown', handleKey);
-    return () => window.removeEventListener('keydown', handleKey);
+    return () => {
+      window.removeEventListener('keydown', handleKey);
+      // Restore focus to the element that opened the modal
+      if (lastFocusedElement.current) {
+        lastFocusedElement.current.focus();
+      }
+    };
   }, [onClose]);
 
   function handleToggle() {
@@ -40,21 +83,29 @@ function PrivacyModal({ onClose }: PrivacyModalProps) {
         animation: 'fadeIn 0.18s var(--ease-out)',
       }}
     >
-      <div style={{
-        width: '100%', maxWidth: 480,
-        background: 'var(--surface)',
-        border: '1px solid var(--border2)',
-        borderRadius: 20,
-        boxShadow: 'var(--shadow-card)',
-        overflow: 'hidden',
-        animation: 'fadeUp 0.22s var(--ease-out)',
-      }}>
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="privacy-modal-title"
+        tabIndex={-1}
+        style={{
+          width: '100%', maxWidth: 480,
+          background: 'var(--surface)',
+          border: '1px solid var(--border2)',
+          borderRadius: 20,
+          boxShadow: 'var(--shadow-card)',
+          overflow: 'hidden',
+          animation: 'fadeUp 0.22s var(--ease-out)',
+          outline: 'none',
+        }}
+      >
         {/* Header */}
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           padding: '20px 24px 0',
         }}>
-          <h2 style={{ fontSize: 17, fontWeight: 700, letterSpacing: '-0.3px', margin: 0 }}>
+          <h2 id="privacy-modal-title" style={{ fontSize: 17, fontWeight: 700, letterSpacing: '-0.3px', margin: 0 }}>
             Privacy
           </h2>
           <button
@@ -97,7 +148,7 @@ function PrivacyModal({ onClose }: PrivacyModalProps) {
             borderRadius: 12,
           }}>
             <div>
-              <div style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--text)' }}>
+              <div id="analytics-toggle-label" style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--text)' }}>
                 {disabled ? 'Analytics disabled' : 'Analytics enabled'}
               </div>
               <div style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 2 }}>
@@ -107,6 +158,7 @@ function PrivacyModal({ onClose }: PrivacyModalProps) {
             <button
               role="switch"
               aria-checked={!disabled}
+              aria-labelledby="analytics-toggle-label"
               onClick={handleToggle}
               style={{
                 width: 44, height: 24, borderRadius: 12,

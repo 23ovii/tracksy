@@ -28,7 +28,11 @@ function isOptedOut(): boolean {
 
 export function trackEvent(event: TrackEventName, properties?: Record<string, string | number>): void {
   if (isOptedOut()) return;
-  vaTrack(event, properties);
+  try {
+    vaTrack(event, properties);
+  } catch (error) {
+    console.error('Analytics tracking failed:', error);
+  }
 }
 
 export function getAnalyticsDisabled(): boolean {

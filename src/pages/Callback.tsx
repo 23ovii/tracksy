@@ -4,6 +4,25 @@ import { useAuth } from '../hooks/useAuth.tsx';
 import { exchangeSpotifyCode, verifyOAuthState } from '../services/auth.ts';
 import { trackEvent, TrackEvents } from '../services/analytics';
 
+function classifyOAuthError(error: any): string {
+  const message = String(error?.message ?? '').toLowerCase();
+
+  if (message.includes('invalid_grant') || message.includes('grant')) {
+    return 'SPOTIFY_INVALID_GRANT';
+  }
+  if (message.includes('network') || message.includes('fetch') || message.includes('connection')) {
+    return 'SPOTIFY_NETWORK';
+  }
+  if (message.includes('timeout')) {
+    return 'SPOTIFY_TIMEOUT';
+  }
+  if (message.includes('invalid_client')) {
+    return 'SPOTIFY_INVALID_CLIENT';
+  }
+
+  return 'UNKNOWN_OAUTH_ERROR';
+}
+
 function Callback() {
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -35,7 +54,7 @@ function Callback() {
         trackEvent(TrackEvents.OAUTH_COMPLETE);
         navigate('/dashboard');
       } catch (error: any) {
-        trackEvent(TrackEvents.OAUTH_ERROR, { reason: String(error?.message ?? 'unknown').slice(0, 100) });
+        trackEvent(TrackEvents.OAUTH_ERROR, { reason: classifyOAuthError(error) });
         setErrorMessage(error.message);
       }
     }
