@@ -138,10 +138,6 @@ function WipeModal({ onClose, onConfirm }: { onClose: () => void; onConfirm: () 
               <li>Theme preference</li>
               <li>Analytics opt-out preference</li>
             </ul>
-            <div style={{ margin: '0 0 20px', padding: '10px 14px', borderRadius: 8, background: 'var(--surface2)', border: '1px solid var(--border)' }}>
-              <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-3)', marginBottom: 6, letterSpacing: '0.05em', textTransform: 'uppercase' }}>Current theme</div>
-              <ThemeToggle />
-            </div>
             <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
               <button
                 onClick={onClose}
