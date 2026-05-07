@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import type { MouseEvent } from 'react';
 import { getAnalyticsDisabled, setAnalyticsDisabled } from '../services/analytics';
-import { Sentry } from '../services/sentry';
 
 interface PrivacyModalProps {
   onClose: () => void;
@@ -126,7 +125,7 @@ function PrivacyModal({ onClose }: PrivacyModalProps) {
         {/* Body */}
         <div style={{ padding: '16px 24px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
           <p style={{ fontSize: 13.5, color: 'var(--text-2)', lineHeight: 1.6, margin: 0 }}>
-            Tracksy uses <strong style={{ color: 'var(--text)' }}>Vercel Analytics</strong> to understand how the app is used — things like how many playlists are sorted or how often the undo feature is used.
+            Tracksy uses <strong style={{ color: 'var(--text)' }}>anonymous analytics</strong> to understand how the app is used — things like how many playlists are sorted or how often the undo feature is used.
           </p>
 
           <ul style={{ fontSize: 13, color: 'var(--text-2)', lineHeight: 1.7, margin: 0, paddingLeft: 18, display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -139,21 +138,6 @@ function PrivacyModal({ onClose }: PrivacyModalProps) {
           <p style={{ fontSize: 13, color: 'var(--text-3)', lineHeight: 1.6, margin: 0 }}>
             You can opt out at any time. Your preference is saved in your browser.
           </p>
-
-          <button
-            onClick={() => {
-              const eventId = Sentry.captureMessage('User submitted report');
-              Sentry.showReportDialog({ eventId });
-            }}
-            style={{
-              background: 'none', border: 'none', padding: 0,
-              fontSize: 13, color: 'var(--green)',
-              textDecoration: 'underline', cursor: 'pointer',
-              textAlign: 'left', width: 'fit-content',
-            }}
-          >
-            Report a problem
-          </button>
 
           {/* Toggle */}
           <div style={{
