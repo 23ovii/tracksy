@@ -12,6 +12,7 @@ interface SorterHeaderProps {
   accent: string;
   accent2: string;
   historyEntries: HistoryEntry[];
+  filtersActive?: boolean;
   onBack: () => void;
   onApply: () => void;
   onRestore: (entry: HistoryEntry) => void;
@@ -39,7 +40,7 @@ function relativeTime(ts: number): string {
 
 function SorterHeader({
   selectedPlaylist, totalMs, applying, applied, accent, accent2,
-  historyEntries, onBack, onApply, onRestore, onClearHistory,
+  historyEntries, filtersActive, onBack, onApply, onRestore, onClearHistory,
 }: SorterHeaderProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
 
@@ -159,62 +160,69 @@ function SorterHeader({
               e.currentTarget.style.color = applying ? 'var(--error-text)' : 'var(--text-2)';
             }}
           >{applying ? '✕ Cancel' : '← Back'}</button>
-          <button
-            onClick={onApply}
-            disabled={applying || applied}
-            style={{
-              display: 'flex', alignItems: 'center', gap: 8,
-              padding: '11px 22px', borderRadius: 50,
-              background: applied
-                ? 'linear-gradient(180deg, #22c962, #159743)'
-                : `linear-gradient(135deg, ${accent}, ${accent2})`,
-              border: 'none',
-              color: '#0a0d12',
-              fontFamily: 'inherit', fontSize: 13, fontWeight: 800,
-              letterSpacing: '-0.1px',
-              cursor: applying || applied ? 'not-allowed' : 'pointer',
-              boxShadow: applied
-                ? '0 8px 24px rgba(29,185,84,0.35)'
-                : `0 10px 28px -4px ${accent}77, 0 0 0 1px rgba(255,255,255,0.12) inset`,
-              transition: 'box-shadow 0.25s, transform 0.2s',
-            }}
-            onMouseEnter={(e: MouseEvent<HTMLButtonElement>) => {
-              if (!applying && !applied) e.currentTarget.style.transform = 'translateY(-1px)';
-            }}
-            onMouseLeave={(e: MouseEvent<HTMLButtonElement>) => {
-              e.currentTarget.style.transform = '';
-            }}
+          <span
+            title={filtersActive ? 'Clear filters to apply to Spotify' : undefined}
+            style={{ display: 'inline-flex', cursor: filtersActive ? 'not-allowed' : undefined }}
           >
-            {applying ? (
-              <>
-                <span style={{ display: 'inline-flex', gap: 3, alignItems: 'center' }}>
-                  {[0, 1, 2].map(i => (
-                    <span key={i} style={{
-                      width: 4, height: 4, borderRadius: '50%',
-                      background: 'currentColor',
-                      display: 'inline-block',
-                      animation: `bounce 1s ease-in-out ${i * 0.15}s infinite`,
-                    }} />
-                  ))}
-                </span>
-                Applying…
-              </>
-            ) : applied ? (
-              <>
-                <svg width="14" height="14" viewBox="0 0 12 12" fill="none">
-                  <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-                Saved to Spotify
-              </>
-            ) : (
-              <>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M12 19V5" /><path d="M5 12l7-7 7 7" />
-                </svg>
-                Apply to Spotify
-              </>
-            )}
-          </button>
+            <button
+              onClick={onApply}
+              disabled={applying || applied || !!filtersActive}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 8,
+                padding: '11px 22px', borderRadius: 50,
+                background: applied
+                  ? 'linear-gradient(180deg, #22c962, #159743)'
+                  : `linear-gradient(135deg, ${accent}, ${accent2})`,
+                border: 'none',
+                color: '#0a0d12',
+                fontFamily: 'inherit', fontSize: 13, fontWeight: 800,
+                letterSpacing: '-0.1px',
+                cursor: applying || applied || filtersActive ? 'not-allowed' : 'pointer',
+                opacity: filtersActive ? 0.45 : 1,
+                pointerEvents: filtersActive ? 'none' : undefined,
+                boxShadow: applied
+                  ? '0 8px 24px rgba(29,185,84,0.35)'
+                  : `0 10px 28px -4px ${accent}77, 0 0 0 1px rgba(255,255,255,0.12) inset`,
+                transition: 'box-shadow 0.25s, transform 0.2s, opacity 0.2s',
+              }}
+              onMouseEnter={(e: MouseEvent<HTMLButtonElement>) => {
+                if (!applying && !applied && !filtersActive) e.currentTarget.style.transform = 'translateY(-1px)';
+              }}
+              onMouseLeave={(e: MouseEvent<HTMLButtonElement>) => {
+                e.currentTarget.style.transform = '';
+              }}
+            >
+              {applying ? (
+                <>
+                  <span style={{ display: 'inline-flex', gap: 3, alignItems: 'center' }}>
+                    {[0, 1, 2].map(i => (
+                      <span key={i} style={{
+                        width: 4, height: 4, borderRadius: '50%',
+                        background: 'currentColor',
+                        display: 'inline-block',
+                        animation: `bounce 1s ease-in-out ${i * 0.15}s infinite`,
+                      }} />
+                    ))}
+                  </span>
+                  Applying…
+                </>
+              ) : applied ? (
+                <>
+                  <svg width="14" height="14" viewBox="0 0 12 12" fill="none">
+                    <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  Saved to Spotify
+                </>
+              ) : (
+                <>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 19V5" /><path d="M5 12l7-7 7 7" />
+                  </svg>
+                  Apply to Spotify
+                </>
+              )}
+            </button>
+          </span>
         </div>
       </div>
 

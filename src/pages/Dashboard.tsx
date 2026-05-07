@@ -10,6 +10,9 @@ import SorterHeader from '../components/dashboard/SorterHeader';
 import SortChips from '../components/dashboard/SortChips';
 import PresetsRow from '../components/dashboard/PresetsRow';
 import TrackTable from '../components/dashboard/TrackTable';
+import FilterBar from '../components/dashboard/FilterBar';
+import type { FilterState } from '../components/dashboard/FilterBar';
+import { DEFAULT_FILTER, countActiveFilters } from '../components/dashboard/FilterBar';
 import { listPresets, savePreset, deletePreset } from '../services/presets';
 import type { SortPreset } from '../services/presets';
 import { getHistory, pushHistory, clearHistory } from '../services/sortHistory';
@@ -41,9 +44,8 @@ function Dashboard() {
   const [presets, setPresets] = useState<SortPreset[]>(() => listPresets());
   const [toast, setToast] = useState<{ msg: string; key: number; type?: 'cancel' } | null>(null);
   const [sortHistory, setSortHistory] = useState<HistoryEntry[]>([]);
-  const [showFilter, setShowFilter] = useState(false);
-  const [filterQuery, setFilterQuery] = useState('');
-  const filterInputRef = useRef<HTMLInputElement>(null);
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [filter, setFilter] = useState<FilterState>(DEFAULT_FILTER);
   const apiPromiseRef = useRef<Promise<{ moves: number }> | null>(null);
   const isUndoRef = useRef(false);
   const isRestoreRef = useRef(false);
@@ -121,11 +123,46 @@ function Dashboard() {
     });
   }
 
-  const sorted = useMemo(() => sortTracks(tracks, sortBy, sortDir), [tracks, sortBy, sortDir]);
+  const activeFilterCount = countActiveFilters(filter);
+
+  const filteredTracks = useMemo(() => {
+    let result = tracks;
+    if (filter.query.trim()) {
+      const q = filter.query.toLowerCase();
+      result = result.filter((t) => t.name.toLowerCase().includes(q) || t.artist.toLowerCase().includes(q));
+    }
+    if (filter.yearMin) {
+      const min = parseInt(filter.yearMin, 10);
+      result = result.filter((t) => t.albumYear >= min);
+    }
+    if (filter.yearMax) {
+      const max = parseInt(filter.yearMax, 10);
+      result = result.filter((t) => t.albumYear <= max);
+    }
+    if (filter.popMin) {
+      const min = parseInt(filter.popMin, 10);
+      result = result.filter((t) => t.popularity >= min);
+    }
+    if (filter.popMax) {
+      const max = parseInt(filter.popMax, 10);
+      result = result.filter((t) => t.popularity <= max);
+    }
+    if (filter.durMin) {
+      const min = parseFloat(filter.durMin) * 60000;
+      result = result.filter((t) => t.durationMs >= min);
+    }
+    if (filter.durMax) {
+      const max = parseFloat(filter.durMax) * 60000;
+      result = result.filter((t) => t.durationMs <= max);
+    }
+    return result;
+  }, [tracks, filter]);
+
+  const sorted = useMemo(() => sortTracks(filteredTracks, sortBy, sortDir), [filteredTracks, sortBy, sortDir]);
   const totalMs = useMemo(() => tracks.reduce((s, t) => s + t.durationMs, 0), [tracks]);
 
   const diffMap = useMemo(() => {
-    if (!tracks.length || !sorted.length) return new Map<Track, number>();
+    if (activeFilterCount > 0 || !tracks.length || !sorted.length) return new Map<Track, number>();
     const originalPos = new Map<Track, number>();
     tracks.forEach((t, i) => originalPos.set(t, i));
     const map = new Map<Track, number>();
@@ -134,23 +171,7 @@ function Dashboard() {
       map.set(t, from - to);
     });
     return map;
-  }, [tracks, sorted]);
-
-  const displayed = useMemo(() => {
-    if (!filterQuery.trim()) return sorted;
-    const q = filterQuery.toLowerCase();
-    return sorted.filter((t) => t.name.toLowerCase().includes(q) || t.artist.toLowerCase().includes(q));
-  }, [sorted, filterQuery]);
-
-  function openFilter() {
-    setShowFilter(true);
-    setTimeout(() => filterInputRef.current?.focus(), 40);
-  }
-
-  function closeFilter() {
-    setShowFilter(false);
-    setFilterQuery('');
-  }
+  }, [tracks, sorted, activeFilterCount]);
 
   useKeyboardShortcuts(
     {
@@ -159,17 +180,16 @@ function Dashboard() {
       ),
       d: () => { if (selectedPlaylist && sortBy !== 'discography') setSortDir((dir) => { setApplied(false); setSortFeedback(''); setSortKey((k) => k + 1); return dir === 'asc' ? 'desc' : 'asc'; }); },
       enter: () => { if (selectedPlaylist && !applying && !applied) handleApply(); },
-      escape: () => { if (showFilter) { closeFilter(); return; } if (selectedPlaylist) handleBack(); },
+      escape: () => { if (filtersOpen) { setFiltersOpen(false); return; } if (selectedPlaylist) handleBack(); },
       '/': () => {
         if (!selectedPlaylist) return;
-        if (showFilter) filterInputRef.current?.focus();
-        else openFilter();
+        setFiltersOpen((v) => !v);
       },
       '?': toggleOverlay,
     },
     (e: KeyboardEvent) => {
       if (overlayOpen) return true;
-      if (e.key === 'Escape' && showFilter) return false;
+      if (e.key === 'Escape' && filtersOpen) return false;
       const t = e.target as HTMLElement;
       return t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable;
     },
@@ -359,6 +379,7 @@ function Dashboard() {
               accent={accent}
               accent2={accent2}
               historyEntries={sortHistory}
+              filtersActive={activeFilterCount > 0}
               onBack={handleBack}
               onApply={handleApply}
               onRestore={handleRestore}
@@ -373,6 +394,14 @@ function Dashboard() {
               onDelete={handleDeletePreset}
               onSave={handleSavePreset}
               disabled={applying}
+            />
+
+            <FilterBar
+              open={filtersOpen}
+              onToggle={() => setFiltersOpen((v) => !v)}
+              filter={filter}
+              onChange={setFilter}
+              activeCount={activeFilterCount}
             />
 
             <SortProgress
@@ -417,7 +446,7 @@ function Dashboard() {
             )}
 
             <TrackTable
-              sorted={displayed}
+              sorted={sorted}
               sortBy={sortBy}
               sortKey={sortKey}
               isLoading={isLoading}
@@ -425,11 +454,6 @@ function Dashboard() {
               diffMap={diffMap}
               showPreview={showPreview}
               onTogglePreview={togglePreview}
-              showFilter={showFilter}
-              filterQuery={filterQuery}
-              filterInputRef={filterInputRef}
-              onFilterChange={setFilterQuery}
-              onFilterClose={closeFilter}
             />
           </div>
         ) : null}

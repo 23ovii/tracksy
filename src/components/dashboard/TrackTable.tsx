@@ -1,4 +1,3 @@
-import type { RefObject } from 'react';
 import type { Track } from '../../types';
 import TrackItem from '../TrackItem';
 
@@ -11,16 +10,10 @@ interface TrackTableProps {
   diffMap?: Map<Track, number>;
   showPreview: boolean;
   onTogglePreview: () => void;
-  showFilter?: boolean;
-  filterQuery?: string;
-  filterInputRef?: RefObject<HTMLInputElement>;
-  onFilterChange?: (q: string) => void;
-  onFilterClose?: () => void;
 }
 
 function TrackTable({
   sorted, sortBy, sortKey, isLoading, accent, diffMap, showPreview, onTogglePreview,
-  showFilter, filterQuery, filterInputRef, onFilterChange, onFilterClose,
 }: TrackTableProps) {
   const hasDiff = diffMap && diffMap.size > 0;
 
@@ -65,54 +58,6 @@ function TrackTable({
             }}
           >
             {showPreview ? 'Hide preview' : 'Show preview'}
-          </button>
-        </div>
-      )}
-
-      {showFilter && (
-        <div style={{
-          padding: '8px 24px',
-          borderBottom: '1px solid var(--border)',
-          background: 'var(--bg-inset)',
-          display: 'flex', alignItems: 'center', gap: 8,
-          animation: 'fadeIn 0.15s var(--ease-out)',
-        }}>
-          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0, color: 'var(--text-3)' }}>
-            <circle cx="7" cy="7" r="5" stroke="currentColor" strokeWidth="1.6" />
-            <line x1="11" y1="11" x2="15" y2="15" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-          </svg>
-          <input
-            ref={filterInputRef}
-            type="text"
-            value={filterQuery ?? ''}
-            onChange={(e) => onFilterChange?.(e.target.value)}
-            onKeyDown={undefined}
-            placeholder="Filter by title or artist…"
-            style={{
-              flex: 1, background: 'none', border: 'none', outline: 'none',
-              fontSize: 13, color: 'var(--text)', fontFamily: 'inherit',
-            }}
-          />
-          {filterQuery && (
-            <button
-              onClick={() => onFilterChange?.('')}
-              aria-label="Clear filter"
-              style={{
-                background: 'none', border: 'none', color: 'var(--text-3)',
-                fontSize: 16, lineHeight: 1, cursor: 'pointer', padding: 2, borderRadius: 3,
-              }}
-            >×</button>
-          )}
-          <button
-            onClick={onFilterClose}
-            aria-label="Close filter"
-            style={{
-              background: 'none', border: '1px solid var(--border)',
-              borderRadius: 4, padding: '2px 8px',
-              fontSize: 11, color: 'var(--text-3)', cursor: 'pointer',
-            }}
-          >
-            Esc
           </button>
         </div>
       )}
