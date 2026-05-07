@@ -6,9 +6,10 @@ interface SortChipsProps {
   sortBy: string;
   sortDir: 'asc' | 'desc';
   onPick: (id: string) => void;
+  disabled?: boolean;
 }
 
-function SortChips({ sortBy, sortDir, onPick }: SortChipsProps) {
+function SortChips({ sortBy, sortDir, onPick, disabled = false }: SortChipsProps) {
   const { toggle: toggleShortcuts } = useShortcutsOverlay();
   return (
     <div style={{
@@ -27,26 +28,28 @@ function SortChips({ sortBy, sortDir, onPick }: SortChipsProps) {
         return (
           <button
             key={opt.id}
-            onClick={() => onPick(opt.id)}
+            onClick={() => { if (!disabled) onPick(opt.id); }}
+            disabled={disabled}
             style={{
               display: 'inline-flex', alignItems: 'center', gap: 7,
               padding: '8px 14px', borderRadius: 50,
               background: active ? `${opt.color}20` : 'var(--chip-bg-inactive)',
               border: `1px solid ${active ? opt.color + '66' : 'var(--border)'}`,
-              fontFamily: 'inherit', cursor: 'pointer',
+              fontFamily: 'inherit', cursor: disabled ? 'default' : 'pointer',
               color: active ? opt.color : 'var(--text-2)',
               fontSize: 12.5, fontWeight: active ? 700 : 500,
               transition: 'background 0.15s, border-color 0.15s, color 0.15s',
               boxShadow: active ? `0 0 0 3px ${opt.color}12` : 'none',
+              opacity: disabled ? 0.5 : 1,
             }}
             onMouseEnter={(e: MouseEvent<HTMLButtonElement>) => {
-              if (!active) {
+              if (!active && !disabled) {
                 e.currentTarget.style.background = 'var(--chip-bg-hover)';
                 e.currentTarget.style.color = 'var(--text)';
               }
             }}
             onMouseLeave={(e: MouseEvent<HTMLButtonElement>) => {
-              if (!active) {
+              if (!active && !disabled) {
                 e.currentTarget.style.background = 'var(--chip-bg-inactive)';
                 e.currentTarget.style.color = 'var(--text-2)';
               }
