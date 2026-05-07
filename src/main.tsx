@@ -1,6 +1,7 @@
 import './instrument';
 
 import { StrictMode } from 'react';
+import { initAnalytics } from './services/analytics';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import * as Sentry from '@sentry/react';
@@ -9,6 +10,8 @@ import { AuthProvider } from './context/AuthContext.tsx';
 import './index.css';
 
 if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+
+initAnalytics();
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <StrictMode>
