@@ -4,10 +4,17 @@ export function initAnalytics() {
   const key = import.meta.env.VITE_POSTHOG_KEY;
   if (!key) return;
   posthog.init(key, {
-    api_host: import.meta.env.VITE_POSTHOG_HOST || 'https://us.i.posthog.com',
+    api_host: import.meta.env.VITE_POSTHOG_HOST || 'https://eu.i.posthog.com',
     person_profiles: 'identified_only',
     autocapture: false,
-    capture_pageview: false, // Vercel Analytics handles page views
+    capture_pageview: false,
+    persistence: 'memory', // no cookies = no banner needed
+    disable_session_recording: true,
+    session_recording: {
+      maskAllInputs: true,
+      maskTextSelector: '.sensitive',
+      recordCrossOriginIframes: false,
+    },
   });
 }
 
@@ -61,4 +68,9 @@ export function setAnalyticsDisabled(disabled: boolean): void {
       posthog.opt_in_capturing();
     }
   } catch { /* ignore */ }
+}
+
+if (import.meta.env.DEV) {
+  (window as any).posthog = posthog;
+  (window as any).trackEvent = trackEvent;
 }

@@ -304,7 +304,7 @@ function AccountMenu({ avatarUrl, displayName, onSignOut, onWipe }: AccountMenuP
         >
           {displayName && (
             <>
-              <div style={{ padding: '10px 16px 8px', fontSize: 12, fontWeight: 600, color: 'var(--text-3)', letterSpacing: '0.01em' }}>
+              <div className="sensitive" style={{ padding: '10px 16px 8px', fontSize: 12, fontWeight: 600, color: 'var(--text-3)', letterSpacing: '0.01em' }}>
                 {displayName}
               </div>
               <div style={{ height: 1, background: 'var(--border)' }} />
