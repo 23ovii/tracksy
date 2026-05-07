@@ -72,22 +72,18 @@ export function sortTracks(tracks: Track[], by: string, dir: 'asc' | 'desc' = 'a
       const aArtistCount = artistCount.get(aArtist) ?? 0;
       const bArtistCount = artistCount.get(bArtist) ?? 0;
 
-      // Artists with only 1 song in the playlist sink to the bottom
-      const aAlone = aArtistCount === 1;
-      const bAlone = bArtistCount === 1;
+      const aAlbumSize = albumTracks.get(normalAlbum(a))?.length ?? 0;
+      const bAlbumSize = albumTracks.get(normalAlbum(b))?.length ?? 0;
+
+      // Tracks from a single-song album OR a single-song artist sink to the very bottom
+      const aAlone = aArtistCount === 1 || aAlbumSize === 1;
+      const bAlone = bArtistCount === 1 || bAlbumSize === 1;
       if (aAlone !== bAlone) return aAlone ? 1 : -1;
       if (aAlone && bAlone) return (originalIndex.get(a) ?? 0) - (originalIndex.get(b) ?? 0);
 
       // Rank artists by total track count, most first; tie → first appearance in playlist
       if (aArtistCount !== bArtistCount) return bArtistCount - aArtistCount;
       if (aArtist !== bArtist) return (artistFirstSeen.get(aArtist) ?? 0) - (artistFirstSeen.get(bArtist) ?? 0);
-
-      // Same artist — single-track albums sink to the bottom of the artist's section
-      const aAlbumSize = albumTracks.get(normalAlbum(a))?.length ?? 0;
-      const bAlbumSize = albumTracks.get(normalAlbum(b))?.length ?? 0;
-      const aAlbumAlone = aAlbumSize === 1;
-      const bAlbumAlone = bAlbumSize === 1;
-      if (aAlbumAlone !== bAlbumAlone) return aAlbumAlone ? 1 : -1;
 
       // Rank albums by track count, most first; tie → first appearance in playlist
       if (aAlbumSize !== bAlbumSize) return bAlbumSize - aAlbumSize;
