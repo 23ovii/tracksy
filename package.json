@@ -20,6 +20,8 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",
+    "@fontsource/inter": "^5.2.8",
+    "@resvg/resvg-js": "^2.6.2",
     "@types/node": "^25.6.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
@@ -35,6 +37,8 @@
     "jsdom": "^29.1.0",
     "postcss": "^8.4.40",
     "prettier": "^3.8.3",
+    "puppeteer-core": "^24.43.0",
+    "satori": "^0.26.0",
     "tailwindcss": "^3.4.4",
     "typescript": "^6.0.3",
     "vite": "^5.4.1",
