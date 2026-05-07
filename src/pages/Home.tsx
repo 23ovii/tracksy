@@ -338,6 +338,15 @@ function Home() {
           >
             Privacy
           </button>
+          <span style={{ fontSize: 12, color: 'var(--border2)' }}>·</span>
+          <a
+            href="/settings"
+            style={{ fontSize: 12, color: 'var(--text-3)', textDecoration: 'none', transition: 'color 0.18s' }}
+            onMouseEnter={(e: MouseEvent<HTMLAnchorElement>) => { e.currentTarget.style.color = 'var(--text-2)'; }}
+            onMouseLeave={(e: MouseEvent<HTMLAnchorElement>) => { e.currentTarget.style.color = 'var(--text-3)'; }}
+          >
+            Settings
+          </a>
         </div>
     </footer>
     {showPrivacy && <PrivacyModal onClose={() => setShowPrivacy(false)} />}
