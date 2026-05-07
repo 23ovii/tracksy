@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth.tsx';
 import { buildSpotifyAuthUrl } from '../services/auth.ts';
 import { trackEvent, TrackEvents } from '../services/analytics';
+import PrivacyModal from '../components/PrivacyModal';
 
 interface Feature {
   label: string;
@@ -68,6 +69,7 @@ function Home() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showPrivacy, setShowPrivacy] = useState(false);
 
   useEffect(() => {
     trackEvent(TrackEvents.LANDING_VIEW);
@@ -99,6 +101,7 @@ function Home() {
   };
 
   return (
+    <>
     <div style={{
       minHeight: 'calc(100vh - var(--nav-h))',
       display: 'flex', alignItems: 'center',
@@ -276,8 +279,25 @@ function Home() {
             );
           })}
         </div>
+        <div style={{ marginTop: 32 }}>
+          <button
+            onClick={() => setShowPrivacy(true)}
+            style={{
+              background: 'none', border: 'none', padding: 0,
+              fontSize: 12, color: 'var(--text-3)', cursor: 'pointer',
+              fontFamily: 'inherit',
+              transition: 'color 0.18s',
+            }}
+            onMouseEnter={(e: MouseEvent<HTMLButtonElement>) => { e.currentTarget.style.color = 'var(--text-2)'; }}
+            onMouseLeave={(e: MouseEvent<HTMLButtonElement>) => { e.currentTarget.style.color = 'var(--text-3)'; }}
+          >
+            Privacy
+          </button>
+        </div>
       </div>
     </div>
+    {showPrivacy && <PrivacyModal onClose={() => setShowPrivacy(false)} />}
+    </>
   );
 }
 

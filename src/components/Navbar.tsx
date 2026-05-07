@@ -1,11 +1,9 @@
-import { useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import type { JSX, MouseEvent } from 'react';
 import { useAuth } from '../hooks/useAuth.tsx';
 import { buildSpotifyAuthUrl } from '../services/auth.ts';
 import { useTheme } from '../hooks/useTheme.ts';
 import type { Theme } from '../hooks/useTheme.ts';
-import PrivacyModal from './PrivacyModal';
 
 const SunIcon = () => (
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -86,14 +84,12 @@ function ThemeToggle() {
 
 function Navbar() {
   const { logout, isAuthenticated } = useAuth();
-  const [showPrivacy, setShowPrivacy] = useState(false);
 
   const handleLogin = async () => {
     window.location.href = await buildSpotifyAuthUrl();
   };
 
   return (
-    <>
     <header style={{
       height: 'var(--nav-h)',
       borderBottom: '1px solid var(--nav-border)',
@@ -164,21 +160,6 @@ function Navbar() {
 
           <ThemeToggle />
 
-          <button
-            onClick={() => setShowPrivacy(true)}
-            style={{
-              marginLeft: 2, padding: '7px 14px', borderRadius: 50,
-              border: 'none', background: 'transparent',
-              color: 'var(--text-3)', fontFamily: 'inherit', fontSize: 12,
-              cursor: 'pointer',
-              transition: 'color 0.18s',
-            }}
-            onMouseEnter={(e: MouseEvent<HTMLButtonElement>) => { e.currentTarget.style.color = 'var(--text-2)'; }}
-            onMouseLeave={(e: MouseEvent<HTMLButtonElement>) => { e.currentTarget.style.color = 'var(--text-3)'; }}
-          >
-            Privacy
-          </button>
-
           {!isAuthenticated && (
             <button
               onClick={handleLogin}
@@ -230,8 +211,6 @@ function Navbar() {
         </nav>
       </div>
     </header>
-    {showPrivacy && <PrivacyModal onClose={() => setShowPrivacy(false)} />}
-  </>
   );
 }
 
