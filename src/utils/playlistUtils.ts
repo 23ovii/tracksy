@@ -12,10 +12,23 @@ export const SORT_OPTIONS: SortOption[] = [
   { id: 'artist',      label: 'Artist',     sub: 'A → Z',         color: '#7a90aa' },
   { id: 'popularity',  label: 'Popularity', sub: 'Chart rank',    color: '#1db954' },
   { id: 'addedAt',     label: 'Date Added', sub: 'Old → New',     color: '#7a90aa' },
-  { id: 'durationMs',  label: 'Duration',   sub: 'Short → Long',  color: '#7a90aa' },
+  { id: 'durationMs',    label: 'Duration',     sub: 'Short → Long',  color: '#7a90aa' },
+  { id: 'discography',   label: 'Discography',  sub: 'Artist · Album', color: '#b57bee' },
 ];
 
 export function sortTracks(tracks: Track[], by: string, dir: 'asc' | 'desc' = 'asc'): Track[] {
+  if (by === 'discography') {
+    return [...tracks].sort((a, b) => {
+      const artistCmp = a.artist.toLowerCase().localeCompare(b.artist.toLowerCase());
+      if (artistCmp !== 0) return dir === 'asc' ? artistCmp : -artistCmp;
+      const yearCmp = a.albumYear - b.albumYear;
+      if (yearCmp !== 0) return dir === 'asc' ? yearCmp : -yearCmp;
+      const albumCmp = a.album.toLowerCase().localeCompare(b.album.toLowerCase());
+      if (albumCmp !== 0) return dir === 'asc' ? albumCmp : -albumCmp;
+      return a.trackNumber - b.trackNumber;
+    });
+  }
+
   return [...tracks].sort((a, b) => {
     let va: any = (a as any)[by];
     let vb: any = (b as any)[by];
