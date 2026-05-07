@@ -50,6 +50,7 @@ function Dashboard() {
   const preApplyTrackIdsRef = useRef<string[]>([]);
   const preApplyTrackKeysRef = useRef<string[]>([]);
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const undoHoverStartRef = useRef<number | null>(null);
   const { open: overlayOpen, toggle: toggleOverlay } = useShortcutsOverlay();
 
   function showToast(msg: string) {
@@ -88,8 +89,11 @@ function Dashboard() {
     loadPlaylists();
   }, [loadPlaylists]);
 
+  const [undoHovered, setUndoHovered] = useState(false);
+
   useEffect(() => {
     if (undoUntil === null) return;
+    if (undoHovered) return;
     const id = setInterval(() => {
       const remaining = undoUntil - Date.now();
       if (remaining <= 0) {
@@ -99,7 +103,7 @@ function Dashboard() {
       }
     }, 50);
     return () => clearInterval(id);
-  }, [undoUntil]);
+  }, [undoUntil, undoHovered]);
 
   useEffect(() => {
     setSortHistory(selectedPlaylist ? getHistory(selectedPlaylist.id) : []);
@@ -180,7 +184,11 @@ function Dashboard() {
   }
 
   function handleBack() {
-    if (applying) cancelSort();
+    if (applying) {
+      cancelSort();
+      showToast('Sort canceled');
+      return;
+    }
     clearSelection();
     setApplied(false);
     setSortFeedback('');
@@ -426,7 +434,20 @@ function Dashboard() {
         ) : null}
       </div>
       {undoUntil !== null && !applying && (
-        <div style={{
+        <div
+          onMouseEnter={() => {
+            undoHoverStartRef.current = Date.now();
+            setUndoHovered(true);
+          }}
+          onMouseLeave={() => {
+            if (undoHoverStartRef.current !== null) {
+              const paused = Date.now() - undoHoverStartRef.current;
+              undoHoverStartRef.current = null;
+              setUndoUntil((prev) => prev !== null ? prev + paused : null);
+            }
+            setUndoHovered(false);
+          }}
+          style={{
           position: 'fixed', bottom: 32, left: '50%', transform: 'translateX(-50%)',
           zIndex: 100, minWidth: 300, maxWidth: 440,
           background: 'var(--glass-bg)',
