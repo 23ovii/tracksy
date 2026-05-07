@@ -9,7 +9,6 @@ import Home from './pages/Home.tsx';
 import Dashboard from './pages/Dashboard.tsx';
 import Callback from './pages/Callback.tsx';
 import Privacy from './pages/Privacy.tsx';
-import Settings from './pages/Settings.tsx';
 import ShortcutsOverlay from './components/ShortcutsOverlay.tsx';
 import { ShortcutsOverlayProvider } from './context/ShortcutsOverlayContext.tsx';
 
@@ -30,7 +29,6 @@ function App() {
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/callback" element={<Callback />} />
           <Route path="/privacy" element={<Privacy />} />
-          <Route path="/settings" element={<Settings />} />
           <Route path="*" element={<Home />} />
         </Routes>
         <Analytics />
