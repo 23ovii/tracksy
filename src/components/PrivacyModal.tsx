@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import type { MouseEvent } from 'react';
 import { getAnalyticsDisabled, setAnalyticsDisabled } from '../services/analytics';
+import { Sentry } from '../services/sentry';
 
 interface PrivacyModalProps {
   onClose: () => void;
@@ -138,6 +139,18 @@ function PrivacyModal({ onClose }: PrivacyModalProps) {
           <p style={{ fontSize: 13, color: 'var(--text-3)', lineHeight: 1.6, margin: 0 }}>
             You can opt out at any time. Your preference is saved in your browser.
           </p>
+
+          <button
+            onClick={() => Sentry.showReportDialog()}
+            style={{
+              background: 'none', border: 'none', padding: 0,
+              fontSize: 13, color: 'var(--green)',
+              textDecoration: 'underline', cursor: 'pointer',
+              textAlign: 'left', width: 'fit-content',
+            }}
+          >
+            Report a problem
+          </button>
 
           {/* Toggle */}
           <div style={{
