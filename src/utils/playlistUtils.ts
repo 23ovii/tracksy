@@ -52,6 +52,20 @@ export function sortTracks(tracks: Track[], by: string, dir: 'asc' | 'desc' = 'a
     const originalIndex = new Map<Track, number>();
     tracks.forEach((t, i) => originalIndex.set(t, i));
 
+    // First appearance of each album in the original playlist — keeps equal-count albums stable
+    const albumFirstSeen = new Map<string, number>();
+    tracks.forEach((t, i) => {
+      const k = normalAlbum(t);
+      if (!albumFirstSeen.has(k)) albumFirstSeen.set(k, i);
+    });
+
+    // First appearance of each canonical artist in the original playlist
+    const artistFirstSeen = new Map<string, number>();
+    tracks.forEach((t, i) => {
+      const artist = albumArtist.get(normalAlbum(t))!;
+      if (!artistFirstSeen.has(artist)) artistFirstSeen.set(artist, i);
+    });
+
     return [...tracks].sort((a, b) => {
       const aArtist = albumArtist.get(normalAlbum(a))!;
       const bArtist = albumArtist.get(normalAlbum(b))!;
@@ -64,13 +78,17 @@ export function sortTracks(tracks: Track[], by: string, dir: 'asc' | 'desc' = 'a
       if (aAlone !== bAlone) return aAlone ? 1 : -1;
       if (aAlone && bAlone) return (originalIndex.get(a) ?? 0) - (originalIndex.get(b) ?? 0);
 
-      // Rank artists by total track count, most first
+      // Rank artists by total track count, most first; tie → first appearance in playlist
       if (aArtistCount !== bArtistCount) return bArtistCount - aArtistCount;
+      if (aArtist !== bArtist) return (artistFirstSeen.get(aArtist) ?? 0) - (artistFirstSeen.get(bArtist) ?? 0);
 
-      // Same artist — rank albums by how many tracks are in the playlist, most first
+      // Same artist — rank albums by track count, most first; tie → first appearance in playlist
       const aAlbumSize = albumTracks.get(normalAlbum(a))?.length ?? 0;
       const bAlbumSize = albumTracks.get(normalAlbum(b))?.length ?? 0;
       if (aAlbumSize !== bAlbumSize) return bAlbumSize - aAlbumSize;
+      const aAlbum = normalAlbum(a);
+      const bAlbum = normalAlbum(b);
+      if (aAlbum !== bAlbum) return (albumFirstSeen.get(aAlbum) ?? 0) - (albumFirstSeen.get(bAlbum) ?? 0);
 
       // Same album — sort by track number
       if (a.trackNumber !== b.trackNumber) return a.trackNumber - b.trackNumber;
