@@ -102,7 +102,7 @@ function Home() {
 
   return (
     <>
-    <div style={{ position: 'relative' }}>
+    <div style={{ position: 'relative', minHeight: 'calc(100vh - var(--nav-h))' }}>
 
       {/* Decorative floating equalizer — top right */}
       <div aria-hidden style={{
@@ -281,7 +281,9 @@ function Home() {
       </div>
       </div>
 
-      <footer style={{
+    </div>
+
+    <footer style={{
         borderTop: '1px solid var(--border)',
         padding: '18px 28px',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -338,8 +340,7 @@ function Home() {
             Privacy
           </button>
         </div>
-      </footer>
-    </div>
+    </footer>
     {showPrivacy && <PrivacyModal onClose={() => setShowPrivacy(false)} />}
     </>
   );
