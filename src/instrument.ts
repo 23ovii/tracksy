@@ -18,11 +18,6 @@ function scrubObject(obj: Record<string, unknown>): Record<string, unknown> {
 }
 
 const dsn = import.meta.env.VITE_SENTRY_DSN;
-
-// Expose Sentry globally for console testing — remove after confirming
-if (typeof window !== 'undefined') {
-  (window as any).Sentry = Sentry;
-}
 if (dsn) {
   Sentry.init({
     dsn,
