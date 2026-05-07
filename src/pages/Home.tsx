@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { JSX, MouseEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth.tsx';
 import { buildSpotifyAuthUrl } from '../services/auth.ts';
+import { trackEvent, TrackEvents } from '../services/analytics';
+import PrivacyModal from '../components/PrivacyModal';
 
 interface Feature {
   label: string;
@@ -67,12 +69,18 @@ function Home() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showPrivacy, setShowPrivacy] = useState(false);
+
+  useEffect(() => {
+    trackEvent(TrackEvents.LANDING_VIEW);
+  }, []);
 
   const handleLogin = async () => {
     if (isAuthenticated) {
       navigate('/dashboard');
       return;
     }
+    trackEvent(TrackEvents.OAUTH_START);
     setIsLoading(true);
     setError('');
     try {
@@ -93,6 +101,7 @@ function Home() {
   };
 
   return (
+    <>
     <div style={{
       minHeight: 'calc(100vh - var(--nav-h))',
       display: 'flex', alignItems: 'center',
@@ -196,7 +205,7 @@ function Home() {
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
               <path d="M20 6L9 17l-5-5" />
             </svg>
-            Free · No tracking · Takes 5 seconds
+            Free · Open source · Takes 5 seconds
           </div>
         </div>
 
@@ -272,6 +281,67 @@ function Home() {
         </div>
       </div>
     </div>
+
+    <footer style={{
+        borderTop: '1px solid var(--border)',
+        padding: '18px 28px',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        flexWrap: 'wrap', gap: 10,
+        position: 'relative', zIndex: 2,
+      }}>
+        {/* Left — copyright + attribution */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+          <span style={{ fontSize: 12, color: 'var(--text-3)' }}>
+            © {new Date().getFullYear()} Tracksy
+          </span>
+          <span style={{ fontSize: 12, color: 'var(--border2)' }}>·</span>
+          <span style={{ fontSize: 12, color: 'var(--text-3)' }}>
+            Built by{' '}
+            <a
+              href="https://23ovii.dev"
+              target="_blank"
+              rel="noreferrer"
+              style={{
+                color: 'var(--text-2)', textDecoration: 'none', fontWeight: 500,
+                transition: 'color 0.18s',
+              }}
+              onMouseEnter={(e: MouseEvent<HTMLAnchorElement>) => { e.currentTarget.style.color = 'var(--green)'; }}
+              onMouseLeave={(e: MouseEvent<HTMLAnchorElement>) => { e.currentTarget.style.color = 'var(--text-2)'; }}
+            >
+              23ovii.dev
+            </a>
+          </span>
+        </div>
+
+        {/* Right — links */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <a
+            href="https://open.spotify.com"
+            target="_blank"
+            rel="noreferrer"
+            style={{ fontSize: 12, color: 'var(--text-3)', textDecoration: 'none', transition: 'color 0.18s' }}
+            onMouseEnter={(e: MouseEvent<HTMLAnchorElement>) => { e.currentTarget.style.color = 'var(--text-2)'; }}
+            onMouseLeave={(e: MouseEvent<HTMLAnchorElement>) => { e.currentTarget.style.color = 'var(--text-3)'; }}
+          >
+            Built for Spotify
+          </a>
+          <span style={{ fontSize: 12, color: 'var(--border2)' }}>·</span>
+          <button
+            onClick={() => setShowPrivacy(true)}
+            style={{
+              background: 'none', border: 'none', padding: 0,
+              fontSize: 12, color: 'var(--text-3)', cursor: 'pointer',
+              fontFamily: 'inherit', transition: 'color 0.18s',
+            }}
+            onMouseEnter={(e: MouseEvent<HTMLButtonElement>) => { e.currentTarget.style.color = 'var(--text-2)'; }}
+            onMouseLeave={(e: MouseEvent<HTMLButtonElement>) => { e.currentTarget.style.color = 'var(--text-3)'; }}
+          >
+            Privacy
+          </button>
+        </div>
+    </footer>
+    {showPrivacy && <PrivacyModal onClose={() => setShowPrivacy(false)} />}
+    </>
   );
 }
 
