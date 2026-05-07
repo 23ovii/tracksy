@@ -102,7 +102,13 @@ function Home() {
 
   return (
     <>
-    <div style={{ position: 'relative' }}>
+    <div style={{
+      minHeight: 'calc(100vh - var(--nav-h))',
+      display: 'flex', alignItems: 'center',
+      padding: '32px 28px 40px',
+      position: 'relative',
+      overflow: 'hidden',
+    }}>
 
       {/* Decorative floating equalizer — top right */}
       <div aria-hidden style={{
@@ -124,11 +130,6 @@ function Home() {
         ))}
       </div>
 
-      <div style={{
-        minHeight: 'calc(100vh - var(--nav-h))',
-        display: 'flex', alignItems: 'center',
-        padding: '32px 28px 40px',
-      }}>
       <div style={{
         maxWidth: 1140, width: '100%', margin: '0 auto',
         position: 'relative', zIndex: 2,
@@ -279,9 +280,9 @@ function Home() {
           })}
         </div>
       </div>
-      </div>
+    </div>
 
-      <footer style={{
+    <footer style={{
         borderTop: '1px solid var(--border)',
         padding: '18px 28px',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -338,8 +339,7 @@ function Home() {
             Privacy
           </button>
         </div>
-      </footer>
-    </div>
+    </footer>
     {showPrivacy && <PrivacyModal onClose={() => setShowPrivacy(false)} />}
     </>
   );
