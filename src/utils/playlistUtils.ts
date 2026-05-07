@@ -18,13 +18,41 @@ export const SORT_OPTIONS: SortOption[] = [
 
 export function sortTracks(tracks: Track[], by: string, dir: 'asc' | 'desc' = 'asc'): Track[] {
   if (by === 'discography') {
+    // Count how many tracks each artist has in this playlist
+    const artistCount = new Map<string, number>();
+    for (const t of tracks) {
+      artistCount.set(t.artist, (artistCount.get(t.artist) ?? 0) + 1);
+    }
+
+    // Count how many tracks each (artist, album) pair has
+    const albumKey = (t: Track) => `${t.artist}|||${t.album}`;
+    const albumCount = new Map<string, number>();
+    for (const t of tracks) {
+      const k = albumKey(t);
+      albumCount.set(k, (albumCount.get(k) ?? 0) + 1);
+    }
+
     return [...tracks].sort((a, b) => {
-      const artistCmp = a.artist.toLowerCase().localeCompare(b.artist.toLowerCase());
-      if (artistCmp !== 0) return dir === 'asc' ? artistCmp : -artistCmp;
-      const yearCmp = a.albumYear - b.albumYear;
-      if (yearCmp !== 0) return dir === 'asc' ? yearCmp : -yearCmp;
-      const albumCmp = a.album.toLowerCase().localeCompare(b.album.toLowerCase());
-      if (albumCmp !== 0) return dir === 'asc' ? albumCmp : -albumCmp;
+      const aArtistCount = artistCount.get(a.artist) ?? 0;
+      const bArtistCount = artistCount.get(b.artist) ?? 0;
+
+      // Artists with only 1 song sink to the bottom
+      const aAlone = aArtistCount === 1;
+      const bAlone = bArtistCount === 1;
+      if (aAlone !== bAlone) return aAlone ? 1 : -1;
+
+      // Among solo-artist tracks, preserve original playlist order
+      if (aAlone && bAlone) return 0;
+
+      // Artists ranked by total song count, most first
+      if (aArtistCount !== bArtistCount) return bArtistCount - aArtistCount;
+
+      // Same artist — rank albums by how many songs from that album are present, most first
+      const aAlbumCount = albumCount.get(albumKey(a)) ?? 0;
+      const bAlbumCount = albumCount.get(albumKey(b)) ?? 0;
+      if (aAlbumCount !== bAlbumCount) return bAlbumCount - aAlbumCount;
+
+      // Same album — sort by track number
       return a.trackNumber - b.trackNumber;
     });
   }
