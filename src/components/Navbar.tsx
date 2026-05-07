@@ -44,8 +44,8 @@ const UserIcon = () => (
 
 const THEME_OPTIONS: { value: Theme; label: string; Icon: () => JSX.Element }[] = [
   { value: 'light',  label: 'Light',  Icon: SunIcon },
-  { value: 'system', label: 'System', Icon: MonitorIcon },
   { value: 'dark',   label: 'Dark',   Icon: MoonIcon },
+  { value: 'system', label: 'System', Icon: MonitorIcon },
 ];
 
 function ThemeToggle() {
