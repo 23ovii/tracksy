@@ -60,8 +60,8 @@ function ThemeToggle() {
         border: '1px solid var(--border2)',
         borderRadius: 50,
         background: 'var(--bg-inset)',
-        padding: 3,
-        gap: 2,
+        padding: 2,
+        gap: 1,
       }}
     >
       {THEME_OPTIONS.map(({ value, label, Icon }) => {
@@ -74,7 +74,7 @@ function ThemeToggle() {
             title={label}
             style={{
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              width: 26, height: 26, borderRadius: 50,
+              width: 22, height: 22, borderRadius: 50,
               border: active ? '1px solid var(--toggle-active-border)' : '1px solid transparent',
               background: active ? 'var(--toggle-active-bg)' : 'transparent',
               boxShadow: active ? '0 1px 4px rgba(0,0,0,0.25)' : 'none',
@@ -311,8 +311,8 @@ function AccountMenu({ avatarUrl, displayName, onSignOut, onWipe }: AccountMenuP
             </>
           )}
 
-          <div style={{ padding: '10px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <span style={{ fontSize: 13, color: 'var(--text-2)', fontWeight: 500 }}>Theme</span>
+          <div style={{ padding: '7px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <span style={{ fontSize: 12, color: 'var(--text-3)', fontWeight: 500 }}>Theme</span>
             <ThemeToggle />
           </div>
 
