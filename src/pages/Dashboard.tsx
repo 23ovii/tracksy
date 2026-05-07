@@ -17,6 +17,7 @@ import type { HistoryEntry } from '../services/sortHistory';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import { useShortcutsOverlay } from '../context/ShortcutsOverlayContext';
 import { buildTrackOccurrenceKeys } from '../utils/trackIdentity';
+import { trackEvent, TrackEvents } from '../services/analytics';
 
 const GLASS: CSSProperties = {
   background: 'var(--glass-bg)',
@@ -65,6 +66,7 @@ function Dashboard() {
       const preset: SortPreset = { id, name, sortBy, sortDir, createdAt: Date.now() };
       savePreset(preset);
       setPresets(listPresets());
+      trackEvent(TrackEvents.PRESET_SAVED);
       showToast('Preset saved');
     } catch (err: any) {
       showToast(err?.message ?? 'Could not save preset.');
@@ -78,6 +80,7 @@ function Dashboard() {
   }
 
   function handleLoadPreset(preset: SortPreset) {
+    trackEvent(TrackEvents.PRESET_APPLIED);
     setSortBy(preset.sortBy);
     setSortDir(preset.sortDir);
     setApplied(false);
@@ -88,6 +91,14 @@ function Dashboard() {
   useEffect(() => {
     loadPlaylists();
   }, [loadPlaylists]);
+
+  const prevPlaylistCountRef = useRef(0);
+  useEffect(() => {
+    if (playlists.length > 0 && playlists.length !== prevPlaylistCountRef.current) {
+      prevPlaylistCountRef.current = playlists.length;
+      trackEvent(TrackEvents.PLAYLISTS_LOADED, { count: playlists.length });
+    }
+  }, [playlists.length]);
 
   const [undoHovered, setUndoHovered] = useState(false);
 
@@ -148,6 +159,9 @@ function Dashboard() {
   }
 
   function closeFilter() {
+    if (filterQuery.trim()) {
+      trackEvent(TrackEvents.FILTER_APPLIED, { filterCount: displayed.length });
+    }
     setShowFilter(false);
     setFilterQuery('');
   }
@@ -155,17 +169,33 @@ function Dashboard() {
   useKeyboardShortcuts(
     {
       ...Object.fromEntries(
-        SORT_OPTIONS.map((opt, i) => [String(i + 1), () => { if (selectedPlaylist) pickSort(opt.id); }]),
+        SORT_OPTIONS.map((opt, i) => [String(i + 1), () => {
+          if (selectedPlaylist) { trackEvent(TrackEvents.SHORTCUT_USED, { key: String(i + 1) }); pickSort(opt.id); }
+        }]),
       ),
-      d: () => { if (selectedPlaylist && sortBy !== 'discography') setSortDir((dir) => { setApplied(false); setSortFeedback(''); setSortKey((k) => k + 1); return dir === 'asc' ? 'desc' : 'asc'; }); },
-      enter: () => { if (selectedPlaylist && !applying && !applied) handleApply(); },
-      escape: () => { if (showFilter) { closeFilter(); return; } if (selectedPlaylist) handleBack(); },
+      d: () => {
+        if (selectedPlaylist && sortBy !== 'discography') {
+          trackEvent(TrackEvents.SHORTCUT_USED, { key: 'd' });
+          setSortDir((dir) => { setApplied(false); setSortFeedback(''); setSortKey((k) => k + 1); return dir === 'asc' ? 'desc' : 'asc'; });
+        }
+      },
+      enter: () => {
+        if (selectedPlaylist && !applying && !applied) {
+          trackEvent(TrackEvents.SHORTCUT_USED, { key: 'enter' });
+          handleApply();
+        }
+      },
+      escape: () => {
+        if (showFilter) { trackEvent(TrackEvents.SHORTCUT_USED, { key: 'escape' }); closeFilter(); return; }
+        if (selectedPlaylist) { trackEvent(TrackEvents.SHORTCUT_USED, { key: 'escape' }); handleBack(); }
+      },
       '/': () => {
         if (!selectedPlaylist) return;
+        trackEvent(TrackEvents.SHORTCUT_USED, { key: '/' });
         if (showFilter) filterInputRef.current?.focus();
         else openFilter();
       },
-      '?': toggleOverlay,
+      '?': () => { trackEvent(TrackEvents.SHORTCUT_USED, { key: '?' }); toggleOverlay(); },
     },
     (e: KeyboardEvent) => {
       if (overlayOpen) return true;
@@ -176,8 +206,10 @@ function Dashboard() {
   );
 
   function pickSort(id: string) {
-    if (sortBy === id && id !== 'discography') setSortDir((d) => d === 'asc' ? 'desc' : 'asc');
+    const nextDir = sortBy === id && id !== 'discography' ? (sortDir === 'asc' ? 'desc' : 'asc') : 'asc';
+    if (sortBy === id && id !== 'discography') setSortDir(nextDir);
     else { setSortBy(id); setSortDir('asc'); }
+    trackEvent(TrackEvents.SORT_PICKED, { sortBy: id, sortDir: nextDir });
     setApplied(false);
     setSortFeedback('');
     setSortKey((k) => k + 1);
@@ -196,6 +228,7 @@ function Dashboard() {
   }
 
   function handleSelect(playlist: Playlist) {
+    trackEvent(TrackEvents.PLAYLIST_SELECTED, { trackCount: playlist.trackCount });
     loadPlaylistTracks(playlist);
     setApplied(false);
     setSortFeedback('');
@@ -251,6 +284,7 @@ function Dashboard() {
           setSortFeedback(`"${playlistName}" is already in this order.`);
         } else {
           setApplied(true);
+          trackEvent(TrackEvents.SORT_APPLIED, { sortBy, moves: result.moves, trackCount: sorted.length });
           if (playlistName) setSortFeedback(`"${playlistName}" sorted by ${label} and saved.`);
           setUndoUntil(Date.now() + 30_000);
           setUndoCountdown(100);
@@ -279,6 +313,7 @@ function Dashboard() {
   }
 
   const handleUndo = useCallback(() => {
+    trackEvent(TrackEvents.SORT_UNDONE);
     setUndoUntil(null);
     setApplying(true);
     setApplyProgress(0);

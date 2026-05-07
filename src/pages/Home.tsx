@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { JSX, MouseEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth.tsx';
 import { buildSpotifyAuthUrl } from '../services/auth.ts';
+import { trackEvent, TrackEvents } from '../services/analytics';
 
 interface Feature {
   label: string;
@@ -68,11 +69,16 @@ function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
+  useEffect(() => {
+    trackEvent(TrackEvents.LANDING_VIEW);
+  }, []);
+
   const handleLogin = async () => {
     if (isAuthenticated) {
       navigate('/dashboard');
       return;
     }
+    trackEvent(TrackEvents.OAUTH_START);
     setIsLoading(true);
     setError('');
     try {

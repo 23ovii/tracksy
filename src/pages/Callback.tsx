@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth.tsx';
 import { exchangeSpotifyCode, verifyOAuthState } from '../services/auth.ts';
+import { trackEvent, TrackEvents } from '../services/analytics';
 
 function Callback() {
   const navigate = useNavigate();
@@ -31,8 +32,10 @@ function Callback() {
       try {
         const tokenData = await exchangeSpotifyCode(code!);
         login(tokenData);
+        trackEvent(TrackEvents.OAUTH_COMPLETE);
         navigate('/dashboard');
       } catch (error: any) {
+        trackEvent(TrackEvents.OAUTH_ERROR, { reason: String(error?.message ?? 'unknown').slice(0, 100) });
         setErrorMessage(error.message);
       }
     }
