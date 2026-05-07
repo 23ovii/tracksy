@@ -187,7 +187,16 @@ function SorterHeader({
           >
             {applying ? (
               <>
-                <span style={{ display: 'inline-block', animation: 'spin 0.7s linear infinite' }}>↻</span>
+                <span style={{ display: 'inline-flex', gap: 3, alignItems: 'center' }}>
+                  {[0, 1, 2].map(i => (
+                    <span key={i} style={{
+                      width: 4, height: 4, borderRadius: '50%',
+                      background: 'currentColor',
+                      display: 'inline-block',
+                      animation: `bounce 1s ease-in-out ${i * 0.15}s infinite`,
+                    }} />
+                  ))}
+                </span>
                 Applying…
               </>
             ) : applied ? (
