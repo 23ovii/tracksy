@@ -18,50 +18,63 @@ export const SORT_OPTIONS: SortOption[] = [
 
 export function sortTracks(tracks: Track[], by: string, dir: 'asc' | 'desc' = 'asc'): Track[] {
   if (by === 'discography') {
-    // Use only the first artist for grouping so featured tracks stay with their primary artist
+    const normalAlbum = (t: Track) => t.album.toLowerCase().trim();
     const primaryArtist = (t: Track) => t.artist.split(',')[0].trim().toLowerCase();
-    const albumKey = (t: Track) => `${primaryArtist(t)}|||${t.album.toLowerCase()}`;
 
-    // Count tracks per primary artist
+    // Group tracks by album name — album is the source of truth, not artist string
+    const albumTracks = new Map<string, Track[]>();
+    for (const t of tracks) {
+      const k = normalAlbum(t);
+      if (!albumTracks.has(k)) albumTracks.set(k, []);
+      albumTracks.get(k)!.push(t);
+    }
+
+    // For each album, pick the most frequent primary artist as the canonical artist
+    const albumArtist = new Map<string, string>();
+    for (const [album, members] of albumTracks) {
+      const freq = new Map<string, number>();
+      for (const t of members) {
+        const pa = primaryArtist(t);
+        freq.set(pa, (freq.get(pa) ?? 0) + 1);
+      }
+      const canonical = [...freq.entries()].sort((a, b) => b[1] - a[1])[0][0];
+      albumArtist.set(album, canonical);
+    }
+
+    // Count total tracks per canonical artist
     const artistCount = new Map<string, number>();
-    for (const t of tracks) {
-      const pa = primaryArtist(t);
-      artistCount.set(pa, (artistCount.get(pa) ?? 0) + 1);
+    for (const [album, members] of albumTracks) {
+      const artist = albumArtist.get(album)!;
+      artistCount.set(artist, (artistCount.get(artist) ?? 0) + members.length);
     }
 
-    // Count tracks per (primary artist, album) pair
-    const albumCount = new Map<string, number>();
-    for (const t of tracks) {
-      const k = albumKey(t);
-      albumCount.set(k, (albumCount.get(k) ?? 0) + 1);
-    }
-
-    // Remember original index so ties preserve playlist order
+    // Original index for stable tie-breaking
     const originalIndex = new Map<Track, number>();
     tracks.forEach((t, i) => originalIndex.set(t, i));
 
     return [...tracks].sort((a, b) => {
-      const aCount = artistCount.get(primaryArtist(a)) ?? 0;
-      const bCount = artistCount.get(primaryArtist(b)) ?? 0;
+      const aArtist = albumArtist.get(normalAlbum(a))!;
+      const bArtist = albumArtist.get(normalAlbum(b))!;
+      const aArtistCount = artistCount.get(aArtist) ?? 0;
+      const bArtistCount = artistCount.get(bArtist) ?? 0;
 
-      // Artists with only 1 song sink to the bottom
-      const aAlone = aCount === 1;
-      const bAlone = bCount === 1;
+      // Artists with only 1 song in the playlist sink to the bottom
+      const aAlone = aArtistCount === 1;
+      const bAlone = bArtistCount === 1;
       if (aAlone !== bAlone) return aAlone ? 1 : -1;
       if (aAlone && bAlone) return (originalIndex.get(a) ?? 0) - (originalIndex.get(b) ?? 0);
 
-      // Artists ranked by total song count, most first
-      if (aCount !== bCount) return bCount - aCount;
+      // Rank artists by total track count, most first
+      if (aArtistCount !== bArtistCount) return bArtistCount - aArtistCount;
 
-      // Same primary artist — rank albums by track count in playlist, most first
-      const aAlbumCount = albumCount.get(albumKey(a)) ?? 0;
-      const bAlbumCount = albumCount.get(albumKey(b)) ?? 0;
-      if (aAlbumCount !== bAlbumCount) return bAlbumCount - aAlbumCount;
+      // Same artist — rank albums by how many tracks are in the playlist, most first
+      const aAlbumSize = albumTracks.get(normalAlbum(a))?.length ?? 0;
+      const bAlbumSize = albumTracks.get(normalAlbum(b))?.length ?? 0;
+      if (aAlbumSize !== bAlbumSize) return bAlbumSize - aAlbumSize;
 
       // Same album — sort by track number
       if (a.trackNumber !== b.trackNumber) return a.trackNumber - b.trackNumber;
 
-      // Fallback: preserve original playlist order
       return (originalIndex.get(a) ?? 0) - (originalIndex.get(b) ?? 0);
     });
   }
