@@ -55,7 +55,7 @@ function Privacy() {
             Last updated: May 7, 2026
           </p>
           <div style={{
-            display: 'inline-flex', alignItems: 'center', gap: 8,
+            display: 'inline-flex', alignItems: 'baseline', gap: 8,
             padding: '7px 14px',
             background: 'rgba(29,185,84,0.08)',
             border: '1px solid rgba(29,185,84,0.2)',
