@@ -153,7 +153,7 @@ function Dashboard() {
       ...Object.fromEntries(
         SORT_OPTIONS.map((opt, i) => [String(i + 1), () => { if (selectedPlaylist) pickSort(opt.id); }]),
       ),
-      d: () => { if (selectedPlaylist) setSortDir((dir) => { setApplied(false); setSortFeedback(''); setSortKey((k) => k + 1); return dir === 'asc' ? 'desc' : 'asc'; }); },
+      d: () => { if (selectedPlaylist && sortBy !== 'discography') setSortDir((dir) => { setApplied(false); setSortFeedback(''); setSortKey((k) => k + 1); return dir === 'asc' ? 'desc' : 'asc'; }); },
       enter: () => { if (selectedPlaylist && !applying && !applied) handleApply(); },
       escape: () => { if (showFilter) { closeFilter(); return; } if (selectedPlaylist) handleBack(); },
       '/': () => {
@@ -172,7 +172,7 @@ function Dashboard() {
   );
 
   function pickSort(id: string) {
-    if (sortBy === id) setSortDir((d) => d === 'asc' ? 'desc' : 'asc');
+    if (sortBy === id && id !== 'discography') setSortDir((d) => d === 'asc' ? 'desc' : 'asc');
     else { setSortBy(id); setSortDir('asc'); }
     setApplied(false);
     setSortFeedback('');
