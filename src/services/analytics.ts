@@ -14,6 +14,7 @@ export const TrackEvents = {
   PRESET_APPLIED: 'preset_applied',
   FILTER_APPLIED: 'filter_applied',
   SHORTCUT_USED: 'shortcut_used',
+  ACCOUNT_WIPED: 'account_wiped',
 } as const;
 
 type TrackEventName = typeof TrackEvents[keyof typeof TrackEvents];
