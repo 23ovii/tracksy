@@ -1,36 +1,34 @@
 import { Link } from 'react-router-dom';
 import Footer from '../components/Footer';
 
-const SECTIONS = [
-  {
-    title: 'The Short Version',
-    body: 'Tracksy collects anonymous usage data to understand how the app is used and fix bugs. No personal information, no Spotify credentials, no playlist contents. You can opt out anytime in Settings.',
-  },
-  {
-    title: 'What Data We Collect',
-    body: 'We record anonymous usage events such as "sort applied", "playlist selected", or "undo used". Events include only counts and category labels — never the actual content. We also collect basic technical data like browser type and device category to help diagnose bugs. Events are associated with an anonymous session identifier that resets each time you close the tab.',
-  },
-  {
-    title: "What We Don't Collect",
-    body: "We don't collect your Spotify credentials, username, email, or account ID. We don't record track names, playlist names, or any content from your library. We don't use cookies or tracking pixels, and we don't follow you across other websites. No personal information ever leaves your browser.",
-  },
-  {
-    title: 'Why We Collect It',
-    body: 'Usage data helps us understand which features are actually useful, catch bugs before they affect everyone, and decide what to build next. Nothing is used for advertising or shared with third parties for commercial purposes.',
-  },
-  {
-    title: 'How We Store It',
-    body: 'Events are sent to PostHog, running on EU servers (eu.i.posthog.com), which is GDPR compliant. PostHog is configured with in-memory storage only — nothing is written to cookies or localStorage on your device. We retain event data for 90 days, after which it is automatically deleted.',
-  },
-  {
-    title: 'Your Rights',
-    body: 'You can opt out of analytics at any time in Settings — your preference takes effect immediately. You have the right to request access to or deletion of any data associated with your session. Because data is anonymous, we cannot look up records by name or email, but we can delete data by session ID if you provide it.',
-  },
-  {
-    title: 'Third-Party Services',
-    body: 'Tracksy uses the Spotify Web API to read and modify your playlists — governed by Spotify\'s own Privacy Policy. Analytics events are processed by PostHog (posthog.com). No other third-party services receive your data.',
-  },
-];
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <h2 style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)', marginBottom: 10 }}>
+        {title}
+      </h2>
+      {children}
+    </div>
+  );
+}
+
+function P({ children }: { children: React.ReactNode }) {
+  return (
+    <p style={{ fontSize: 14, color: 'var(--text-2)', lineHeight: 1.7, margin: 0 }}>
+      {children}
+    </p>
+  );
+}
+
+function Ul({ items }: { items: React.ReactNode[] }) {
+  return (
+    <ul style={{ margin: 0, paddingLeft: 20, display: 'flex', flexDirection: 'column', gap: 4 }}>
+      {items.map((item, i) => (
+        <li key={i} style={{ fontSize: 14, color: 'var(--text-2)', lineHeight: 1.7 }}>{item}</li>
+      ))}
+    </ul>
+  );
+}
 
 function Privacy() {
   return (
@@ -44,27 +42,66 @@ function Privacy() {
             Privacy Policy
           </h1>
           <p style={{ fontSize: 14, color: 'var(--text-3)', marginBottom: 48 }}>
-            Last updated 7 May 2025
+            Last updated: May 7, 2026
           </p>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
-            {SECTIONS.map(({ title, body }) => (
-              <div key={title}>
-                <h2 style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)', marginBottom: 8 }}>
-                  {title}
-                </h2>
-                <p style={{ fontSize: 14, color: 'var(--text-2)', lineHeight: 1.7, margin: 0 }}>
-                  {body}
-                </p>
-              </div>
-            ))}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 36 }}>
+            <Section title="The Short Version">
+              <P>Tracksy uses anonymous analytics to understand how people use the app and fix bugs. We don't collect personal information, we don't use cookies, and you can opt out anytime in Settings.</P>
+            </Section>
 
-            <div>
-              <h2 style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)', marginBottom: 8 }}>
-                Contact
-              </h2>
-              <p style={{ fontSize: 14, color: 'var(--text-2)', lineHeight: 1.7, margin: 0 }}>
-                For privacy questions or data deletion requests, open an issue on{' '}
+            <Section title="What Data We Collect">
+              <Ul items={[
+                'Usage events (actions like "playlist sorted", "preset applied")',
+                'Technical data (browser type, device type, error messages)',
+                'Anonymous session identifiers (not linked to you personally)',
+              ]} />
+            </Section>
+
+            <Section title="What We Don't Collect">
+              <Ul items={[
+                'Your Spotify credentials or login information',
+                'Personal information (name, email, etc.)',
+                'Playlist contents or song data',
+                'Tracking cookies or cross-site tracking',
+              ]} />
+            </Section>
+
+            <Section title="Why We Collect It">
+              <P>To make Tracksy better — understand which features people use, find and fix bugs faster, improve user experience.</P>
+            </Section>
+
+            <Section title="How We Store It">
+              <Ul items={[
+                'Provider: PostHog (privacy-focused analytics)',
+                'Location: EU servers (GDPR compliant)',
+                'Storage: In-memory only (no cookies, no localStorage persistence)',
+                'Retention: 90 days, then automatically deleted',
+              ]} />
+            </Section>
+
+            <Section title="Your Rights">
+              <Ul items={[
+                <span>Opt out: Disable analytics anytime in <Link to="/settings" style={{ color: 'var(--green)', textDecoration: 'none' }}>Settings</Link></span>,
+                <span>Data deletion: Contact us via <a href="https://github.com/23ovii/tracksy/issues" target="_blank" rel="noreferrer" style={{ color: 'var(--green)', textDecoration: 'none' }}>GitHub Issues</a> to request data deletion</span>,
+                'Transparency: This is open-source — you can see exactly what we track in the code',
+              ]} />
+            </Section>
+
+            <Section title="Third-Party Services">
+              <Ul items={[
+                "Spotify API: To access your playlists (we don't store credentials)",
+                'PostHog: For anonymous analytics (EU servers, GDPR compliant)',
+              ]} />
+            </Section>
+
+            <Section title="Changes to This Policy">
+              <P>We'll update this page if our privacy practices change. Check back occasionally.</P>
+            </Section>
+
+            <Section title="Contact">
+              <P>
+                Questions? Open an issue on{' '}
                 <a
                   href="https://github.com/23ovii/tracksy/issues"
                   target="_blank"
@@ -72,10 +109,9 @@ function Privacy() {
                   style={{ color: 'var(--green)', textDecoration: 'none' }}
                 >
                   GitHub
-                </a>{' '}
-                or email ovii.23@icloud.com. We will respond within 30 days.
-              </p>
-            </div>
+                </a>.
+              </P>
+            </Section>
 
             <div style={{
               padding: '16px 20px',
@@ -85,16 +121,8 @@ function Privacy() {
               display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16,
               flexWrap: 'wrap',
             }}>
-              <span style={{ fontSize: 13, color: 'var(--text-3)' }}>
-                Want to opt out of analytics?
-              </span>
-              <Link
-                to="/settings"
-                style={{
-                  fontSize: 13, fontWeight: 600, color: 'var(--green)',
-                  textDecoration: 'none', whiteSpace: 'nowrap',
-                }}
-              >
+              <span style={{ fontSize: 13, color: 'var(--text-3)' }}>Want to opt out of analytics?</span>
+              <Link to="/settings" style={{ fontSize: 13, fontWeight: 600, color: 'var(--green)', textDecoration: 'none', whiteSpace: 'nowrap' }}>
                 Go to Settings →
               </Link>
             </div>
