@@ -75,12 +75,12 @@ function ThemeToggle() {
             style={{
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               width: 26, height: 26, borderRadius: 50,
-              border: 'none',
-              background: active ? 'var(--glass-bg)' : 'transparent',
-              boxShadow: active ? '0 1px 4px rgba(0,0,0,0.2)' : 'none',
+              border: active ? '1px solid var(--toggle-active-border)' : '1px solid transparent',
+              background: active ? 'var(--toggle-active-bg)' : 'transparent',
+              boxShadow: active ? '0 1px 4px rgba(0,0,0,0.25)' : 'none',
               color: active ? 'var(--text)' : 'var(--text-3)',
               cursor: 'pointer',
-              transition: 'background 0.18s, color 0.18s, box-shadow 0.18s',
+              transition: 'background 0.18s, color 0.18s, box-shadow 0.18s, border-color 0.18s',
             }}
           >
             <Icon />
