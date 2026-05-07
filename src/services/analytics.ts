@@ -1,4 +1,22 @@
-import { track as vaTrack } from '@vercel/analytics';
+import posthog from 'posthog-js';
+
+export function initAnalytics() {
+  const key = import.meta.env.VITE_POSTHOG_KEY;
+  if (!key) return;
+  posthog.init(key, {
+    api_host: import.meta.env.VITE_POSTHOG_HOST || 'https://eu.i.posthog.com',
+    person_profiles: 'identified_only',
+    autocapture: false,
+    capture_pageview: false,
+    persistence: 'memory', // no cookies = no banner needed
+    disable_session_recording: true,
+    session_recording: {
+      maskAllInputs: true,
+      maskTextSelector: '.sensitive',
+      recordCrossOriginIframes: false,
+    },
+  });
+}
 
 export const TrackEvents = {
   LANDING_VIEW: 'landing_view',
@@ -30,7 +48,7 @@ function isOptedOut(): boolean {
 export function trackEvent(event: TrackEventName, properties?: Record<string, string | number>): void {
   if (isOptedOut()) return;
   try {
-    vaTrack(event, properties);
+    posthog.capture(event, properties);
   } catch (error) {
     console.error('Analytics tracking failed:', error);
   }
@@ -44,8 +62,15 @@ export function setAnalyticsDisabled(disabled: boolean): void {
   try {
     if (disabled) {
       localStorage.setItem('tracksy_analytics_disabled', 'true');
+      posthog.opt_out_capturing();
     } else {
       localStorage.removeItem('tracksy_analytics_disabled');
+      posthog.opt_in_capturing();
     }
   } catch { /* ignore */ }
+}
+
+if (import.meta.env.DEV) {
+  (window as any).posthog = posthog;
+  (window as any).trackEvent = trackEvent;
 }
