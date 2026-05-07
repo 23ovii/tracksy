@@ -141,7 +141,10 @@ function PrivacyModal({ onClose }: PrivacyModalProps) {
           </p>
 
           <button
-            onClick={() => Sentry.showReportDialog()}
+            onClick={() => {
+              const eventId = Sentry.captureMessage('User submitted report');
+              Sentry.showReportDialog({ eventId });
+            }}
             style={{
               background: 'none', border: 'none', padding: 0,
               fontSize: 13, color: 'var(--green)',
