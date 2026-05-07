@@ -463,8 +463,6 @@ function Navbar() {
               </NavLink>
             ))}
 
-            {!isAuthenticated && <ThemeToggle />}
-
             {!isAuthenticated && (
               <button
                 onClick={handleLogin}
