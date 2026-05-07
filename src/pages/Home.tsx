@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth.tsx';
 import { buildSpotifyAuthUrl } from '../services/auth.ts';
 import { trackEvent, TrackEvents } from '../services/analytics';
-import PrivacyModal from '../components/PrivacyModal';
 import Footer from '../components/Footer';
 
 interface Feature {
@@ -70,7 +69,6 @@ function Home() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const [showPrivacy, setShowPrivacy] = useState(false);
 
   useEffect(() => {
     trackEvent(TrackEvents.LANDING_VIEW);
@@ -283,8 +281,7 @@ function Home() {
       </div>
     </div>
 
-    <Footer onPrivacyClick={() => setShowPrivacy(true)} />
-    {showPrivacy && <PrivacyModal onClose={() => setShowPrivacy(false)} />}
+    <Footer />
     </>
   );
 }

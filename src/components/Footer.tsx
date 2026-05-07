@@ -1,11 +1,7 @@
 import type { MouseEvent } from 'react';
 import { Link } from 'react-router-dom';
 
-interface FooterProps {
-  onPrivacyClick?: () => void;
-}
-
-function Footer({ onPrivacyClick }: FooterProps) {
+function Footer() {
   return (
     <footer style={{
       borderTop: '1px solid var(--border)',
@@ -46,29 +42,14 @@ function Footer({ onPrivacyClick }: FooterProps) {
           Built for Spotify
         </a>
         <span style={{ fontSize: 12, color: 'var(--border2)' }}>·</span>
-        {onPrivacyClick ? (
-          <button
-            onClick={onPrivacyClick}
-            style={{
-              background: 'none', border: 'none', padding: 0,
-              fontSize: 12, color: 'var(--text-3)', cursor: 'pointer',
-              fontFamily: 'inherit', transition: 'color 0.18s',
-            }}
-            onMouseEnter={(e: MouseEvent<HTMLButtonElement>) => { e.currentTarget.style.color = 'var(--text-2)'; }}
-            onMouseLeave={(e: MouseEvent<HTMLButtonElement>) => { e.currentTarget.style.color = 'var(--text-3)'; }}
-          >
-            Privacy
-          </button>
-        ) : (
-          <Link
-            to="/privacy"
-            style={{ fontSize: 12, color: 'var(--text-3)', textDecoration: 'none', transition: 'color 0.18s' }}
-            onMouseEnter={(e: MouseEvent<HTMLAnchorElement>) => { e.currentTarget.style.color = 'var(--text-2)'; }}
-            onMouseLeave={(e: MouseEvent<HTMLAnchorElement>) => { e.currentTarget.style.color = 'var(--text-3)'; }}
-          >
-            Privacy
-          </Link>
-        )}
+        <Link
+          to="/privacy"
+          style={{ fontSize: 12, color: 'var(--text-3)', textDecoration: 'none', transition: 'color 0.18s' }}
+          onMouseEnter={(e: MouseEvent<HTMLAnchorElement>) => { e.currentTarget.style.color = 'var(--text-2)'; }}
+          onMouseLeave={(e: MouseEvent<HTMLAnchorElement>) => { e.currentTarget.style.color = 'var(--text-3)'; }}
+        >
+          Privacy
+        </Link>
         <span style={{ fontSize: 12, color: 'var(--border2)' }}>·</span>
         <Link
           to="/settings"
