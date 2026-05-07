@@ -4,7 +4,6 @@ import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/react';
 import posthog from 'posthog-js';
 import Navbar from './components/Navbar.tsx';
-import Footer from './components/Footer.tsx';
 import ProtectedRoute from './components/ProtectedRoute.tsx';
 import Home from './pages/Home.tsx';
 import Dashboard from './pages/Dashboard.tsx';
@@ -34,7 +33,6 @@ function App() {
           <Route path="/settings" element={<Settings />} />
           <Route path="*" element={<Home />} />
         </Routes>
-        <Footer />
         <Analytics />
         <SpeedInsights />
       </div>
