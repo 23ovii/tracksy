@@ -304,7 +304,7 @@ function AccountMenu({ avatarUrl, displayName, onSignOut, onWipe }: AccountMenuP
         >
           {displayName && (
             <>
-              <div style={{ padding: '10px 16px 8px', fontSize: 12, fontWeight: 600, color: 'var(--text-3)', letterSpacing: '0.01em' }}>
+              <div style={{ padding: '10px 16px 8px', fontSize: 11, fontWeight: 600, color: 'var(--text-3)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
                 {displayName}
               </div>
               <div style={{ height: 1, background: 'var(--border)' }} />
@@ -325,7 +325,7 @@ function AccountMenu({ avatarUrl, displayName, onSignOut, onWipe }: AccountMenuP
               display: 'block', width: '100%', textAlign: 'left',
               padding: '10px 16px',
               border: 'none', background: 'transparent',
-              color: 'var(--text-2)', fontFamily: 'inherit', fontSize: 13, fontWeight: 500,
+              color: 'var(--text)', fontFamily: 'inherit', fontSize: 13, fontWeight: 500,
               cursor: 'pointer',
               transition: 'background 0.14s, color 0.14s',
             }}
