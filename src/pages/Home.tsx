@@ -287,15 +287,37 @@ function Home() {
 
       <footer style={{
         borderTop: '1px solid var(--border)',
-        padding: '16px 28px',
+        padding: '18px 28px',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        flexWrap: 'wrap', gap: 12,
+        flexWrap: 'wrap', gap: 10,
         position: 'relative', zIndex: 2,
       }}>
-        <span style={{ fontSize: 12, color: 'var(--text-3)' }}>
-          © {new Date().getFullYear()} Tracksy
-        </span>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+        {/* Left — copyright + attribution */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+          <span style={{ fontSize: 12, color: 'var(--text-3)' }}>
+            © {new Date().getFullYear()} Tracksy
+          </span>
+          <span style={{ fontSize: 12, color: 'var(--border2)' }}>·</span>
+          <span style={{ fontSize: 12, color: 'var(--text-3)' }}>
+            Built by{' '}
+            <a
+              href="https://23ovii.dev"
+              target="_blank"
+              rel="noreferrer"
+              style={{
+                color: 'var(--text-2)', textDecoration: 'none', fontWeight: 500,
+                transition: 'color 0.18s',
+              }}
+              onMouseEnter={(e: MouseEvent<HTMLAnchorElement>) => { e.currentTarget.style.color = 'var(--green)'; }}
+              onMouseLeave={(e: MouseEvent<HTMLAnchorElement>) => { e.currentTarget.style.color = 'var(--text-2)'; }}
+            >
+              23ovii.dev
+            </a>
+          </span>
+        </div>
+
+        {/* Right — links */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <a
             href="https://open.spotify.com"
             target="_blank"
@@ -306,6 +328,7 @@ function Home() {
           >
             Built for Spotify
           </a>
+          <span style={{ fontSize: 12, color: 'var(--border2)' }}>·</span>
           <button
             onClick={() => setShowPrivacy(true)}
             style={{
