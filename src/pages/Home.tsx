@@ -104,8 +104,7 @@ function Home() {
     <>
     <div style={{
       minHeight: 'calc(100vh - var(--nav-h))',
-      display: 'flex', alignItems: 'center',
-      padding: '32px 28px 40px',
+      display: 'flex', flexDirection: 'column',
       position: 'relative',
       overflow: 'hidden',
     }}>
@@ -130,6 +129,10 @@ function Home() {
         ))}
       </div>
 
+      <div style={{
+        flex: 1, display: 'flex', alignItems: 'center',
+        padding: '32px 28px 40px',
+      }}>
       <div style={{
         maxWidth: 1140, width: '100%', margin: '0 auto',
         position: 'relative', zIndex: 2,
@@ -279,14 +282,36 @@ function Home() {
             );
           })}
         </div>
-        <div style={{ marginTop: 32 }}>
+      </div>
+      </div>
+
+      <footer style={{
+        borderTop: '1px solid var(--border)',
+        padding: '16px 28px',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        flexWrap: 'wrap', gap: 12,
+        position: 'relative', zIndex: 2,
+      }}>
+        <span style={{ fontSize: 12, color: 'var(--text-3)' }}>
+          © {new Date().getFullYear()} Tracksy
+        </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+          <a
+            href="https://open.spotify.com"
+            target="_blank"
+            rel="noreferrer"
+            style={{ fontSize: 12, color: 'var(--text-3)', textDecoration: 'none', transition: 'color 0.18s' }}
+            onMouseEnter={(e: MouseEvent<HTMLAnchorElement>) => { e.currentTarget.style.color = 'var(--text-2)'; }}
+            onMouseLeave={(e: MouseEvent<HTMLAnchorElement>) => { e.currentTarget.style.color = 'var(--text-3)'; }}
+          >
+            Built for Spotify
+          </a>
           <button
             onClick={() => setShowPrivacy(true)}
             style={{
               background: 'none', border: 'none', padding: 0,
               fontSize: 12, color: 'var(--text-3)', cursor: 'pointer',
-              fontFamily: 'inherit',
-              transition: 'color 0.18s',
+              fontFamily: 'inherit', transition: 'color 0.18s',
             }}
             onMouseEnter={(e: MouseEvent<HTMLButtonElement>) => { e.currentTarget.style.color = 'var(--text-2)'; }}
             onMouseLeave={(e: MouseEvent<HTMLButtonElement>) => { e.currentTarget.style.color = 'var(--text-3)'; }}
@@ -294,7 +319,7 @@ function Home() {
             Privacy
           </button>
         </div>
-      </div>
+      </footer>
     </div>
     {showPrivacy && <PrivacyModal onClose={() => setShowPrivacy(false)} />}
     </>
