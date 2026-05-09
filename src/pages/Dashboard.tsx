@@ -1,7 +1,10 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import type { CSSProperties } from 'react';
 import { useSpotify } from '../hooks/useSpotify.tsx';
+import { useSortApply } from '../hooks/useSortApply.ts';
 import SortProgress from '../components/SortProgress.tsx';
+import Toast from '../components/Toast.tsx';
+import UndoToast from '../components/dashboard/UndoToast.tsx';
 import { SORT_OPTIONS, sortTracks } from '../utils/playlistUtils.ts';
 import type { Playlist, Track } from '../types';
 import AmbientBackdrop from '../components/dashboard/AmbientBackdrop';
@@ -27,31 +30,30 @@ const GLASS: CSSProperties = {
 };
 
 function Dashboard() {
-  const { playlists, tracks, selectedPlaylist, isLoading, loadPlaylists, loadPlaylistTracks, applySort, undoLastSort, restoreOrder, cancelSort, clearSelection, getCurrentOrder } = useSpotify();
+  const spotify = useSpotify();
+  const { playlists, tracks, selectedPlaylist, isLoading, loadPlaylists, loadPlaylistTracks, cancelSort, clearSelection, getCurrentOrder } = spotify;
+
+  const sortApply = useSortApply({
+    applySort: spotify.applySort,
+    undoLastSort: spotify.undoLastSort,
+    restoreOrder: spotify.restoreOrder,
+    cancelSort,
+  });
+  const { applying, isUndo, applyProgress, rateLimitMsg, startApply, startUndo, startRestore, settle, cancel } = sortApply;
 
   const [sortBy, setSortBy] = useState('name');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
-  const [applying, setApplying] = useState(false);
   const [applied, setApplied] = useState(false);
   const [sortFeedback, setSortFeedback] = useState('');
   const [sortKey, setSortKey] = useState(0);
-  const [applyProgress, setApplyProgress] = useState(0);
-  const [rateLimitMsg, setRateLimitMsg] = useState('');
   const [undoUntil, setUndoUntil] = useState<number | null>(null);
-  const [, setUndoTick] = useState(0);
   const [presets, setPresets] = useState<SortPreset[]>(() => listPresets());
   const [toast, setToast] = useState<{ msg: string; key: number; type?: 'cancel' } | null>(null);
   const [sortHistory, setSortHistory] = useState<HistoryEntry[]>([]);
   const [showFilter, setShowFilter] = useState(false);
   const [filterQuery, setFilterQuery] = useState('');
   const filterInputRef = useRef<HTMLInputElement>(null);
-  const apiPromiseRef = useRef<Promise<{ moves: number }> | null>(null);
-  const isUndoRef = useRef(false);
-  const isRestoreRef = useRef(false);
-  const preApplyTrackIdsRef = useRef<string[]>([]);
-  const preApplyTrackKeysRef = useRef<string[]>([]);
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const undoHoverStartRef = useRef<number | null>(null);
   const { open: overlayOpen, toggle: toggleOverlay } = useShortcutsOverlay();
 
   function showToast(msg: string, type?: 'cancel') {
@@ -88,9 +90,7 @@ function Dashboard() {
     setSortKey((k) => k + 1);
   }
 
-  useEffect(() => {
-    loadPlaylists();
-  }, [loadPlaylists]);
+  useEffect(() => { loadPlaylists(); }, [loadPlaylists]);
 
   const prevPlaylistCountRef = useRef(0);
   useEffect(() => {
@@ -99,21 +99,6 @@ function Dashboard() {
       trackEvent(TrackEvents.PLAYLISTS_LOADED, { count: playlists.length });
     }
   }, [playlists.length]);
-
-  const [undoHovered, setUndoHovered] = useState(false);
-
-  useEffect(() => {
-    if (undoUntil === null) return;
-    if (undoHovered) return;
-    const id = setInterval(() => {
-      if (Date.now() >= undoUntil) {
-        setUndoUntil(null);
-      } else {
-        setUndoTick((t) => t + 1);
-      }
-    }, 50);
-    return () => clearInterval(id);
-  }, [undoUntil, undoHovered]);
 
   useEffect(() => {
     setSortHistory(selectedPlaylist ? getHistory(selectedPlaylist.id) : []);
@@ -221,7 +206,7 @@ function Dashboard() {
 
   function handleBack() {
     if (applying) {
-      cancelSort();
+      cancel();
       showToast('Sort canceled', 'cancel');
       return;
     }
@@ -241,54 +226,28 @@ function Dashboard() {
   }
 
   function handleApply() {
-    const currentOrder = getCurrentOrder();
-    preApplyTrackIdsRef.current = currentOrder.map((t) => t.id);
-    preApplyTrackKeysRef.current = buildTrackOccurrenceKeys(currentOrder);
-    setApplying(true);
-    setApplyProgress(0);
-    setRateLimitMsg('');
-    setSortFeedback('');
-    const promise = applySort(
-      sorted,
-      setApplyProgress,
-      (retryAfter) => setRateLimitMsg(`Rate limited by Spotify — retrying in ${retryAfter}s…`),
-    );
-    apiPromiseRef.current = promise;
-    promise.catch((err) => {
-      setApplying(false);
-      setApplyProgress(0);
-      setRateLimitMsg('');
-      if (err?.name !== 'AbortError') setSortFeedback('Failed to save to Spotify. Try again.');
+    startApply(sorted, getCurrentOrder(), (err: unknown) => {
+      const e = err as any;
+      if (e?.name !== 'AbortError') setSortFeedback('Failed to save to Spotify. Try again.');
     });
   }
 
   async function handleDone() {
     const playlistName = selectedPlaylist?.name;
-    const wasUndo = isUndoRef.current;
-    const wasRestore = isRestoreRef.current;
-    isUndoRef.current = false;
-    isRestoreRef.current = false;
     try {
-      const result = await apiPromiseRef.current;
-      setApplying(false);
-      setApplyProgress(0);
-      setRateLimitMsg('');
+      const { moves, wasUndo, wasRestore, preApplyIds, preApplyKeys } = await settle();
       if (wasUndo || wasRestore) {
         setUndoUntil(null);
         setApplied(false);
-        if (result?.moves === 0) {
-          setSortFeedback('Already in this order.');
-        } else {
-          setSortFeedback('Reverted.');
-        }
+        setSortFeedback(moves === 0 ? 'Already in this order.' : 'Reverted.');
         setTimeout(() => setSortFeedback(''), 3_000);
       } else {
         const label = SORT_OPTIONS.find((o) => o.id === sortBy)?.label;
-        if (result?.moves === 0) {
+        if (moves === 0) {
           setSortFeedback(`"${playlistName}" is already in this order.`);
         } else {
           setApplied(true);
-          trackEvent(TrackEvents.SORT_APPLIED, { sortBy, moves: result.moves, trackCount: sorted.length });
+          trackEvent(TrackEvents.SORT_APPLIED, { sortBy, moves, trackCount: sorted.length });
           if (playlistName) setSortFeedback(`"${playlistName}" sorted by ${label} and saved.`);
           setUndoUntil(Date.now() + 30_000);
           if (selectedPlaylist) {
@@ -297,9 +256,9 @@ function Dashboard() {
               playlistId: selectedPlaylist.id,
               appliedAt: Date.now(),
               sortLabel: label ?? sortBy,
-              trackIdsBefore: preApplyTrackIdsRef.current,
+              trackIdsBefore: preApplyIds,
               trackIdsAfter: sorted.map((t) => t.id),
-              trackKeysBefore: preApplyTrackKeysRef.current,
+              trackKeysBefore: preApplyKeys,
               trackKeysAfter: buildTrackOccurrenceKeys(sorted),
             };
             pushHistory(entry);
@@ -308,56 +267,26 @@ function Dashboard() {
         }
       }
     } catch (err: any) {
-      isUndoRef.current = false;
-      isRestoreRef.current = false;
-      setApplying(false);
-      setSortFeedback(err?.message ?? (wasUndo || wasRestore ? 'Failed to revert. Try again.' : 'Failed to save to Spotify. Try again.'));
+      setSortFeedback(err?.message ?? 'Failed to save to Spotify. Try again.');
     }
   }
 
   const handleUndo = useCallback(() => {
     trackEvent(TrackEvents.SORT_UNDONE);
     setUndoUntil(null);
-    setApplying(true);
-    setApplyProgress(0);
-    setRateLimitMsg('');
-    setSortFeedback('');
-    isUndoRef.current = true;
-    const promise = undoLastSort(
-      setApplyProgress,
-      (retryAfter) => setRateLimitMsg(`Rate limited by Spotify — retrying in ${retryAfter}s…`),
-    );
-    apiPromiseRef.current = promise;
-    promise.catch((err) => {
-      isUndoRef.current = false;
-      setApplying(false);
-      setApplyProgress(0);
-      setRateLimitMsg('');
-      if (err?.name !== 'AbortError') setSortFeedback('Failed to undo. Try again.');
+    startUndo((err: unknown) => {
+      const e = err as any;
+      if (e?.name !== 'AbortError') setSortFeedback('Failed to undo. Try again.');
     });
-  }, [undoLastSort]);
+  }, [startUndo]);
 
   const handleRestore = useCallback((entry: HistoryEntry) => {
     setUndoUntil(null);
-    setApplying(true);
-    setApplyProgress(0);
-    setRateLimitMsg('');
-    setSortFeedback('');
-    isRestoreRef.current = true;
-    const promise = restoreOrder(
-      entry.trackKeysBefore ?? entry.trackIdsBefore,
-      setApplyProgress,
-      (retryAfter) => setRateLimitMsg(`Rate limited by Spotify — retrying in ${retryAfter}s…`),
-    );
-    apiPromiseRef.current = promise;
-    promise.catch((err) => {
-      isRestoreRef.current = false;
-      setApplying(false);
-      setApplyProgress(0);
-      setRateLimitMsg('');
-      if (err?.name !== 'AbortError') setSortFeedback(err?.message ?? 'Failed to restore. Try again.');
+    startRestore(entry, (err: unknown) => {
+      const e = err as any;
+      if (e?.name !== 'AbortError') setSortFeedback(e?.message ?? 'Failed to restore. Try again.');
     });
-  }, [restoreOrder]);
+  }, [startRestore]);
 
   function handleClearHistory() {
     if (!selectedPlaylist) return;
@@ -377,7 +306,6 @@ function Dashboard() {
         animation: 'fadeUp 0.45s var(--ease-out)',
         position: 'relative', zIndex: 1,
       }}>
-
         {!selectedPlaylist && (
           <LibraryPanel
             playlists={playlists}
@@ -416,7 +344,7 @@ function Dashboard() {
             <SortProgress
               active={applying}
               progress={applyProgress}
-              label={isUndoRef.current ? 'original order' : SORT_OPTIONS.find((o) => o.id === sortBy)?.label}
+              label={isUndo ? 'original order' : SORT_OPTIONS.find((o) => o.id === sortBy)?.label}
               onDone={handleDone}
               color={accent}
               colorEnd={accent2}
@@ -472,144 +400,25 @@ function Dashboard() {
           </div>
         )}
       </div>
+
       {undoUntil !== null && !applying && (
-        <div
-          onMouseEnter={() => {
-            undoHoverStartRef.current = Date.now();
-            setUndoHovered(true);
-          }}
-          onMouseLeave={() => {
-            if (undoHoverStartRef.current !== null) {
-              const paused = Date.now() - undoHoverStartRef.current;
-              undoHoverStartRef.current = null;
-              setUndoUntil((prev) => prev !== null ? prev + paused : null);
-            }
-            setUndoHovered(false);
-          }}
-          style={{
-          position: 'fixed', bottom: 32, left: '50%', transform: 'translateX(-50%)',
-          zIndex: 100, minWidth: 300, maxWidth: 440,
-          background: 'var(--glass-bg)',
-          border: '1px solid var(--border2)',
-          borderRadius: 12,
-          boxShadow: 'var(--shadow-card)',
-          overflow: 'hidden',
-          animation: 'toastIn 0.3s var(--ease-out)',
-          backdropFilter: 'blur(16px)',
-          WebkitBackdropFilter: 'blur(16px)',
-        }}>
-          <div style={{ padding: '12px 10px 12px 16px', display: 'flex', alignItems: 'center', gap: 10 }}>
-            <span style={{ flex: 1, fontSize: 13, color: 'var(--text)', fontWeight: 500 }}>
-              Sorted by{' '}
-              <strong style={{ color: accent }}>
-                {SORT_OPTIONS.find((o) => o.id === sortBy)?.label}
-              </strong>
-              . Undo?
-            </span>
-            <button
-              onClick={handleUndo}
-              style={{
-                padding: '5px 12px',
-                background: `${accent}18`,
-                border: `1px solid ${accent}44`,
-                borderRadius: 7,
-                color: accent,
-                fontSize: 12,
-                fontWeight: 700,
-                cursor: 'pointer',
-                flexShrink: 0,
-                letterSpacing: '-0.1px',
-              }}
-            >
-              Undo
-            </button>
-            <button
-              onClick={() => setUndoUntil(null)}
-              aria-label="Dismiss"
-              style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                width: 24, height: 24, flexShrink: 0,
-                background: 'none', border: 'none',
-                color: 'var(--text-3)', fontSize: 18, lineHeight: 1,
-                cursor: 'pointer', borderRadius: 4,
-              }}
-            >
-              ×
-            </button>
-          </div>
-          <div style={{ height: 3, background: 'var(--border)' }}>
-            <div style={{
-              height: '100%',
-              width: `${undoUntil !== null ? Math.max(0, (undoUntil - Date.now()) / 30_000) * 100 : 0}%`,
-              background: `linear-gradient(90deg, ${accent}, ${accent2})`,
-              transition: 'width 0.1s linear',
-            }} />
-          </div>
-        </div>
+        <UndoToast
+          undoUntil={undoUntil}
+          sortBy={sortBy}
+          accent={accent}
+          accent2={accent2}
+          onUndo={handleUndo}
+          onDismiss={() => setUndoUntil(null)}
+        />
       )}
 
       {toast && (
-        toast.type === 'cancel' ? (
-          <div
-            key={toast.key}
-            style={{
-              position: 'fixed', bottom: undoUntil !== null ? 96 : 32,
-              left: '50%', transform: 'translateX(-50%)',
-              zIndex: 101,
-              display: 'flex', alignItems: 'center', gap: 12,
-              padding: '12px 20px 12px 14px',
-              background: 'var(--glass-bg)',
-              border: '1px solid rgba(239,68,68,0.22)',
-              borderLeft: '3px solid rgba(239,68,68,0.65)',
-              borderRadius: 12,
-              boxShadow: '0 8px 32px rgba(239,68,68,0.12), var(--shadow-card)',
-              backdropFilter: 'blur(18px)',
-              WebkitBackdropFilter: 'blur(18px)',
-              animation: 'toastIn 0.28s var(--ease-out)',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            <div style={{
-              width: 30, height: 30, borderRadius: '50%', flexShrink: 0,
-              background: 'rgba(239,68,68,0.1)',
-              border: '1px solid rgba(239,68,68,0.2)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                <path d="M9 3L3 9M3 3l6 6" stroke="rgba(239,68,68,0.9)" strokeWidth="2" strokeLinecap="round" />
-              </svg>
-            </div>
-            <div>
-              <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--error-text)', lineHeight: 1.3 }}>
-                Sort canceled
-              </div>
-              <div style={{ fontSize: 11.5, color: 'var(--text-3)', marginTop: 1 }}>
-                No changes were saved to Spotify
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div
-            key={toast.key}
-            style={{
-              position: 'fixed', bottom: undoUntil !== null ? 96 : 32,
-              left: '50%', transform: 'translateX(-50%)',
-              zIndex: 101,
-              background: 'var(--glass-bg)',
-              border: '1px solid var(--border2)',
-              borderRadius: 10,
-              boxShadow: 'var(--shadow-card)',
-              padding: '9px 18px',
-              fontSize: 13, color: 'var(--text)', fontWeight: 500,
-              backdropFilter: 'blur(16px)',
-              WebkitBackdropFilter: 'blur(16px)',
-              animation: 'toastIn 0.25s var(--ease-out)',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {toast.msg}
-          </div>
-        )
+        <Toast
+          key={toast.key}
+          msg={toast.msg}
+          type={toast.type}
+          stacked={undoUntil !== null}
+        />
       )}
     </>
   );
