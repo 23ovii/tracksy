@@ -38,7 +38,7 @@ function Dashboard() {
   const [applyProgress, setApplyProgress] = useState(0);
   const [rateLimitMsg, setRateLimitMsg] = useState('');
   const [undoUntil, setUndoUntil] = useState<number | null>(null);
-  const [undoCountdown, setUndoCountdown] = useState(100);
+  const [, setUndoTick] = useState(0);
   const [presets, setPresets] = useState<SortPreset[]>(() => listPresets());
   const [toast, setToast] = useState<{ msg: string; key: number; type?: 'cancel' } | null>(null);
   const [sortHistory, setSortHistory] = useState<HistoryEntry[]>([]);
@@ -106,11 +106,10 @@ function Dashboard() {
     if (undoUntil === null) return;
     if (undoHovered) return;
     const id = setInterval(() => {
-      const remaining = undoUntil - Date.now();
-      if (remaining <= 0) {
+      if (Date.now() >= undoUntil) {
         setUndoUntil(null);
       } else {
-        setUndoCountdown((remaining / 30_000) * 100);
+        setUndoTick((t) => t + 1);
       }
     }, 50);
     return () => clearInterval(id);
@@ -206,9 +205,14 @@ function Dashboard() {
   );
 
   function pickSort(id: string) {
-    const nextDir = sortBy === id && id !== 'discography' ? (sortDir === 'asc' ? 'desc' : 'asc') : 'asc';
-    if (sortBy === id && id !== 'discography') setSortDir(nextDir);
-    else { setSortBy(id); setSortDir('asc'); }
+    const toggling = sortBy === id && id !== 'discography';
+    const nextDir = toggling && sortDir === 'asc' ? 'desc' : 'asc';
+    if (toggling) {
+      setSortDir(nextDir);
+    } else {
+      setSortBy(id);
+      setSortDir('asc');
+    }
     trackEvent(TrackEvents.SORT_PICKED, { sortBy: id, sortDir: nextDir });
     setApplied(false);
     setSortFeedback('');
@@ -287,7 +291,6 @@ function Dashboard() {
           trackEvent(TrackEvents.SORT_APPLIED, { sortBy, moves: result.moves, trackCount: sorted.length });
           if (playlistName) setSortFeedback(`"${playlistName}" sorted by ${label} and saved.`);
           setUndoUntil(Date.now() + 30_000);
-          setUndoCountdown(100);
           if (selectedPlaylist) {
             const entry: HistoryEntry = {
               id: Date.now().toString(36) + Math.random().toString(36).slice(2),
@@ -384,7 +387,7 @@ function Dashboard() {
           />
         )}
 
-        {selectedPlaylist ? (
+        {selectedPlaylist && (
           <div style={{ ...GLASS, overflow: 'hidden' }}>
             <SorterHeader
               selectedPlaylist={selectedPlaylist}
@@ -467,7 +470,7 @@ function Dashboard() {
               onFilterClose={closeFilter}
             />
           </div>
-        ) : null}
+        )}
       </div>
       {undoUntil !== null && !applying && (
         <div
@@ -537,7 +540,7 @@ function Dashboard() {
           <div style={{ height: 3, background: 'var(--border)' }}>
             <div style={{
               height: '100%',
-              width: `${undoCountdown}%`,
+              width: `${undoUntil !== null ? Math.max(0, (undoUntil - Date.now()) / 30_000) * 100 : 0}%`,
               background: `linear-gradient(90deg, ${accent}, ${accent2})`,
               transition: 'width 0.1s linear',
             }} />

@@ -378,10 +378,6 @@ function Navbar() {
     window.location.href = await buildSpotifyAuthUrl();
   };
 
-  const handleSignOut = () => {
-    logout();
-  };
-
   const handleWipeConfirm = () => {
     trackEvent(TrackEvents.ACCOUNT_WIPED);
     logout();
@@ -491,7 +487,7 @@ function Navbar() {
               <AccountMenu
                 avatarUrl={avatarUrl}
                 displayName={displayName}
-                onSignOut={handleSignOut}
+                onSignOut={logout}
                 onWipe={() => setShowWipeModal(true)}
               />
             )}
