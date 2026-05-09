@@ -98,10 +98,10 @@ export function sortTracks(tracks: Track[], by: string, dir: 'asc' | 'desc' = 'a
     });
   }
 
+  // ISO 8601 date strings (addedAt) sort correctly as plain strings — no Date() needed
   return [...tracks].sort((a, b) => {
     let va: any = (a as any)[by];
     let vb: any = (b as any)[by];
-    if (by === 'addedAt') { va = new Date(va); vb = new Date(vb); }
     if (typeof va === 'string') { va = va.toLowerCase(); vb = vb.toLowerCase(); }
     const c = va < vb ? -1 : va > vb ? 1 : 0;
     return dir === 'asc' ? c : -c;
