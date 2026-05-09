@@ -115,6 +115,7 @@ Light and dark themes defined via CSS classes (`theme-light`, `theme-dark`) on `
 ### Components
 
 **Top-level (`src/components/`)**
+
 | Component | Description |
 |---|---|
 | `Navbar.tsx` | Sticky header with logo, nav links, theme toggle, Sign In/Out button, account menu (analytics opt-out and data wipe) |
@@ -128,6 +129,7 @@ Light and dark themes defined via CSS classes (`theme-light`, `theme-dark`) on `
 | `ErrorBoundary.tsx` | Class component catching JS errors; shows inline-styled error panel and reload button |
 
 **Dashboard sub-components (`src/components/dashboard/`)**
+
 | Component | Description |
 |---|---|
 | `LibraryPanel.tsx` | Glass-morphism panel listing the user's playlists with a refresh button |
@@ -139,6 +141,7 @@ Light and dark themes defined via CSS classes (`theme-light`, `theme-dark`) on `
 | `PlaylistCover.tsx` | Square thumbnail with playlist image or music note icon fallback |
 
 **Contexts**
+
 | Context | Description |
 |---|---|
 | `AuthContext` | Provides `token`, `refreshToken`, `expiresAt`, `isAuthenticated`, `user`, `login`, `logout` |
@@ -150,6 +153,7 @@ CSS variables (`--bg`, `--surface`, `--glass-bg`, `--border`, `--border2`, `--gr
 Note: emojis in playlist names are not visible — Inter (Google Fonts) claims the emoji unicode range, preventing system emoji font fallback. Known issue, left unresolved.
 
 ### localStorage keys
+
 | Key | Purpose |
 |---|---|
 | `tracksy_auth_state` | OAuth tokens and expiry |

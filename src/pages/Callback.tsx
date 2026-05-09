@@ -78,7 +78,7 @@ function Callback() {
           Finishing authentication...
         </h2>
         <p style={{ marginTop: 16, color: 'var(--text-2)' }}>
-          {errorMessage || 'This page captures the Spotify authorization code and exchanges it for an access token.'}
+          This page captures the Spotify authorization code and exchanges it for an access token.
         </p>
         {errorMessage && (
           <p style={{

@@ -115,6 +115,7 @@ Light/dark via `theme-light`/`theme-dark` class on `<html>`. Anti-flash script i
 ### Components
 
 **Top-level (`src/components/`)**
+
 | Component | Description |
 |---|---|
 | `Navbar.tsx` | Sticky header with logo, nav links, theme toggle, Sign In/Out, account menu |
@@ -128,6 +129,7 @@ Light/dark via `theme-light`/`theme-dark` class on `<html>`. Anti-flash script i
 | `ErrorBoundary.tsx` | Class component; catches JS errors; inline-styled error panel |
 
 **Dashboard sub-components (`src/components/dashboard/`)**
+
 | Component | Description |
 |---|---|
 | `LibraryPanel.tsx` | Playlist list with refresh button |
@@ -139,6 +141,7 @@ Light/dark via `theme-light`/`theme-dark` class on `<html>`. Anti-flash script i
 | `PlaylistCover.tsx` | Playlist thumbnail |
 
 ### localStorage keys
+
 | Key | Purpose |
 |---|---|
 | `tracksy_auth_state` | OAuth tokens and expiry |
