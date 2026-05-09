@@ -189,7 +189,7 @@ function AccountMenu({ avatarUrl, displayName, onSignOut, onWipe }: AccountMenuP
             }}
             onMouseLeave={(e: MouseEvent<HTMLButtonElement>) => {
               e.currentTarget.style.background = 'transparent';
-              e.currentTarget.style.color = 'var(--text-2)';
+              e.currentTarget.style.color = 'var(--text)';
             }}
           >
             Sign out

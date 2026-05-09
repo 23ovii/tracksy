@@ -23,6 +23,7 @@ function UndoToast({ undoUntil, sortBy, accent, accent2, onUndo, onDismiss }: Un
     if (hovered) return;
     const id = setInterval(() => {
       if (Date.now() >= localUntil) {
+        clearInterval(id);
         onDismiss();
       } else {
         setTick((t) => t + 1);
