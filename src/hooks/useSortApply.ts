@@ -31,6 +31,7 @@ export interface SettleResult {
 
 export function useSortApply({ applySort, undoLastSort, restoreOrder, cancelSort }: SortApplyDeps) {
   const [applying, setApplying] = useState(false);
+  const [isUndo, setIsUndo] = useState(false);
   const [applyProgress, setApplyProgress] = useState(0);
   const [rateLimitMsg, setRateLimitMsg] = useState('');
 
@@ -61,6 +62,7 @@ export function useSortApply({ applySort, undoLastSort, restoreOrder, cancelSort
     isUndoRef.current = false;
     isRestoreRef.current = false;
     setApplying(true);
+    setIsUndo(false);
     setApplyProgress(0);
     setRateLimitMsg('');
     const promise = applySort(sortedTracks, setApplyProgress, onRateLimit);
@@ -72,6 +74,7 @@ export function useSortApply({ applySort, undoLastSort, restoreOrder, cancelSort
     isUndoRef.current = true;
     isRestoreRef.current = false;
     setApplying(true);
+    setIsUndo(true);
     setApplyProgress(0);
     setRateLimitMsg('');
     const promise = undoLastSort(setApplyProgress, onRateLimit);
@@ -116,5 +119,5 @@ export function useSortApply({ applySort, undoLastSort, restoreOrder, cancelSort
 
   const cancel = useCallback(() => cancelSort(), [cancelSort]);
 
-  return { applying, applyProgress, rateLimitMsg, startApply, startUndo, startRestore, settle, cancel };
+  return { applying, isUndo, applyProgress, rateLimitMsg, startApply, startUndo, startRestore, settle, cancel };
 }

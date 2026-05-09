@@ -39,7 +39,7 @@ function Dashboard() {
     restoreOrder: spotify.restoreOrder,
     cancelSort,
   });
-  const { applying, applyProgress, rateLimitMsg, startApply, startUndo, startRestore, settle, cancel } = sortApply;
+  const { applying, isUndo, applyProgress, rateLimitMsg, startApply, startUndo, startRestore, settle, cancel } = sortApply;
 
   const [sortBy, setSortBy] = useState('name');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
@@ -344,7 +344,7 @@ function Dashboard() {
             <SortProgress
               active={applying}
               progress={applyProgress}
-              label={SORT_OPTIONS.find((o) => o.id === sortBy)?.label}
+              label={isUndo ? 'original order' : SORT_OPTIONS.find((o) => o.id === sortBy)?.label}
               onDone={handleDone}
               color={accent}
               colorEnd={accent2}
