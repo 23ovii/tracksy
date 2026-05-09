@@ -63,15 +63,32 @@ function Callback() {
   }, [login, navigate]);
 
   return (
-    <div className="flex w-full justify-center p-6">
-      <section className="w-full max-w-3xl rounded-3xl border border-slate-700 bg-white/5 p-10 text-center text-slate-200 shadow-glow">
-        <p className="text-sm uppercase tracking-[0.32em] text-spotify-green">OAuth callback</p>
-        <h2 className="mt-6 text-3xl font-semibold text-white">Finishing authentication...</h2>
-        <p className="mt-4 text-slate-400">
+    <div style={{ display: 'flex', width: '100%', justifyContent: 'center', padding: 24 }}>
+      <section style={{
+        width: '100%', maxWidth: 768, borderRadius: 24,
+        border: '1px solid var(--border2)',
+        background: 'var(--surface)',
+        padding: 40, textAlign: 'center',
+        boxShadow: 'var(--shadow-card)',
+      }}>
+        <p style={{ fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.32em', color: 'var(--green)' }}>
+          OAuth callback
+        </p>
+        <h2 style={{ marginTop: 24, fontSize: 28, fontWeight: 600, color: 'var(--text)' }}>
+          Finishing authentication...
+        </h2>
+        <p style={{ marginTop: 16, color: 'var(--text-2)' }}>
           {errorMessage || 'This page captures the Spotify authorization code and exchanges it for an access token.'}
         </p>
         {errorMessage && (
-          <p className="mt-4 rounded-3xl bg-rose-500/10 px-4 py-3 text-sm text-rose-200">{errorMessage}</p>
+          <p style={{
+            marginTop: 16, borderRadius: 24,
+            background: 'rgba(244,63,94,0.10)',
+            padding: '12px 16px', fontSize: 14,
+            color: 'var(--error-text)',
+          }}>
+            {errorMessage}
+          </p>
         )}
       </section>
     </div>

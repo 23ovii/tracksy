@@ -26,14 +26,31 @@ class ErrorBoundary extends React.Component<Props, State> {
   render() {
     if (this.state.hasError) {
       return (
-        <div className="flex w-full justify-center p-6">
-          <section className="w-full max-w-3xl rounded-3xl border border-slate-700 bg-white/5 p-10 text-center text-slate-200 shadow-glow">
-            <p className="text-sm uppercase tracking-[0.32em] text-spotify-green">Error</p>
-            <h2 className="mt-6 text-3xl font-semibold text-white">Something went wrong</h2>
-            <p className="mt-4 font-mono text-xs text-slate-400">{this.state.error?.message}</p>
+        <div style={{ display: 'flex', width: '100%', justifyContent: 'center', padding: 24 }}>
+          <section style={{
+            width: '100%', maxWidth: 768, borderRadius: 24,
+            border: '1px solid var(--border2)',
+            background: 'var(--surface)',
+            padding: 40, textAlign: 'center',
+            boxShadow: 'var(--shadow-card)',
+          }}>
+            <p style={{ fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.32em', color: 'var(--green)' }}>
+              Error
+            </p>
+            <h2 style={{ marginTop: 24, fontSize: 28, fontWeight: 600, color: 'var(--text)' }}>
+              Something went wrong
+            </h2>
+            <p style={{ marginTop: 16, fontFamily: 'monospace', fontSize: 12, color: 'var(--text-2)' }}>
+              {this.state.error?.message}
+            </p>
             <button
               onClick={() => window.location.reload()}
-              className="mt-6 rounded-full bg-spotify-green px-6 py-2 text-sm font-semibold text-black hover:bg-green-400"
+              style={{
+                marginTop: 24, borderRadius: 999,
+                background: 'var(--green)', padding: '8px 24px',
+                fontSize: 14, fontWeight: 600, color: '#000',
+                border: 'none', cursor: 'pointer',
+              }}
             >
               Reload page
             </button>
