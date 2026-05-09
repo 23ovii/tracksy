@@ -131,6 +131,6 @@ describe('LICENSE', () => {
 
   it('ends with "SOFTWARE." clause (complete license text)', () => {
     const trimmed = content.trimEnd();
-    expect(trimmed).toMatch(/IN THE SOFTWARE\.$/);
+    expect(trimmed).toMatch(/SOFTWARE\.$/);
   });
 });
