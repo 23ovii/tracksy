@@ -14,7 +14,7 @@ function randomString(length = 64): string {
   const values = new Uint32Array(length);
   window.crypto.getRandomValues(values);
   for (let i = 0; i < length; i += 1) {
-    result += charset[values[i] % charset.length];
+    result += charset[values[i]! % charset.length]!;
   }
   return result;
 }

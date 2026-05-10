@@ -13,7 +13,7 @@ interface TrackTableProps {
   onTogglePreview: () => void;
   showFilter?: boolean;
   filterQuery?: string;
-  filterInputRef?: RefObject<HTMLInputElement>;
+  filterInputRef?: RefObject<HTMLInputElement | null>;
   onFilterChange?: (q: string) => void;
   onFilterClose?: () => void;
 }
@@ -151,15 +151,18 @@ function TrackTable({
         </div>
       ) : (
         <div key={sortKey} style={{ maxHeight: 480, overflowY: 'auto' }}>
-          {sorted.map((t, i) => (
-            <TrackItem
-              key={`${t.id}-${i}`}
-              track={t}
-              index={i}
-              sortBy={sortBy}
-              delta={withDelta ? diffMap!.get(t) : undefined}
-            />
-          ))}
+          {sorted.map((t, i) => {
+            const delta = withDelta ? diffMap!.get(t) : undefined;
+            return (
+              <TrackItem
+                key={`${t.id}-${i}`}
+                track={t}
+                index={i}
+                sortBy={sortBy}
+                {...(delta !== undefined ? { delta } : {})}
+              />
+            );
+          })}
         </div>
       )}
     </>
