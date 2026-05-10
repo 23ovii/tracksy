@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { sortTracks, removeDuplicateTracks } from './playlistUtils';
+
 import type { Track } from '../types';
+
+import { sortTracks, removeDuplicateTracks } from './playlistUtils';
 
 function makeTrack(overrides: Partial<Track>): Track {
   return {

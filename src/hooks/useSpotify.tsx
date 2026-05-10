@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef } from 'react';
-import { useAuth } from './useAuth.tsx';
+
 import {
   getSpotifyPlaylists,
   getSpotifyPlaylistTracks,
@@ -7,6 +7,8 @@ import {
 } from '../services/spotify.ts';
 import type { Track, Playlist } from '../types';
 import { restoreTracksFromKeys } from '../utils/trackIdentity.ts';
+
+import { useAuth } from './useAuth.tsx';
 
 export function useSpotify() {
   const { token } = useAuth();

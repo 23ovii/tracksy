@@ -1,4 +1,5 @@
 import type { MouseEvent } from 'react';
+
 import type { Playlist } from '../types';
 
 interface PlaylistCardProps {

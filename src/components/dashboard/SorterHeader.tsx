@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import type { MouseEvent } from 'react';
+
 import type { Playlist } from '../../types';
 import type { HistoryEntry } from '../../services/sortHistory';
+
 import PlaylistCover from './PlaylistCover';
 
 interface SorterHeaderProps {
@@ -221,7 +223,9 @@ function SorterHeader({
       {drawerOpen && (
         <>
           <div
+            role="presentation"
             onClick={() => setDrawerOpen(false)}
+            onKeyDown={(e) => { if (e.key === 'Escape') setDrawerOpen(false); }}
             style={{
               position: 'fixed', inset: 0, zIndex: 200,
               background: 'var(--modal-backdrop)',

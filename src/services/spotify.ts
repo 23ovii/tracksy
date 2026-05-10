@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any -- Spotify API responses are untyped; replaced in PR #4 */
 import type { Track, Playlist, SpotifyUser } from '../types';
 
 const COLOR_PAIRS: [string, string][] = [

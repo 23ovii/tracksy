@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
+
 import type { Track } from '../types';
+
 import {
   buildTrackOccurrenceKeys,
   mapTracksByOccurrenceKey,

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import type { CSSProperties } from 'react';
+
 import { useSpotify } from '../hooks/useSpotify.tsx';
 import { useSortApply } from '../hooks/useSortApply.ts';
 import SortProgress from '../components/SortProgress.tsx';
@@ -70,8 +71,8 @@ function Dashboard() {
       setPresets(listPresets());
       trackEvent(TrackEvents.PRESET_SAVED);
       showToast('Preset saved');
-    } catch (err: any) {
-      showToast(err?.message ?? 'Could not save preset.');
+    } catch (err: unknown) {
+      showToast(err instanceof Error ? err.message : 'Could not save preset.');
     }
   }
 
@@ -227,8 +228,7 @@ function Dashboard() {
 
   function handleApply() {
     startApply(sorted, getCurrentOrder(), (err: unknown) => {
-      const e = err as any;
-      if (e?.name !== 'AbortError') setSortFeedback('Failed to save to Spotify. Try again.');
+      if ((err as { name?: string })?.name !== 'AbortError') setSortFeedback('Failed to save to Spotify. Try again.');
     });
   }
 
@@ -266,8 +266,8 @@ function Dashboard() {
           }
         }
       }
-    } catch (err: any) {
-      setSortFeedback(err?.message ?? 'Failed to save to Spotify. Try again.');
+    } catch (err: unknown) {
+      setSortFeedback(err instanceof Error ? err.message : 'Failed to save to Spotify. Try again.');
     }
   }
 
@@ -275,15 +275,14 @@ function Dashboard() {
     trackEvent(TrackEvents.SORT_UNDONE);
     setUndoUntil(null);
     startUndo((err: unknown) => {
-      const e = err as any;
-      if (e?.name !== 'AbortError') setSortFeedback('Failed to undo. Try again.');
+      if ((err as { name?: string })?.name !== 'AbortError') setSortFeedback('Failed to undo. Try again.');
     });
   }, [startUndo]);
 
   const handleRestore = useCallback((entry: HistoryEntry) => {
     setUndoUntil(null);
     startRestore(entry, (err: unknown) => {
-      const e = err as any;
+      const e = err as { name?: string; message?: string };
       if (e?.name !== 'AbortError') setSortFeedback(e?.message ?? 'Failed to restore. Try again.');
     });
   }, [startRestore]);

@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+
 import { useShortcutsOverlay } from '../context/ShortcutsOverlayContext';
 import { SORT_OPTIONS } from '../utils/playlistUtils';
 
@@ -63,7 +64,9 @@ export default function ShortcutsOverlay() {
   return (
     <div
       ref={backdropRef}
+      role="presentation"
       onClick={(e) => { if (e.target === backdropRef.current) setOpen(false); }}
+      onKeyDown={(e) => { if (e.key === 'Escape') setOpen(false); }}
       style={{
         position: 'fixed', inset: 0, zIndex: 1000,
         background: 'var(--modal-backdrop)',
