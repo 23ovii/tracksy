@@ -13,6 +13,8 @@ function makeTrack(id: string, name = id): Track {
     name,
     artist: 'Artist',
     album: 'Album',
+    albumYear: 0,
+    trackNumber: 0,
     durationMs: 180000,
     addedAt: '2024-01-01T00:00:00Z',
     popularity: 50,

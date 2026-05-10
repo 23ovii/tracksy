@@ -19,7 +19,7 @@ export const SORT_OPTIONS: SortOption[] = [
 export function sortTracks(tracks: Track[], by: string, dir: 'asc' | 'desc' = 'asc'): Track[] {
   if (by === 'discography') {
     const normalAlbum = (t: Track) => t.album.toLowerCase().trim();
-    const primaryArtist = (t: Track) => t.artist.split(',')[0].trim().toLowerCase();
+    const primaryArtist = (t: Track) => t.artist.split(',')[0]!.trim().toLowerCase();
 
     // Group tracks by album name — album is the source of truth, not artist string
     const albumTracks = new Map<string, Track[]>();
@@ -37,7 +37,7 @@ export function sortTracks(tracks: Track[], by: string, dir: 'asc' | 'desc' = 'a
         const pa = primaryArtist(t);
         freq.set(pa, (freq.get(pa) ?? 0) + 1);
       }
-      const canonical = [...freq.entries()].sort((a, b) => b[1] - a[1])[0][0];
+      const canonical = [...freq.entries()].sort((a, b) => b[1] - a[1])[0]![0];
       albumArtist.set(album, canonical);
     }
 

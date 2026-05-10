@@ -11,8 +11,10 @@
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint src",
+    "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "validate": "npm run typecheck && npm run lint && npm test"
   },
   "dependencies": {
     "@vercel/analytics": "^2.0.1",

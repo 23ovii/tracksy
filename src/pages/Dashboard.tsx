@@ -58,7 +58,7 @@ function Dashboard() {
 
   function showToast(msg: string, type?: 'cancel') {
     if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
-    setToast({ msg, key: Date.now(), type });
+    setToast(type !== undefined ? { msg, key: Date.now(), type } : { msg, key: Date.now() });
     toastTimerRef.current = setTimeout(() => setToast(null), type === 'cancel' ? 3_000 : 2_500);
   }
 
@@ -416,7 +416,7 @@ function Dashboard() {
         <Toast
           key={toast.key}
           msg={toast.msg}
-          type={toast.type}
+          {...(toast.type !== undefined ? { type: toast.type } : {})}
           stacked={undoUntil !== null}
         />
       )}

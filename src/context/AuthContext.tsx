@@ -41,10 +41,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const applyToken = useCallback((tokenResponse: TokenResponse): number => {
     const expiresAt = Date.now() + (tokenResponse.expires_in ?? 3600) * 1000;
+    const token = tokenResponse.refresh_token ?? authState?.refresh_token;
     setAuthState({
       access_token: tokenResponse.access_token,
-      refresh_token: tokenResponse.refresh_token ?? authState?.refresh_token,
       expires_at: expiresAt,
+      ...(token !== undefined ? { refresh_token: token } : {}),
     });
     return expiresAt;
   }, [authState?.refresh_token]);

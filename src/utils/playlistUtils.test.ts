@@ -5,9 +5,12 @@ import type { Track } from '../types';
 function makeTrack(overrides: Partial<Track>): Track {
   return {
     id: 'id',
+    uri: '',
     name: 'Track Name',
     artist: 'Artist Name',
     album: 'Album',
+    albumYear: 0,
+    trackNumber: 0,
     durationMs: 180000,
     addedAt: '2024-01-01T00:00:00Z',
     popularity: 50,
@@ -126,6 +129,6 @@ describe('removeDuplicateTracks', () => {
       makeTrack({ id: 'dup', name: 'Second', popularity: 20 }),
     ];
     const result = removeDuplicateTracks(tracks);
-    expect(result[0].name).toBe('First');
+    expect(result[0]!.name).toBe('First');
   });
 });
