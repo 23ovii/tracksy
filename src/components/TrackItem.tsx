@@ -1,4 +1,5 @@
 import type { MouseEvent } from 'react';
+
 import { SORT_OPTIONS } from '../utils/playlistUtils.ts';
 import type { Track } from '../types';
 

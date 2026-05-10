@@ -71,6 +71,6 @@ export function setAnalyticsDisabled(disabled: boolean): void {
 }
 
 if (import.meta.env.DEV) {
-  (window as any).posthog = posthog;
-  (window as any).trackEvent = trackEvent;
+  (window as unknown as { posthog: unknown }).posthog = posthog;
+  (window as unknown as { trackEvent: unknown }).trackEvent = trackEvent;
 }

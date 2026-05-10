@@ -1,7 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
 import type { MouseEvent } from 'react';
-import PlaylistCard from './PlaylistCard.tsx';
+
 import type { Playlist } from '../types';
+
+import PlaylistCard from './PlaylistCard.tsx';
 
 interface PlaylistSliderProps {
   playlists: Playlist[];

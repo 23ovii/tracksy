@@ -3,6 +3,7 @@ import { Routes, Route, useLocation } from 'react-router-dom';
 import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/react';
 import posthog from 'posthog-js';
+
 import Navbar from './components/Navbar.tsx';
 import ProtectedRoute from './components/ProtectedRoute.tsx';
 import Home from './pages/Home.tsx';

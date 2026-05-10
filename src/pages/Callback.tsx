@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+
 import { useAuth } from '../hooks/useAuth.tsx';
 import { exchangeSpotifyCode, verifyOAuthState } from '../services/auth.ts';
 import { trackEvent, TrackEvents } from '../services/analytics';
 
-function classifyOAuthError(error: any): string {
-  const message = String(error?.message ?? '').toLowerCase();
+function classifyOAuthError(error: unknown): string {
+  const message = String((error as { message?: string })?.message ?? '').toLowerCase();
 
   if (message.includes('invalid_grant') || message.includes('grant')) {
     return 'SPOTIFY_INVALID_GRANT';
@@ -53,9 +54,9 @@ function Callback() {
         login(tokenData);
         trackEvent(TrackEvents.OAUTH_COMPLETE);
         navigate('/dashboard');
-      } catch (error: any) {
+      } catch (error: unknown) {
         trackEvent(TrackEvents.OAUTH_ERROR, { reason: classifyOAuthError(error) });
-        setErrorMessage(error.message);
+        setErrorMessage(error instanceof Error ? error.message : 'Authentication failed.');
       }
     }
 

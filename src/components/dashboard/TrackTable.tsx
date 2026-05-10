@@ -1,4 +1,5 @@
 import type { RefObject } from 'react';
+
 import type { Track } from '../../types';
 import TrackItem from '../TrackItem';
 

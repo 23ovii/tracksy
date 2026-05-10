@@ -1,5 +1,6 @@
 import { createContext, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
+
 import { refreshSpotifyToken } from '../services/auth.ts';
 import { getSpotifyCurrentUser } from '../services/spotify.ts';
 import type { TokenResponse, AuthContextValue, SpotifyUser } from '../types';

@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import type { MouseEvent } from 'react';
+
 import type { Playlist } from '../../types';
 import type { HistoryEntry } from '../../services/sortHistory';
+
 import PlaylistCover from './PlaylistCover';
 
 interface SorterHeaderProps {
@@ -46,6 +48,13 @@ function SorterHeader({
   useEffect(() => {
     if (applying) setDrawerOpen(false);
   }, [applying]);
+
+  useEffect(() => {
+    if (!drawerOpen) return;
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') setDrawerOpen(false); };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [drawerOpen]);
 
   const reversed = [...historyEntries].reverse();
 
@@ -221,6 +230,7 @@ function SorterHeader({
       {drawerOpen && (
         <>
           <div
+            role="presentation"
             onClick={() => setDrawerOpen(false)}
             style={{
               position: 'fixed', inset: 0, zIndex: 200,

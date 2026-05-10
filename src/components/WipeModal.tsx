@@ -18,10 +18,9 @@ function WipeModal({ onClose, onConfirm }: WipeModalProps) {
 
   return (
     <div
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="wipe-modal-title"
+      role="presentation"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+      onKeyDown={(e) => { if (e.key === 'Escape') onClose(); }}
       style={{
         position: 'fixed', inset: 0, zIndex: 1000,
         background: 'rgba(0,0,0,0.55)',
@@ -30,15 +29,19 @@ function WipeModal({ onClose, onConfirm }: WipeModalProps) {
         padding: 24,
       }}
     >
-      <div style={{
-        background: 'var(--surface)',
-        border: '1px solid var(--border)',
-        borderRadius: 16,
-        padding: '28px 32px',
-        maxWidth: 460,
-        width: '100%',
-        boxShadow: '0 24px 64px rgba(0,0,0,0.4)',
-      }}>
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="wipe-modal-title"
+        style={{
+          background: 'var(--surface)',
+          border: '1px solid var(--border)',
+          borderRadius: 16,
+          padding: '28px 32px',
+          maxWidth: 460,
+          width: '100%',
+          boxShadow: '0 24px 64px rgba(0,0,0,0.4)',
+        }}>
         {step === 'confirm' ? (
           <>
             <h2 id="wipe-modal-title" style={{ margin: '0 0 12px', fontSize: 18, fontWeight: 700, color: 'var(--text)' }}>

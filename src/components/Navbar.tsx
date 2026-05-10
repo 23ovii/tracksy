@@ -1,9 +1,11 @@
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import type { MouseEvent } from 'react';
 import { useState } from 'react';
+
 import { useAuth } from '../hooks/useAuth.tsx';
 import { buildSpotifyAuthUrl } from '../services/auth.ts';
 import { trackEvent, TrackEvents } from '../services/analytics.ts';
+
 import AccountMenu from './AccountMenu.tsx';
 import WipeModal from './WipeModal.tsx';
 

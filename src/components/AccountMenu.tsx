@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { JSX, MouseEvent } from 'react';
+
 import { useTheme } from '../hooks/useTheme.ts';
 import type { Theme } from '../hooks/useTheme.ts';
 

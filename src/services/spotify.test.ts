@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+
 import { playlistColors } from './spotify';
 
 const COLOR_PAIRS_LENGTH = 14;
