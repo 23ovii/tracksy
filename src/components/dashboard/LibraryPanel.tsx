@@ -1,4 +1,5 @@
 import type { CSSProperties, MouseEvent } from 'react';
+
 import type { Playlist } from '../../types';
 import PlaylistCard from '../PlaylistCard';
 

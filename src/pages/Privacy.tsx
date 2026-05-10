@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { ReactNode } from 'react';
+
 import { getAnalyticsDisabled, setAnalyticsDisabled } from '../services/analytics';
 import Footer from '../components/Footer';
 

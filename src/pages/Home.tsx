@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import type { JSX, MouseEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
+
 import { useAuth } from '../hooks/useAuth.tsx';
 import { buildSpotifyAuthUrl } from '../services/auth.ts';
 import { trackEvent, TrackEvents } from '../services/analytics';
@@ -84,9 +85,9 @@ function Home() {
     setError('');
     try {
       window.location.href = await buildSpotifyAuthUrl();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      setError(err.message);
+      setError(err instanceof Error ? err.message : 'Failed to start sign-in.');
       setIsLoading(false);
     }
   };

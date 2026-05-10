@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import type { MouseEvent, KeyboardEvent } from 'react';
+
 import type { SortPreset } from '../../services/presets';
 import { SORT_OPTIONS } from '../../utils/playlistUtils';
 
