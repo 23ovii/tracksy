@@ -90,7 +90,7 @@ describe('LICENSE', () => {
   });
 
   it('starts with "MIT License" on the first line', () => {
-    expect(lines[0].trim()).toBe('MIT License');
+    expect(lines[0]!.trim()).toBe('MIT License');
   });
 
   it('identifies the license as MIT', () => {
