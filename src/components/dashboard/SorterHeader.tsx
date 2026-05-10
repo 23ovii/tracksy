@@ -49,6 +49,13 @@ function SorterHeader({
     if (applying) setDrawerOpen(false);
   }, [applying]);
 
+  useEffect(() => {
+    if (!drawerOpen) return;
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') setDrawerOpen(false); };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [drawerOpen]);
+
   const reversed = [...historyEntries].reverse();
 
   return (
@@ -225,7 +232,6 @@ function SorterHeader({
           <div
             role="presentation"
             onClick={() => setDrawerOpen(false)}
-            onKeyDown={(e) => { if (e.key === 'Escape') setDrawerOpen(false); }}
             style={{
               position: 'fixed', inset: 0, zIndex: 200,
               background: 'var(--modal-backdrop)',
