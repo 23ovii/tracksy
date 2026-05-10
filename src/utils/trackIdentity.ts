@@ -13,7 +13,7 @@ export function buildTrackOccurrenceKeys(tracks: Track[]): string[] {
 
 export function mapTracksByOccurrenceKey(tracks: Track[]): Map<string, Track> {
   const keys = buildTrackOccurrenceKeys(tracks);
-  return new Map(keys.map((key, index) => [key, tracks[index]]));
+  return new Map(keys.map((key, index) => [key, tracks[index]!]));
 }
 
 export function restoreTracksFromKeys(baseline: Track[], targetKeys: string[]): Track[] | null {

@@ -20,7 +20,7 @@ const COLOR_PAIRS: [string, string][] = [
 export function playlistColors(id: string): [string, string] {
   let hash = 0;
   for (const ch of id) hash = (hash * 31 + ch.charCodeAt(0)) >>> 0;
-  return COLOR_PAIRS[hash % COLOR_PAIRS.length];
+  return COLOR_PAIRS[hash % COLOR_PAIRS.length]!;
 }
 
 function mapPlaylist(item: any): Playlist {
@@ -94,7 +94,7 @@ async function writeSpotify(
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(body),
-    signal,
+    signal: signal ?? null,
   });
 
   if (response.status === 429) {
@@ -186,7 +186,7 @@ export async function savePlaylistTracks(
   for (let i = 0; i < target.length; i++) {
     signal?.throwIfAborted();
 
-    const targetOrigIdx = target[i];
+    const targetOrigIdx = target[i]!;
     const currentPos = slot.get(targetOrigIdx)!;
     if (currentPos === i) continue;
 
@@ -210,7 +210,7 @@ export async function savePlaylistTracks(
     const lo = Math.min(currentPos, i);
     const hi = Math.max(currentPos, i);
     for (let j = lo; j <= hi; j++) {
-      slot.set(current[j], j);
+      slot.set(current[j]!, j);
     }
 
     moves++;
