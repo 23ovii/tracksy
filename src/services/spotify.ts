@@ -1,5 +1,12 @@
-/* eslint-disable @typescript-eslint/no-explicit-any -- Spotify API responses are untyped; replaced in PR #4 */
 import type { Track, Playlist, SpotifyUser } from '../types';
+
+import type {
+  SpotifyErrorResponse,
+  SpotifyPaging,
+  SpotifyPlaylistObject,
+  SpotifyPlaylistTrackItem,
+  SpotifyUserObject,
+} from './spotify.types';
 
 const COLOR_PAIRS: [string, string][] = [
   ['#e8622a', '#e84080'],
@@ -24,27 +31,28 @@ export function playlistColors(id: string): [string, string] {
   return COLOR_PAIRS[hash % COLOR_PAIRS.length]!;
 }
 
-function mapPlaylist(item: any): Playlist {
+function mapPlaylist(item: SpotifyPlaylistObject): Playlist {
   const [color1, color2] = playlistColors(item.id);
+  const imageUrl = item.images?.[0]?.url;
   return {
     id: item.id,
     name: item.name,
     trackCount: item.tracks?.total ?? 0,
     color1,
     color2,
-    imageUrl: item.images?.[0]?.url,
+    ...(imageUrl !== undefined && { imageUrl }),
   };
 }
 
-function mapTrack(item: any): Track | null {
+function mapTrack(item: SpotifyPlaylistTrackItem): Track | null {
   const track = item.track;
-  if (!track) return null;
+  if (!track || item.is_local || track.uri.startsWith('spotify:local:')) return null;
 
   return {
     id: track.id || track.uri,
-    uri: track.uri as string,
+    uri: track.uri,
     name: track.name,
-    artist: track.artists?.map((a: any) => a.name).join(', ') ?? 'Unknown artist',
+    artist: track.artists?.map((a) => a.name).join(', ') ?? 'Unknown artist',
     album: track.album?.name ?? '',
     albumYear: parseInt(track.album?.release_date?.slice(0, 4) ?? '0', 10),
     trackNumber: track.track_number ?? 0,
@@ -54,22 +62,22 @@ function mapTrack(item: any): Track | null {
   };
 }
 
-async function fetchSpotify(url: string, token: string): Promise<any> {
+async function fetchSpotify<T>(url: string, token: string): Promise<T> {
   const response = await fetch(url, {
     headers: { Authorization: `Bearer ${token}` },
   });
 
   if (!response.ok) {
-    const body = await response.json().catch(() => null);
+    const body = await response.json().catch(() => null) as SpotifyErrorResponse | null;
     const msg = body?.error?.message || body?.error_description || response.statusText || `HTTP ${response.status}`;
     throw new Error(`Spotify API error: ${msg}`);
   }
 
-  return response.json();
+  return response.json() as Promise<T>;
 }
 
 export async function getSpotifyCurrentUser(token: string): Promise<SpotifyUser> {
-  const data = await fetchSpotify('https://api.spotify.com/v1/me', token);
+  const data = await fetchSpotify<SpotifyUserObject>('https://api.spotify.com/v1/me', token);
   return {
     id: data.id,
     display_name: data.display_name ?? null,
@@ -116,11 +124,11 @@ async function writeSpotify(
   }
 }
 
-async function fetchAllPages(firstUrl: string, token: string): Promise<any[]> {
-  const items: any[] = [];
+async function fetchAllPages<T>(firstUrl: string, token: string): Promise<T[]> {
+  const items: T[] = [];
   let url: string | null = firstUrl;
   while (url) {
-    const data = await fetchSpotify(url, token);
+    const data: SpotifyPaging<T> = await fetchSpotify<SpotifyPaging<T>>(url, token);
     items.push(...data.items);
     url = data.next;
   }
@@ -129,16 +137,16 @@ async function fetchAllPages(firstUrl: string, token: string): Promise<any[]> {
 
 export async function getSpotifyPlaylists(token: string): Promise<Playlist[]> {
   const [user, items] = await Promise.all([
-    fetchSpotify('https://api.spotify.com/v1/me', token),
-    fetchAllPages('https://api.spotify.com/v1/me/playlists?limit=50', token),
+    fetchSpotify<SpotifyUserObject>('https://api.spotify.com/v1/me', token),
+    fetchAllPages<SpotifyPlaylistObject>('https://api.spotify.com/v1/me/playlists?limit=50', token),
   ]);
   return items
-    .filter((item: any) => item.owner.id === user.id)
+    .filter((item) => item.owner.id === user.id)
     .map(mapPlaylist);
 }
 
 export async function getSpotifyPlaylistTracks(token: string, playlistId: string): Promise<Track[]> {
-  const items = await fetchAllPages(`https://api.spotify.com/v1/playlists/${playlistId}/tracks?limit=100`, token);
+  const items = await fetchAllPages<SpotifyPlaylistTrackItem>(`https://api.spotify.com/v1/playlists/${playlistId}/tracks?limit=100`, token);
   return items.map(mapTrack).filter((t): t is Track => t !== null);
 }
 
