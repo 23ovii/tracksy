@@ -7,6 +7,7 @@ import SortProgress from '../components/SortProgress.tsx';
 import Toast from '../components/Toast.tsx';
 import UndoToast from '../components/dashboard/UndoToast.tsx';
 import { SORT_OPTIONS, sortTracks } from '../utils/playlistUtils.ts';
+import type { SortKey, SortDir } from '../utils/playlistUtils.ts';
 import type { Playlist, Track } from '../types';
 import AmbientBackdrop from '../components/dashboard/AmbientBackdrop';
 import LibraryPanel from '../components/dashboard/LibraryPanel';
@@ -42,8 +43,8 @@ function Dashboard() {
   });
   const { applying, isUndo, applyProgress, rateLimitMsg, startApply, startUndo, startRestore, settle, cancel } = sortApply;
 
-  const [sortBy, setSortBy] = useState('name');
-  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
+  const [sortBy, setSortBy] = useState<SortKey>('name');
+  const [sortDir, setSortDir] = useState<SortDir>('asc');
   const [applied, setApplied] = useState(false);
   const [sortFeedback, setSortFeedback] = useState('');
   const [sortKey, setSortKey] = useState(0);
@@ -190,7 +191,7 @@ function Dashboard() {
     },
   );
 
-  function pickSort(id: string) {
+  function pickSort(id: SortKey) {
     const toggling = sortBy === id && id !== 'discography';
     const nextDir = toggling && sortDir === 'asc' ? 'desc' : 'asc';
     if (toggling) {

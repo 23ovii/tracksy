@@ -1,12 +1,13 @@
 import type { MouseEvent } from 'react';
 
 import { SORT_OPTIONS } from '../../utils/playlistUtils';
+import type { SortKey, SortDir } from '../../utils/playlistUtils';
 import { useShortcutsOverlay } from '../../context/ShortcutsOverlayContext';
 
 interface SortChipsProps {
-  sortBy: string;
-  sortDir: 'asc' | 'desc';
-  onPick: (id: string) => void;
+  sortBy: SortKey;
+  sortDir: SortDir;
+  onPick: (id: SortKey) => void;
   disabled?: boolean;
 }
 
