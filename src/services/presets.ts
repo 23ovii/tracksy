@@ -1,8 +1,10 @@
+import type { SortKey, SortDir } from '../utils/playlistUtils';
+
 export interface SortPreset {
   id: string;
   name: string;
-  sortBy: string;
-  sortDir: 'asc' | 'desc';
+  sortBy: SortKey;
+  sortDir: SortDir;
   smartOpts?: { shape: string; intensity: number };
   createdAt: number;
 }
