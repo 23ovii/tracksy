@@ -8,25 +8,25 @@ export default function StatusBanner({ message, onDismiss }: Props) {
     <div
       role="alert"
       style={{
-        background: 'rgba(234,179,8,0.10)',
-        borderBottom: '1px solid rgba(234,179,8,0.28)',
+        background: 'rgba(239,68,68,0.10)',
+        borderBottom: '1px solid rgba(239,68,68,0.25)',
         padding: '9px 20px',
         display: 'flex',
         alignItems: 'center',
         gap: 10,
         fontSize: 13,
-        zIndex: 190,
         position: 'relative',
+        zIndex: 190,
       }}
     >
       <span style={{
         width: 8, height: 8, borderRadius: '50%',
-        background: '#eab308',
+        background: '#ef4444',
         flexShrink: 0,
         animation: 'statusPulse 2s ease-in-out infinite',
       }} />
 
-      <span style={{ fontWeight: 700, color: '#eab308', flexShrink: 0 }}>
+      <span style={{ fontWeight: 700, color: '#ef4444', whiteSpace: 'nowrap' }}>
         Spotify issues
       </span>
 
@@ -35,6 +35,7 @@ export default function StatusBanner({ message, onDismiss }: Props) {
         overflow: 'hidden',
         textOverflow: 'ellipsis',
         whiteSpace: 'nowrap',
+        flex: 1,
       }}>
         {message}
       </span>
@@ -46,7 +47,7 @@ export default function StatusBanner({ message, onDismiss }: Props) {
         style={{
           marginLeft: 'auto',
           flexShrink: 0,
-          color: '#eab308',
+          color: '#ef4444',
           fontWeight: 600,
           fontSize: 12,
           textDecoration: 'underline',
@@ -54,7 +55,7 @@ export default function StatusBanner({ message, onDismiss }: Props) {
           opacity: 0.9,
         }}
       >
-        Spotify status
+        Updates on X
       </a>
 
       <button
