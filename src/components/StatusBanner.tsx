@@ -40,7 +40,7 @@ export default function StatusBanner({ message, onDismiss }: Props) {
       </span>
 
       <a
-        href="https://spotify.statuspage.io"
+        href="https://x.com/spotifyStatus"
         target="_blank"
         rel="noopener noreferrer"
         style={{
