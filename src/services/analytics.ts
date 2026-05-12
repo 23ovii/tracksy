@@ -1,14 +1,35 @@
-import posthog from 'posthog-js';
+import type { PostHog } from 'posthog-js';
 
-export function initAnalytics() {
-  const key = import.meta.env.VITE_POSTHOG_KEY;
+let posthogPromise: Promise<PostHog> | null = null;
+
+const load = (): Promise<PostHog> => {
+  if (!posthogPromise) {
+    posthogPromise = import('posthog-js').then(m => m.default).catch(err => {
+      posthogPromise = null;
+      throw err;
+    });
+  }
+  return posthogPromise;
+};
+
+function isOptedOut(): boolean {
+  try {
+    return localStorage.getItem('tracksy_analytics_disabled') === 'true';
+  } catch {
+    return false;
+  }
+}
+
+export async function initAnalytics(): Promise<void> {
+  const key = import.meta.env.VITE_POSTHOG_KEY as string | undefined;
   if (!key) return;
+  const posthog = await load();
   posthog.init(key, {
     api_host: import.meta.env.VITE_POSTHOG_HOST || 'https://eu.i.posthog.com',
     person_profiles: 'identified_only',
     autocapture: false,
     capture_pageview: false,
-    persistence: 'memory', // no cookies = no banner needed
+    persistence: 'memory',
     disable_session_recording: true,
     session_recording: {
       maskAllInputs: true,
@@ -37,21 +58,14 @@ export const TrackEvents = {
 
 type TrackEventName = typeof TrackEvents[keyof typeof TrackEvents];
 
-function isOptedOut(): boolean {
-  try {
-    return localStorage.getItem('tracksy_analytics_disabled') === 'true';
-  } catch {
-    return false;
-  }
+export function trackEvent(event: TrackEventName, properties?: Record<string, string | number>): void {
+  if (isOptedOut() || !import.meta.env.VITE_POSTHOG_KEY) return;
+  load().then(p => p.capture(event, properties)).catch(() => {});
 }
 
-export function trackEvent(event: TrackEventName, properties?: Record<string, string | number>): void {
-  if (isOptedOut()) return;
-  try {
-    posthog.capture(event, properties);
-  } catch (error) {
-    console.error('Analytics tracking failed:', error);
-  }
+export function trackPageview(): void {
+  if (isOptedOut() || !import.meta.env.VITE_POSTHOG_KEY) return;
+  load().then(p => p.capture('$pageview')).catch(() => {});
 }
 
 export function getAnalyticsDisabled(): boolean {
@@ -62,15 +76,16 @@ export function setAnalyticsDisabled(disabled: boolean): void {
   try {
     if (disabled) {
       localStorage.setItem('tracksy_analytics_disabled', 'true');
-      posthog.opt_out_capturing();
     } else {
       localStorage.removeItem('tracksy_analytics_disabled');
-      posthog.opt_in_capturing();
+    }
+    if (import.meta.env.VITE_POSTHOG_KEY) {
+      load().then(p => disabled ? p.opt_out_capturing() : p.opt_in_capturing()).catch(() => {});
     }
   } catch { /* ignore */ }
 }
 
 if (import.meta.env.DEV) {
-  (window as unknown as { posthog: unknown }).posthog = posthog;
+  load().then(p => { (window as unknown as { posthog: unknown }).posthog = p; }).catch(() => {});
   (window as unknown as { trackEvent: unknown }).trackEvent = trackEvent;
 }
