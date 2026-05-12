@@ -35,7 +35,10 @@ function coercePreset(raw: unknown): SortPreset | null {
     createdAt: r.createdAt,
   };
   if (r.smartOpts && typeof r.smartOpts === 'object') {
-    preset.smartOpts = r.smartOpts as { shape: string; intensity: number };
+    const s = r.smartOpts as Record<string, unknown>;
+    if (typeof s.shape === 'string' && typeof s.intensity === 'number' && Number.isFinite(s.intensity)) {
+      preset.smartOpts = { shape: s.shape, intensity: s.intensity };
+    }
   }
   return preset;
 }
