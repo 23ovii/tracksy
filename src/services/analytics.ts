@@ -3,7 +3,12 @@ import type { PostHog } from 'posthog-js';
 let posthogPromise: Promise<PostHog> | null = null;
 
 const load = (): Promise<PostHog> => {
-  if (!posthogPromise) posthogPromise = import('posthog-js').then(m => m.default);
+  if (!posthogPromise) {
+    posthogPromise = import('posthog-js').then(m => m.default).catch(err => {
+      posthogPromise = null;
+      throw err;
+    });
+  }
   return posthogPromise;
 };
 
@@ -74,10 +79,13 @@ export function setAnalyticsDisabled(disabled: boolean): void {
     } else {
       localStorage.removeItem('tracksy_analytics_disabled');
     }
-    load().then(p => disabled ? p.opt_out_capturing() : p.opt_in_capturing()).catch(() => {});
+    if (import.meta.env.VITE_POSTHOG_KEY) {
+      load().then(p => disabled ? p.opt_out_capturing() : p.opt_in_capturing()).catch(() => {});
+    }
   } catch { /* ignore */ }
 }
 
 if (import.meta.env.DEV) {
+  load().then(p => { (window as unknown as { posthog: unknown }).posthog = p; }).catch(() => {});
   (window as unknown as { trackEvent: unknown }).trackEvent = trackEvent;
 }
