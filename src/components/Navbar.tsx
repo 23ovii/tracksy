@@ -1,5 +1,4 @@
 import { Link, NavLink, useNavigate } from 'react-router-dom';
-import type { MouseEvent } from 'react';
 import { useState } from 'react';
 
 import { useAuth } from '../hooks/useAuth.tsx';
@@ -73,6 +72,7 @@ function Navbar() {
                 key={to}
                 to={to}
                 end={end}
+                className="tk-nav-item"
                 style={({ isActive }) => ({
                   position: 'relative',
                   padding: '8px 16px', borderRadius: 50,
@@ -81,18 +81,7 @@ function Navbar() {
                   fontSize: 13, fontWeight: isActive ? 600 : 500,
                   textDecoration: 'none',
                   boxShadow: '0 0 0 1px transparent',
-                  transition: 'background 0.2s, color 0.2s, transform 0.2s var(--ease-out), box-shadow 0.2s',
                 })}
-                onMouseEnter={(e: MouseEvent<HTMLAnchorElement>) => {
-                  e.currentTarget.style.transform = 'translateY(-1px)';
-                  e.currentTarget.style.color = 'var(--text)';
-                  e.currentTarget.style.boxShadow = '0 0 0 1px var(--border2)';
-                }}
-                onMouseLeave={(e: MouseEvent<HTMLAnchorElement>) => {
-                  e.currentTarget.style.transform = '';
-                  e.currentTarget.style.color = '';
-                  e.currentTarget.style.boxShadow = '0 0 0 1px transparent';
-                }}
               >
                 {label}
               </NavLink>
@@ -101,22 +90,12 @@ function Navbar() {
             {!isAuthenticated && (
               <button
                 onClick={handleLogin}
+                className="tk-green-pill"
                 style={{
                   marginLeft: 4, padding: '7px 18px', borderRadius: 50,
                   border: '1px solid rgba(29,185,84,0.45)', background: 'rgba(29,185,84,0.08)',
                   color: 'var(--green)', fontFamily: 'inherit', fontSize: 13, fontWeight: 600,
                   cursor: 'pointer',
-                  transition: 'border-color 0.18s, background 0.18s, transform 0.18s',
-                }}
-                onMouseEnter={(e: MouseEvent<HTMLButtonElement>) => {
-                  e.currentTarget.style.borderColor = 'rgba(29,185,84,0.8)';
-                  e.currentTarget.style.background = 'rgba(29,185,84,0.16)';
-                  e.currentTarget.style.transform = 'translateY(-1px)';
-                }}
-                onMouseLeave={(e: MouseEvent<HTMLButtonElement>) => {
-                  e.currentTarget.style.borderColor = 'rgba(29,185,84,0.45)';
-                  e.currentTarget.style.background = 'rgba(29,185,84,0.08)';
-                  e.currentTarget.style.transform = '';
                 }}
               >
                 Sign In

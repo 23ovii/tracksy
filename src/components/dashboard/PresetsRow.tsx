@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import type { MouseEvent, KeyboardEvent } from 'react';
+import type { KeyboardEvent } from 'react';
 
 import type { SortPreset } from '../../services/presets';
 import { SORT_OPTIONS } from '../../utils/playlistUtils';
@@ -70,21 +70,13 @@ function PresetsRow({ presets, onLoad, onDelete, onSave, disabled = false }: Pre
       {!expanded && hidden > 0 && (
         <button
           onClick={() => setExpanded(true)}
+          className="tk-preset-muted"
           style={{
             padding: '5px 10px', borderRadius: 50,
             background: 'var(--chip-bg-inactive)',
             border: '1px solid var(--border2)',
             color: 'var(--text-3)', fontSize: 11.5, fontWeight: 600,
             fontFamily: 'inherit', cursor: 'pointer',
-            transition: 'color 0.15s, border-color 0.15s',
-          }}
-          onMouseEnter={(e: MouseEvent<HTMLButtonElement>) => {
-            e.currentTarget.style.color = 'var(--text-2)';
-            e.currentTarget.style.borderColor = 'var(--border2)';
-          }}
-          onMouseLeave={(e: MouseEvent<HTMLButtonElement>) => {
-            e.currentTarget.style.color = 'var(--text-3)';
-            e.currentTarget.style.borderColor = 'var(--border2)';
           }}
         >
           +{hidden} more
@@ -122,6 +114,7 @@ function SaveChip({ onClick }: { onClick: () => void }) {
   return (
     <button
       onClick={onClick}
+      className="tk-preset-muted"
       style={{
         display: 'inline-flex', alignItems: 'center', gap: 5,
         padding: '5px 10px', borderRadius: 50,
@@ -129,15 +122,6 @@ function SaveChip({ onClick }: { onClick: () => void }) {
         border: '1px dashed var(--border2)',
         color: 'var(--text-3)', fontSize: 11.5, fontWeight: 600,
         fontFamily: 'inherit', cursor: 'pointer',
-        transition: 'color 0.15s, border-color 0.15s',
-      }}
-      onMouseEnter={(e: MouseEvent<HTMLButtonElement>) => {
-        e.currentTarget.style.color = 'var(--text-2)';
-        e.currentTarget.style.borderColor = 'var(--border2)';
-      }}
-      onMouseLeave={(e: MouseEvent<HTMLButtonElement>) => {
-        e.currentTarget.style.color = 'var(--text-3)';
-        e.currentTarget.style.borderColor = 'var(--border2)';
       }}
     >
       + Save current sort
@@ -187,6 +171,7 @@ function PresetChip({ preset, onLoad, onDelete }: {
       <button
         onClick={(e) => { e.stopPropagation(); onDelete(preset.id); }}
         aria-label={`Delete preset ${preset.name}`}
+        className="tk-preset-delete"
         style={{
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           width: hovered ? 20 : 0,
@@ -195,14 +180,7 @@ function PresetChip({ preset, onLoad, onDelete }: {
           background: 'none', border: 'none',
           color: 'var(--text-3)', fontSize: 14, lineHeight: 1,
           cursor: 'pointer',
-          transition: 'width 0.15s, padding 0.15s, color 0.15s',
           fontFamily: 'inherit',
-        }}
-        onMouseEnter={(e: MouseEvent<HTMLButtonElement>) => {
-          e.currentTarget.style.color = '#ff6b6b';
-        }}
-        onMouseLeave={(e: MouseEvent<HTMLButtonElement>) => {
-          e.currentTarget.style.color = 'var(--text-3)';
         }}
       >
         ×

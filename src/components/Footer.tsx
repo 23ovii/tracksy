@@ -1,4 +1,3 @@
-import type { MouseEvent } from 'react';
 import { Link } from 'react-router-dom';
 
 function Footer() {
@@ -21,9 +20,8 @@ function Footer() {
             href="https://23ovii.dev"
             target="_blank"
             rel="noreferrer"
-            style={{ color: 'var(--text-2)', textDecoration: 'none', fontWeight: 500, transition: 'color 0.18s' }}
-            onMouseEnter={(e: MouseEvent<HTMLAnchorElement>) => { e.currentTarget.style.color = 'var(--green)'; }}
-            onMouseLeave={(e: MouseEvent<HTMLAnchorElement>) => { e.currentTarget.style.color = 'var(--text-2)'; }}
+            className="tk-link"
+            style={{ color: 'var(--text-2)', textDecoration: 'none', fontWeight: 500 }}
           >
             23ovii.dev
           </a>
@@ -35,18 +33,16 @@ function Footer() {
           href="https://open.spotify.com"
           target="_blank"
           rel="noreferrer"
-          style={{ fontSize: 12, color: 'var(--text-3)', textDecoration: 'none', transition: 'color 0.18s' }}
-          onMouseEnter={(e: MouseEvent<HTMLAnchorElement>) => { e.currentTarget.style.color = 'var(--text-2)'; }}
-          onMouseLeave={(e: MouseEvent<HTMLAnchorElement>) => { e.currentTarget.style.color = 'var(--text-3)'; }}
+          className="tk-muted-link"
+          style={{ fontSize: 12, color: 'var(--text-3)', textDecoration: 'none' }}
         >
           Built for Spotify
         </a>
         <span style={{ fontSize: 12, color: 'var(--border2)' }}>·</span>
         <Link
           to="/privacy"
-          style={{ fontSize: 12, color: 'var(--text-3)', textDecoration: 'none', transition: 'color 0.18s' }}
-          onMouseEnter={(e: MouseEvent<HTMLAnchorElement>) => { e.currentTarget.style.color = 'var(--text-2)'; }}
-          onMouseLeave={(e: MouseEvent<HTMLAnchorElement>) => { e.currentTarget.style.color = 'var(--text-3)'; }}
+          className="tk-muted-link"
+          style={{ fontSize: 12, color: 'var(--text-3)', textDecoration: 'none' }}
         >
           Privacy
         </Link>

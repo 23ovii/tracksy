@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import type { JSX, MouseEvent } from 'react';
+import type { JSX, CSSProperties } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { useAuth } from '../hooks/useAuth.tsx';
@@ -92,14 +92,6 @@ function Home() {
     }
   };
 
-  const ctaHover = (e: MouseEvent<HTMLButtonElement>, on: boolean) => {
-    if (isLoading) return;
-    e.currentTarget.style.transform = on ? 'translateY(-2px)' : '';
-    e.currentTarget.style.boxShadow = on
-      ? '0 14px 44px rgba(29,185,84,0.55), 0 0 0 1px rgba(255,255,255,0.1) inset'
-      : '0 6px 28px rgba(29,185,84,0.35), 0 0 0 1px rgba(255,255,255,0.08) inset';
-  };
-
   return (
     <>
     <div style={{
@@ -181,6 +173,7 @@ function Home() {
           <button
             onClick={handleLogin}
             disabled={isLoading}
+            className="tk-cta"
             style={{
               display: 'inline-flex', alignItems: 'center', gap: 11,
               background: 'linear-gradient(180deg, #22c962, #159743)',
@@ -189,12 +182,9 @@ function Home() {
               fontFamily: 'inherit', fontSize: 15, fontWeight: 700,
               cursor: isLoading ? 'not-allowed' : 'pointer',
               boxShadow: '0 6px 28px rgba(29,185,84,0.35), 0 0 0 1px rgba(255,255,255,0.08) inset',
-              transition: 'transform 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out)',
               opacity: isLoading ? 0.7 : 1,
               letterSpacing: '-0.1px',
             }}
-            onMouseEnter={(e) => ctaHover(e, true)}
-            onMouseLeave={(e) => ctaHover(e, false)}
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
               <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.65 14.42c-.19.31-.6.41-.91.22-2.49-1.52-5.63-1.87-9.32-1.02-.36.08-.72-.14-.8-.5-.08-.36.14-.72.5-.8 4.04-.92 7.51-.52 10.31 1.19.31.19.41.6.22.91zm1.24-2.77c-.24.38-.75.51-1.13.27-2.85-1.75-7.19-2.26-10.56-1.24-.44.13-.9-.12-1.03-.56-.13-.44.12-.9.56-1.03 3.84-1.17 8.61-.6 11.89 1.43.38.24.51.75.27 1.13zm.11-2.89c-3.42-2.03-9.07-2.22-12.33-1.23-.52.16-1.07-.14-1.23-.66-.16-.52.14-1.07.66-1.23C8.9 6.76 15.12 6.98 19 9.3c.47.28.63.89.35 1.36-.28.47-.89.62-1.35.35v-.15z" />
@@ -227,29 +217,21 @@ function Home() {
           {FEATURES.map((f, i) => {
             const isLive = f.tag === 'Live';
             return (
-              <div key={f.label} style={{
-                position: 'relative',
-                background: 'var(--surface2)',
-                border: '1px solid var(--border)',
-                borderRadius: 16,
-                padding: '18px 20px',
-                transition: 'transform 0.22s var(--ease-out), border-color 0.22s, background 0.22s',
-                cursor: 'default',
-                animation: `fadeUp 0.5s var(--ease-out) ${0.2 + i * 0.05}s both`,
-                overflow: 'hidden',
-              }}
-              onMouseEnter={(e) => {
-                const el = e.currentTarget as HTMLDivElement;
-                el.style.transform = 'translateY(-3px)';
-                el.style.borderColor = `${f.accent}55`;
-                el.style.background = 'var(--surface3)';
-              }}
-              onMouseLeave={(e) => {
-                const el = e.currentTarget as HTMLDivElement;
-                el.style.transform = '';
-                el.style.borderColor = 'var(--border)';
-                el.style.background = 'var(--surface2)';
-              }}>
+              <div
+                key={f.label}
+                className="tk-feature-card"
+                style={{
+                  '--hover-color': `${f.accent}55`,
+                  position: 'relative',
+                  background: 'var(--surface2)',
+                  border: '1px solid var(--border)',
+                  borderRadius: 16,
+                  padding: '18px 20px',
+                  cursor: 'default',
+                  animation: `fadeUp 0.5s var(--ease-out) ${0.2 + i * 0.05}s both`,
+                  overflow: 'hidden',
+                } as CSSProperties}
+              >
                 {/* Accent bar */}
                 <div aria-hidden style={{
                   position: 'absolute', top: 0, left: 0, right: 0, height: 1,

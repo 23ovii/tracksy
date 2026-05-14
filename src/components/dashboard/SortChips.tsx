@@ -1,5 +1,3 @@
-import type { MouseEvent } from 'react';
-
 import { SORT_OPTIONS } from '../../utils/playlistUtils';
 import type { SortKey, SortDir } from '../../utils/playlistUtils';
 import { useShortcutsOverlay } from '../../context/ShortcutsOverlayContext';
@@ -32,6 +30,7 @@ function SortChips({ sortBy, sortDir, onPick, disabled = false }: SortChipsProps
             key={opt.id}
             onClick={() => { if (!disabled) onPick(opt.id); }}
             disabled={disabled}
+            className={`tk-chip${active ? ' is-active' : ''}`}
             style={{
               display: 'inline-flex', alignItems: 'center', gap: 7,
               padding: '8px 14px', borderRadius: 50,
@@ -40,21 +39,8 @@ function SortChips({ sortBy, sortDir, onPick, disabled = false }: SortChipsProps
               fontFamily: 'inherit', cursor: disabled ? 'default' : 'pointer',
               color: active ? opt.color : 'var(--text-2)',
               fontSize: 12.5, fontWeight: active ? 700 : 500,
-              transition: 'background 0.15s, border-color 0.15s, color 0.15s',
               boxShadow: active ? `0 0 0 3px ${opt.color}12` : 'none',
               opacity: disabled ? 0.5 : 1,
-            }}
-            onMouseEnter={(e: MouseEvent<HTMLButtonElement>) => {
-              if (!active && !disabled) {
-                e.currentTarget.style.background = 'var(--chip-bg-hover)';
-                e.currentTarget.style.color = 'var(--text)';
-              }
-            }}
-            onMouseLeave={(e: MouseEvent<HTMLButtonElement>) => {
-              if (!active && !disabled) {
-                e.currentTarget.style.background = 'var(--chip-bg-inactive)';
-                e.currentTarget.style.color = 'var(--text-2)';
-              }
             }}
           >
             {opt.label}
@@ -71,23 +57,13 @@ function SortChips({ sortBy, sortDir, onPick, disabled = false }: SortChipsProps
         onClick={toggleShortcuts}
         aria-label="Keyboard shortcuts"
         title="Keyboard shortcuts (?)"
+        className="tk-help-chip"
         style={{
           marginLeft: 'auto', width: 26, height: 26, borderRadius: 6,
           border: '1px solid var(--border)', background: 'transparent',
           color: 'var(--text-3)', fontFamily: 'inherit', fontSize: 12, fontWeight: 700,
           cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
           flexShrink: 0,
-          transition: 'border-color 0.15s, color 0.15s, background 0.15s',
-        }}
-        onMouseEnter={(e: MouseEvent<HTMLButtonElement>) => {
-          e.currentTarget.style.borderColor = 'var(--border2)';
-          e.currentTarget.style.color = 'var(--text-2)';
-          e.currentTarget.style.background = 'var(--chip-bg-hover)';
-        }}
-        onMouseLeave={(e: MouseEvent<HTMLButtonElement>) => {
-          e.currentTarget.style.borderColor = 'var(--border)';
-          e.currentTarget.style.color = 'var(--text-3)';
-          e.currentTarget.style.background = 'transparent';
         }}
       >
         ?
