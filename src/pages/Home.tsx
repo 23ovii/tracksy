@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import type { JSX, CSSProperties } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { useAuth } from '../hooks/useAuth.tsx';
+import { useAuth } from '../auth/AuthProvider';
 import { buildSpotifyAuthUrl } from '../services/auth.ts';
 import { trackEvent, TrackEvents } from '../services/analytics';
 import Footer from '../components/Footer';

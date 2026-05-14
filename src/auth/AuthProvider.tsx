@@ -1,4 +1,4 @@
-import { createContext, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 
 import { refreshSpotifyToken } from '../services/auth.ts';
@@ -73,9 +73,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => clearTimeout(refreshTimerRef.current!);
   }, [authState?.refresh_token, authState?.expires_at, applyToken]);
 
-  // Sync auth state across tabs via storage events
-  // Per HTML spec, storage events only fire for other tabs, not the current tab,
-  // so the localStorage write above won't trigger this listener
+  // Per HTML spec, storage events only fire for other tabs, not the current tab
   useEffect(() => {
     const handleStorageChange = (event: StorageEvent) => {
       if (event.key === STORAGE_KEY) {
@@ -127,4 +125,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
-export default AuthContext;
+export function useAuth(): AuthContextValue {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within AuthProvider');
+  }
+  return context;
+}
