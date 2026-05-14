@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import type { JSX, MouseEvent } from 'react';
+import type { JSX } from 'react';
 
 import { useTheme } from '../hooks/useTheme.ts';
 import type { Theme } from '../hooks/useTheme.ts';
@@ -120,6 +120,7 @@ function AccountMenu({ avatarUrl, displayName, onSignOut, onWipe }: AccountMenuP
         aria-label="Account menu"
         aria-expanded={open}
         aria-haspopup="menu"
+        className={`tk-avatar-btn${open ? ' is-open' : ''}`}
         style={{
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           width: 34, height: 34, borderRadius: 50, padding: 0,
@@ -127,13 +128,6 @@ function AccountMenu({ avatarUrl, displayName, onSignOut, onWipe }: AccountMenuP
           background: 'var(--surface2)',
           overflow: 'hidden',
           cursor: 'pointer',
-          transition: 'border-color 0.18s',
-        }}
-        onMouseEnter={(e: MouseEvent<HTMLButtonElement>) => {
-          if (!open) e.currentTarget.style.borderColor = 'rgba(29,185,84,0.6)';
-        }}
-        onMouseLeave={(e: MouseEvent<HTMLButtonElement>) => {
-          if (!open) e.currentTarget.style.borderColor = 'var(--border2)';
         }}
       >
         {avatarUrl ? (
@@ -176,21 +170,13 @@ function AccountMenu({ avatarUrl, displayName, onSignOut, onWipe }: AccountMenuP
           <button
             role="menuitem"
             onClick={() => { setOpen(false); onSignOut(); }}
+            className="tk-menu-item"
             style={{
               display: 'block', width: '100%', textAlign: 'left',
               padding: '10px 16px',
               border: 'none', background: 'transparent',
               color: 'var(--text)', fontFamily: 'inherit', fontSize: 13, fontWeight: 500,
               cursor: 'pointer',
-              transition: 'background 0.14s, color 0.14s',
-            }}
-            onMouseEnter={(e: MouseEvent<HTMLButtonElement>) => {
-              e.currentTarget.style.background = 'var(--border)';
-              e.currentTarget.style.color = 'var(--text)';
-            }}
-            onMouseLeave={(e: MouseEvent<HTMLButtonElement>) => {
-              e.currentTarget.style.background = 'transparent';
-              e.currentTarget.style.color = 'var(--text)';
             }}
           >
             Sign out
@@ -201,19 +187,13 @@ function AccountMenu({ avatarUrl, displayName, onSignOut, onWipe }: AccountMenuP
           <button
             role="menuitem"
             onClick={() => { setOpen(false); onWipe(); }}
+            className="tk-menu-item-danger"
             style={{
               display: 'block', width: '100%', textAlign: 'left',
               padding: '10px 16px',
               border: 'none', background: 'transparent',
               color: '#ef4444', fontFamily: 'inherit', fontSize: 13, fontWeight: 500,
               cursor: 'pointer',
-              transition: 'background 0.14s',
-            }}
-            onMouseEnter={(e: MouseEvent<HTMLButtonElement>) => {
-              e.currentTarget.style.background = 'rgba(239,68,68,0.08)';
-            }}
-            onMouseLeave={(e: MouseEvent<HTMLButtonElement>) => {
-              e.currentTarget.style.background = 'transparent';
             }}
           >
             Disconnect &amp; wipe data

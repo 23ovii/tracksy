@@ -1,4 +1,4 @@
-import type { CSSProperties, MouseEvent } from 'react';
+import type { CSSProperties } from 'react';
 
 import type { Playlist } from '../../types';
 import PlaylistCard from '../PlaylistCard';
@@ -43,6 +43,7 @@ function LibraryPanel({ playlists, isLoading, onRefresh, onSelect }: LibraryPane
           onClick={onRefresh}
           disabled={isLoading}
           aria-label="Refresh playlists"
+          className="tk-icon-btn"
           style={{
             width: 34, height: 34, borderRadius: '50%',
             border: '1px solid var(--border2)',
@@ -51,20 +52,7 @@ function LibraryPanel({ playlists, isLoading, onRefresh, onSelect }: LibraryPane
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             cursor: isLoading ? 'not-allowed' : 'pointer',
             opacity: isLoading ? 0.4 : 1,
-            transition: 'border-color 0.2s, color 0.2s, background 0.2s',
             flexShrink: 0,
-          }}
-          onMouseEnter={(e: MouseEvent<HTMLButtonElement>) => {
-            if (!isLoading) {
-              e.currentTarget.style.borderColor = 'rgba(29,185,84,0.5)';
-              e.currentTarget.style.color = 'var(--green)';
-              e.currentTarget.style.background = 'rgba(29,185,84,0.08)';
-            }
-          }}
-          onMouseLeave={(e: MouseEvent<HTMLButtonElement>) => {
-            e.currentTarget.style.borderColor = 'var(--border2)';
-            e.currentTarget.style.color = 'var(--text-3)';
-            e.currentTarget.style.background = 'var(--surface2)';
           }}
         >
           <svg

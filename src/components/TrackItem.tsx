@@ -1,5 +1,5 @@
 import { memo } from 'react';
-import type { MouseEvent } from 'react';
+import type { CSSProperties } from 'react';
 
 import { SORT_OPTIONS } from '../utils/playlistUtils.ts';
 import type { Track } from '../types';
@@ -23,25 +23,17 @@ const TrackItem = memo(function TrackItem({ track, index, sortBy, delta }: Track
 
   return (
     <div
-      className={delta !== undefined ? 'track-row track-row--delta' : 'track-row'}
+      className={`tk-row-hoverable${delta !== undefined ? ' track-row track-row--delta' : ' track-row'}`}
       style={{
+        '--row-accent': activeColor,
         padding: '0 24px',
         height: 58,
         alignItems: 'center',
         borderBottom: '1px solid var(--border)',
-        transition: 'background 0.18s, box-shadow 0.18s',
         animation: index < 20 ? `trackIn 0.24s var(--ease-out) ${index * 0.02}s both` : 'none',
         cursor: 'default',
         position: 'relative',
-      }}
-      onMouseEnter={(e: MouseEvent<HTMLDivElement>) => {
-        e.currentTarget.style.background = 'var(--track-hover-bg)';
-        e.currentTarget.style.boxShadow = `inset 3px 0 0 ${activeColor}`;
-      }}
-      onMouseLeave={(e: MouseEvent<HTMLDivElement>) => {
-        e.currentTarget.style.background = 'transparent';
-        e.currentTarget.style.boxShadow = 'none';
-      }}
+      } as CSSProperties}
     >
       <span style={{
         color: 'var(--text-3)', fontSize: 12, fontWeight: 600,

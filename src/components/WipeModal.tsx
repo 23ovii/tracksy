@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import type { MouseEvent } from 'react';
 
 type Step = 'confirm' | 'done';
 
@@ -60,20 +59,12 @@ function WipeModal({ onClose, onConfirm }: WipeModalProps) {
               <CancelButton onClick={onClose} label="Cancel" />
               <button
                 onClick={handleConfirm}
+                className="tk-modal-danger"
                 style={{
                   padding: '8px 20px', borderRadius: 50,
                   border: '1px solid rgba(239,68,68,0.5)', background: 'rgba(239,68,68,0.1)',
                   color: '#ef4444', fontFamily: 'inherit', fontSize: 13, fontWeight: 600,
                   cursor: 'pointer',
-                  transition: 'border-color 0.18s, background 0.18s',
-                }}
-                onMouseEnter={(e: MouseEvent<HTMLButtonElement>) => {
-                  e.currentTarget.style.borderColor = 'rgba(239,68,68,0.8)';
-                  e.currentTarget.style.background = 'rgba(239,68,68,0.2)';
-                }}
-                onMouseLeave={(e: MouseEvent<HTMLButtonElement>) => {
-                  e.currentTarget.style.borderColor = 'rgba(239,68,68,0.5)';
-                  e.currentTarget.style.background = 'rgba(239,68,68,0.1)';
                 }}
               >
                 Wipe &amp; disconnect
@@ -114,20 +105,12 @@ function CancelButton({ onClick, label }: { onClick: () => void; label: string }
   return (
     <button
       onClick={onClick}
+      className="tk-modal-ghost"
       style={{
         padding: '8px 20px', borderRadius: 50,
         border: '1px solid var(--border2)', background: 'transparent',
         color: 'var(--text-2)', fontFamily: 'inherit', fontSize: 13, fontWeight: 500,
         cursor: 'pointer',
-        transition: 'border-color 0.18s, color 0.18s',
-      }}
-      onMouseEnter={(e: MouseEvent<HTMLButtonElement>) => {
-        e.currentTarget.style.borderColor = 'var(--text-3)';
-        e.currentTarget.style.color = 'var(--text)';
-      }}
-      onMouseLeave={(e: MouseEvent<HTMLButtonElement>) => {
-        e.currentTarget.style.borderColor = 'var(--border2)';
-        e.currentTarget.style.color = 'var(--text-2)';
       }}
     >
       {label}

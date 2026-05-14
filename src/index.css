@@ -195,6 +195,202 @@ button:focus-visible, a:focus-visible {
   to   { transform: translateX(0); }
 }
 
+/* ── Hover utilities ── */
+
+.tk-nav-item {
+  transition: background .2s, color .2s, transform .2s var(--ease-out), box-shadow .2s;
+}
+.tk-nav-item:hover,
+.tk-nav-item:focus-visible {
+  transform: translateY(-1px);
+  color: var(--text) !important;
+  box-shadow: 0 0 0 1px var(--border2) !important;
+}
+
+.tk-green-pill {
+  transition: border-color .18s, background .18s, transform .18s;
+}
+.tk-green-pill:hover:not(:disabled),
+.tk-green-pill:focus-visible:not(:disabled) {
+  border-color: rgba(29,185,84,0.8) !important;
+  background: rgba(29,185,84,0.16) !important;
+  transform: translateY(-1px);
+}
+
+.tk-cta {
+  transition: transform .2s var(--ease-out), box-shadow .2s var(--ease-out);
+}
+.tk-cta:hover:not(:disabled),
+.tk-cta:focus-visible:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 44px rgba(29,185,84,0.55), 0 0 0 1px rgba(255,255,255,0.1) inset !important;
+}
+
+.tk-playlist-card {
+  transition: transform .2s var(--ease-out), border-color .18s, box-shadow .2s;
+}
+.tk-playlist-card:not(.is-selected):hover,
+.tk-playlist-card:not(.is-selected):focus-visible {
+  transform: translateY(-4px);
+  border-color: var(--hover-color, var(--border)) !important;
+}
+.tk-playlist-card .tk-card-overlay {
+  opacity: 0;
+  transition: opacity .25s var(--ease-out);
+}
+.tk-playlist-card:hover .tk-card-overlay,
+.tk-playlist-card:focus-visible .tk-card-overlay {
+  opacity: 1;
+}
+
+.tk-chip {
+  transition: background .15s, border-color .15s, color .15s;
+}
+.tk-chip:not(.is-active):hover:not(:disabled),
+.tk-chip:not(.is-active):focus-visible:not(:disabled) {
+  background: var(--chip-bg-hover) !important;
+  color: var(--text) !important;
+}
+
+.tk-help-chip {
+  transition: border-color .15s, color .15s, background .15s;
+}
+.tk-help-chip:hover,
+.tk-help-chip:focus-visible {
+  border-color: var(--border2) !important;
+  color: var(--text-2) !important;
+  background: var(--chip-bg-hover) !important;
+}
+
+.tk-row-hoverable {
+  transition: background .18s, box-shadow .18s;
+}
+.tk-row-hoverable:hover {
+  background: var(--track-hover-bg);
+  box-shadow: inset 3px 0 0 var(--row-accent, var(--text-2));
+}
+
+.tk-icon-btn {
+  transition: border-color .2s, color .2s, background .2s;
+}
+.tk-icon-btn:hover:not(:disabled),
+.tk-icon-btn:focus-visible:not(:disabled) {
+  border-color: rgba(29,185,84,0.5) !important;
+  color: var(--green) !important;
+  background: rgba(29,185,84,0.08) !important;
+}
+
+.tk-link {
+  transition: color .18s;
+}
+.tk-link:hover,
+.tk-link:focus-visible {
+  color: var(--green) !important;
+}
+
+.tk-muted-link {
+  transition: color .18s;
+}
+.tk-muted-link:hover,
+.tk-muted-link:focus-visible {
+  color: var(--text-2) !important;
+}
+
+.tk-menu-item {
+  transition: background .14s, color .14s;
+}
+.tk-menu-item:hover,
+.tk-menu-item:focus-visible {
+  background: var(--border) !important;
+}
+
+.tk-menu-item-danger {
+  transition: background .14s;
+}
+.tk-menu-item-danger:hover,
+.tk-menu-item-danger:focus-visible {
+  background: rgba(239,68,68,0.08) !important;
+}
+
+.tk-avatar-btn {
+  transition: border-color .18s;
+}
+.tk-avatar-btn:not(.is-open):hover,
+.tk-avatar-btn:not(.is-open):focus-visible {
+  border-color: rgba(29,185,84,0.6) !important;
+}
+
+.tk-modal-ghost {
+  transition: border-color .18s, color .18s;
+}
+.tk-modal-ghost:hover,
+.tk-modal-ghost:focus-visible {
+  border-color: var(--text-3) !important;
+  color: var(--text) !important;
+}
+
+.tk-modal-danger {
+  transition: border-color .18s, background .18s;
+}
+.tk-modal-danger:hover,
+.tk-modal-danger:focus-visible {
+  border-color: rgba(239,68,68,0.8) !important;
+  background: rgba(239,68,68,0.2) !important;
+}
+
+.tk-ghost-pill {
+  color: var(--ghost-pill-color, var(--text-2));
+  border: 1px solid var(--ghost-pill-border, var(--border2));
+  transition: border-color .2s, color .2s;
+}
+.tk-ghost-pill:hover,
+.tk-ghost-pill:focus-visible {
+  color: var(--ghost-pill-hover-color, var(--text));
+  border-color: var(--ghost-pill-hover-border, var(--border2));
+}
+
+.tk-apply-btn {
+  transition: box-shadow .25s, transform .2s;
+}
+.tk-apply-btn:not(:disabled):hover,
+.tk-apply-btn:not(:disabled):focus-visible {
+  transform: translateY(-1px);
+}
+
+.tk-accent-btn {
+  transition: background .15s, border-color .15s;
+}
+.tk-accent-btn:hover,
+.tk-accent-btn:focus-visible {
+  background: var(--accent-hover-bg) !important;
+  border-color: var(--accent-hover-border) !important;
+}
+
+.tk-feature-card {
+  transition: transform .22s var(--ease-out), border-color .22s, background .22s;
+}
+.tk-feature-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--hover-color, var(--border)) !important;
+  background: var(--surface3) !important;
+}
+
+.tk-preset-muted {
+  transition: color .15s, border-color .15s;
+}
+.tk-preset-muted:hover,
+.tk-preset-muted:focus-visible {
+  color: var(--text-2) !important;
+}
+
+.tk-preset-delete {
+  transition: width .15s, padding .15s, color .15s;
+}
+.tk-preset-delete:hover,
+.tk-preset-delete:focus-visible {
+  color: #ff6b6b !important;
+}
+
 /* Track row responsive grid */
 .track-row {
   display: grid;

@@ -1,4 +1,4 @@
-import type { MouseEvent } from 'react';
+import type { CSSProperties } from 'react';
 
 import type { Playlist } from '../types';
 
@@ -14,7 +14,9 @@ function PlaylistCard({ playlist, selected, onClick }: PlaylistCardProps) {
   return (
     <button
       onClick={onClick}
+      className={`tk-playlist-card${isSelected ? ' is-selected' : ''}`}
       style={{
+        '--hover-color': playlist.color1 + '55',
         color: 'var(--text)',
         background: isSelected ? 'var(--surface3)' : 'var(--surface2)',
         border: `1px solid ${isSelected ? playlist.color1 + '88' : 'var(--border)'}`,
@@ -27,28 +29,9 @@ function PlaylistCard({ playlist, selected, onClick }: PlaylistCardProps) {
         boxShadow: isSelected
           ? `0 0 0 1px ${playlist.color1}44, 0 18px 40px -16px ${playlist.color1}66, 0 2px 0 rgba(255,255,255,0.04) inset`
           : 'var(--card-shadow)',
-        transition: 'transform 0.2s var(--ease-out), border-color 0.18s, box-shadow 0.2s',
         width: '100%',
         position: 'relative',
-      }}
-      onMouseEnter={(e: MouseEvent<HTMLButtonElement>) => {
-        if (!isSelected) {
-          e.currentTarget.style.transform = 'translateY(-4px)';
-          e.currentTarget.style.borderColor = playlist.color1 + '55';
-          e.currentTarget.style.boxShadow = 'var(--card-shadow)';
-          const overlay = e.currentTarget.querySelector('[data-overlay]') as HTMLElement | null;
-          if (overlay) overlay.style.opacity = '1';
-        }
-      }}
-      onMouseLeave={(e: MouseEvent<HTMLButtonElement>) => {
-        if (!isSelected) {
-          e.currentTarget.style.transform = '';
-          e.currentTarget.style.borderColor = 'var(--border)';
-          e.currentTarget.style.boxShadow = 'var(--card-shadow)';
-          const overlay = e.currentTarget.querySelector('[data-overlay]') as HTMLElement | null;
-          if (overlay) overlay.style.opacity = '0';
-        }
-      }}
+      } as CSSProperties}
     >
       <div style={{
         height: 116,
@@ -93,12 +76,10 @@ function PlaylistCard({ playlist, selected, onClick }: PlaylistCardProps) {
 
         {/* Hover overlay — play chip */}
         {!isSelected && (
-          <div data-overlay aria-hidden style={{
+          <div aria-hidden className="tk-card-overlay" style={{
             position: 'absolute', inset: 0,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             background: 'rgba(0,0,0,0.35)',
-            opacity: 0,
-            transition: 'opacity 0.25s var(--ease-out)',
           }}>
             <div style={{
               width: 40, height: 40, borderRadius: '50%',

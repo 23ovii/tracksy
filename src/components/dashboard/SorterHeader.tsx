@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import type { MouseEvent } from 'react';
+import type { CSSProperties } from 'react';
 
 import type { Playlist } from '../../types';
 import type { HistoryEntry } from '../../services/sortHistory';
@@ -115,23 +115,13 @@ function SorterHeader({
           {historyEntries.length > 0 && !applying && (
             <button
               onClick={() => setDrawerOpen(true)}
+              className="tk-ghost-pill"
               style={{
                 padding: '10px 16px', borderRadius: 50,
                 background: 'var(--chip-bg-inactive)',
-                border: '1px solid var(--border2)',
-                color: 'var(--text-2)',
                 fontFamily: 'inherit', fontSize: 12.5, fontWeight: 500,
                 cursor: 'pointer',
                 display: 'flex', alignItems: 'center', gap: 6,
-                transition: 'border-color 0.2s, color 0.2s',
-              }}
-              onMouseEnter={(e: MouseEvent<HTMLButtonElement>) => {
-                e.currentTarget.style.borderColor = 'var(--border2)';
-                e.currentTarget.style.color = 'var(--text)';
-              }}
-              onMouseLeave={(e: MouseEvent<HTMLButtonElement>) => {
-                e.currentTarget.style.borderColor = 'var(--border2)';
-                e.currentTarget.style.color = 'var(--text-2)';
               }}
             >
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -150,27 +140,22 @@ function SorterHeader({
           )}
           <button
             onClick={onBack}
+            className="tk-ghost-pill"
             style={{
+              '--ghost-pill-color': applying ? 'var(--error-text)' : 'var(--text-2)',
+              '--ghost-pill-hover-color': applying ? 'var(--error-text)' : 'var(--text)',
+              '--ghost-pill-border': applying ? 'rgba(239,68,68,0.3)' : 'var(--border2)',
+              '--ghost-pill-hover-border': applying ? 'rgba(239,68,68,0.6)' : 'var(--border2)',
               padding: '10px 18px', borderRadius: 50,
               background: applying ? 'rgba(239,68,68,0.08)' : 'var(--chip-bg-inactive)',
-              border: `1px solid ${applying ? 'rgba(239,68,68,0.3)' : 'var(--border2)'}`,
-              color: applying ? 'var(--error-text)' : 'var(--text-2)',
               fontFamily: 'inherit', fontSize: 12.5, fontWeight: 500,
               cursor: 'pointer',
-              transition: 'border-color 0.2s, color 0.2s, background 0.2s',
-            }}
-            onMouseEnter={(e: MouseEvent<HTMLButtonElement>) => {
-              e.currentTarget.style.borderColor = applying ? 'rgba(239,68,68,0.6)' : 'var(--border2)';
-              e.currentTarget.style.color = applying ? 'var(--error-text)' : 'var(--text)';
-            }}
-            onMouseLeave={(e: MouseEvent<HTMLButtonElement>) => {
-              e.currentTarget.style.borderColor = applying ? 'rgba(239,68,68,0.3)' : 'var(--border2)';
-              e.currentTarget.style.color = applying ? 'var(--error-text)' : 'var(--text-2)';
-            }}
+            } as CSSProperties}
           >{applying ? '✕ Cancel' : '← Back'}</button>
           <button
             onClick={onApply}
             disabled={applying || applied}
+            className="tk-apply-btn"
             style={{
               display: 'flex', alignItems: 'center', gap: 8,
               padding: '11px 22px', borderRadius: 50,
@@ -185,13 +170,6 @@ function SorterHeader({
               boxShadow: applied
                 ? '0 8px 24px rgba(29,185,84,0.35)'
                 : `0 10px 28px -4px ${accent}77, 0 0 0 1px rgba(255,255,255,0.12) inset`,
-              transition: 'box-shadow 0.25s, transform 0.2s',
-            }}
-            onMouseEnter={(e: MouseEvent<HTMLButtonElement>) => {
-              if (!applying && !applied) e.currentTarget.style.transform = 'translateY(-1px)';
-            }}
-            onMouseLeave={(e: MouseEvent<HTMLButtonElement>) => {
-              e.currentTarget.style.transform = '';
             }}
           >
             {applying ? (
@@ -308,23 +286,17 @@ function SorterHeader({
                   </div>
                   <button
                     onClick={() => { onRestore(entry); setDrawerOpen(false); }}
+                    className="tk-accent-btn"
                     style={{
+                      '--accent-hover-bg': `${accent}22`,
+                      '--accent-hover-border': `${accent}55`,
                       padding: '6px 12px', borderRadius: 6, flexShrink: 0,
                       background: `${accent}12`,
                       border: `1px solid ${accent}30`,
                       color: accent,
                       fontFamily: 'inherit', fontSize: 11.5, fontWeight: 700,
                       cursor: 'pointer',
-                      transition: 'background 0.15s, border-color 0.15s',
-                    }}
-                    onMouseEnter={(e: MouseEvent<HTMLButtonElement>) => {
-                      e.currentTarget.style.background = `${accent}22`;
-                      e.currentTarget.style.borderColor = `${accent}55`;
-                    }}
-                    onMouseLeave={(e: MouseEvent<HTMLButtonElement>) => {
-                      e.currentTarget.style.background = `${accent}12`;
-                      e.currentTarget.style.borderColor = `${accent}30`;
-                    }}
+                    } as CSSProperties}
                   >Restore</button>
                 </div>
               ))}
