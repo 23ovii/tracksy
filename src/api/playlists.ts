@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 
 import type { Playlist, Track } from '../types';
-import { useAuth } from '../hooks/useAuth';
+import { useAuth } from '../auth/AuthProvider';
 import { getSpotifyPlaylists, getSpotifyPlaylistTracks } from '../services/spotify';
 
 export const playlistKeys = {
