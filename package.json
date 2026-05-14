@@ -17,6 +17,7 @@
     "validate": "npm run typecheck && npm run lint && npm test"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.100.10",
     "@vercel/analytics": "^2.0.1",
     "@vercel/edge-config": "^1.4.3",
     "@vercel/speed-insights": "^2.0.0",
@@ -29,6 +30,7 @@
     "@eslint/js": "^10.0.1",
     "@resvg/resvg-js": "^2.6.2",
     "@tailwindcss/vite": "^4.3.0",
+    "@tanstack/react-query-devtools": "^5.100.10",
     "@types/node": "^25.7.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",

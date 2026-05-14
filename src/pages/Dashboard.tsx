@@ -38,8 +38,8 @@ function Dashboard() {
   const tracksQuery = usePlaylistTracks(selectedPlaylist?.id ?? null);
   const reorder = useReorderPlaylist(selectedPlaylist?.id ?? '');
 
-  const tracks = tracksQuery.data ?? [];
-  const playlists = playlistsQuery.data ?? [];
+  const tracks = useMemo(() => tracksQuery.data ?? [], [tracksQuery.data]);
+  const playlists = useMemo(() => playlistsQuery.data ?? [], [playlistsQuery.data]);
 
   const [sortBy, setSortBy] = useState<SortKey>('name');
   const [sortDir, setSortDir] = useState<SortDir>('asc');
@@ -131,10 +131,7 @@ function Dashboard() {
     });
   }
 
-  const sorted = useMemo(
-    () => sortTracks(currentOrder.length ? currentOrder : tracks, sortBy, sortDir),
-    [currentOrder, tracks, sortBy, sortDir],
-  );
+  const sorted = useMemo(() => sortTracks(tracks, sortBy, sortDir), [tracks, sortBy, sortDir]);
   const totalMs = useMemo(() => tracks.reduce((s, t) => s + t.durationMs, 0), [tracks]);
 
   // diffMap: shows how far each track in `sorted` has moved from the current Spotify order.
