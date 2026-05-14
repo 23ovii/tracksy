@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import type { Track } from '../types';
-import { useAuth } from '../hooks/useAuth';
+import { useAuth } from '../auth/AuthProvider';
 import { savePlaylistTracks } from '../services/spotify';
 
 import { playlistKeys } from './playlists';

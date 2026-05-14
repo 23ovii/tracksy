@@ -1,7 +1,7 @@
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 
-import { useAuth } from '../hooks/useAuth.tsx';
+import { useAuth } from '../auth/AuthProvider';
 import { buildSpotifyAuthUrl } from '../services/auth.ts';
 import { trackEvent, TrackEvents } from '../services/analytics.ts';
 
