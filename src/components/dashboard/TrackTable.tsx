@@ -1,4 +1,6 @@
+import { useRef } from 'react';
 import type { RefObject } from 'react';
+import { useVirtualizer } from '@tanstack/react-virtual';
 
 import type { Track } from '../../types';
 import TrackItem from '../TrackItem';
@@ -17,6 +19,59 @@ interface TrackTableProps {
   filterInputRef?: RefObject<HTMLInputElement | null>;
   onFilterChange?: (q: string) => void;
   onFilterClose?: () => void;
+}
+
+function VirtualTrackList({ sorted, sortBy, diffMap, withDelta }: {
+  sorted: Track[];
+  sortBy: string;
+  diffMap: Map<Track, number> | undefined;
+  withDelta: boolean;
+}) {
+  const parentRef = useRef<HTMLDivElement>(null);
+
+  const virtualizer = useVirtualizer({
+    count: sorted.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 58,
+    overscan: 8,
+  });
+
+  const items = virtualizer.getVirtualItems();
+  const totalSize = virtualizer.getTotalSize();
+
+  return (
+    <div
+      ref={parentRef}
+      style={{ maxHeight: 480, overflowY: 'auto' }}
+    >
+      <div style={{ height: totalSize, position: 'relative' }}>
+        {items.map((virtualItem) => {
+          const t = sorted[virtualItem.index];
+          if (!t) return null;
+          const delta = withDelta ? diffMap!.get(t) : undefined;
+          return (
+            <div
+              key={`${t.id}-${virtualItem.index}`}
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                transform: `translateY(${virtualItem.start}px)`,
+              }}
+            >
+              <TrackItem
+                track={t}
+                index={virtualItem.index}
+                sortBy={sortBy}
+                {...(delta !== undefined ? { delta } : {})}
+              />
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
 }
 
 function TrackTable({
@@ -151,19 +206,13 @@ function TrackTable({
           Loading tracks…
         </div>
       ) : (
-        <div key={sortKey} style={{ maxHeight: 480, overflowY: 'auto' }}>
-          {sorted.map((t, i) => {
-            const delta = withDelta ? diffMap!.get(t) : undefined;
-            return (
-              <TrackItem
-                key={`${t.id}-${i}`}
-                track={t}
-                index={i}
-                sortBy={sortBy}
-                {...(delta !== undefined ? { delta } : {})}
-              />
-            );
-          })}
+        <div key={sortKey}>
+          <VirtualTrackList
+            sorted={sorted}
+            sortBy={sortBy}
+            diffMap={diffMap ?? undefined}
+            withDelta={!!withDelta}
+          />
         </div>
       )}
     </>

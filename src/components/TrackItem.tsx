@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import type { MouseEvent } from 'react';
 
 import { SORT_OPTIONS } from '../utils/playlistUtils.ts';
@@ -16,7 +17,7 @@ function formatDuration(ms: number): string {
   return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
-function TrackItem({ track, index, sortBy, delta }: TrackItemProps) {
+const TrackItem = memo(function TrackItem({ track, index, sortBy, delta }: TrackItemProps) {
   const opt = SORT_OPTIONS.find((o) => o.id === sortBy);
   const activeColor = opt?.color ?? 'var(--text-2)';
 
@@ -114,6 +115,11 @@ function TrackItem({ track, index, sortBy, delta }: TrackItemProps) {
       }}>{formatDuration(track.durationMs)}</div>
     </div>
   );
-}
+}, (prev, next) =>
+  prev.track.id === next.track.id &&
+  prev.index === next.index &&
+  prev.sortBy === next.sortBy &&
+  prev.delta === next.delta
+);
 
 export default TrackItem;
