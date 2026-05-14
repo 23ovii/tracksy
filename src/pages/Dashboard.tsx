@@ -118,7 +118,10 @@ function Dashboard() {
     });
   }
 
-  const sorted = useMemo(() => sortTracks(tracks, sortBy, sortDir), [tracks, sortBy, sortDir]);
+  const sorted = useMemo(
+    () => sortTracks(currentOrder.length ? currentOrder : tracks, sortBy, sortDir),
+    [currentOrder, tracks, sortBy, sortDir],
+  );
   const totalMs = useMemo(() => tracks.reduce((s, t) => s + t.durationMs, 0), [tracks]);
 
   const diffMap = useMemo(() => {

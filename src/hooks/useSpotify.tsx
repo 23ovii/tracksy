@@ -25,6 +25,11 @@ export function useSpotify() {
   // Tracks the actual current Spotify order, updated after every successful write.
   const currentSpotifyOrderRef = useRef<Track[]>([]);
 
+  function setOrderBoth(newOrder: Track[]) {
+    currentSpotifyOrderRef.current = newOrder;
+    setCurrentOrder(newOrder);
+  }
+
   const loadPlaylists = useCallback(async () => {
     setIsLoading(true);
     setFeedback('');
@@ -47,8 +52,7 @@ export function useSpotify() {
       if (currentPlaylistIdRef.current !== playlist.id) return;
       setSelectedPlaylist(playlist);
       setTracks(raw);
-      setCurrentOrder(raw);
-      currentSpotifyOrderRef.current = raw;
+      setOrderBoth(raw);
     } catch (error) {
       if (currentPlaylistIdRef.current !== playlist.id) return;
       console.error(error);
@@ -69,8 +73,7 @@ export function useSpotify() {
     const controller = new AbortController();
     abortControllerRef.current = controller;
     const result = await savePlaylistTracks(token!, selectedPlaylist!.id, baseline, sortedTracks, onProgress, onRateLimit, controller.signal);
-    currentSpotifyOrderRef.current = [...sortedTracks];
-    setCurrentOrder([...sortedTracks]);
+    setOrderBoth([...sortedTracks]);
     return result;
   }, [token, selectedPlaylist, tracks]);
 
@@ -91,8 +94,7 @@ export function useSpotify() {
       onRateLimit,
       controller.signal,
     );
-    currentSpotifyOrderRef.current = [...original];
-    setCurrentOrder([...original]);
+    setOrderBoth([...original]);
     return result;
   }, [token, selectedPlaylist]);
 
@@ -117,8 +119,7 @@ export function useSpotify() {
     const controller = new AbortController();
     abortControllerRef.current = controller;
     const result = await savePlaylistTracks(token!, selectedPlaylist!.id, baseline, restoredTracks, onProgress, onRateLimit, controller.signal);
-    currentSpotifyOrderRef.current = [...restoredTracks];
-    setCurrentOrder([...restoredTracks]);
+    setOrderBoth([...restoredTracks]);
     return result;
   }, [token, selectedPlaylist, tracks]);
 
@@ -131,8 +132,7 @@ export function useSpotify() {
     setSelectedPlaylist(null);
     setTracks([]);
     setFeedback('');
-    setCurrentOrder([]);
-    currentSpotifyOrderRef.current = [];
+    setOrderBoth([]);
     lastOriginalTracksRef.current = [];
     lastSortedTracksRef.current = [];
   }, []);
