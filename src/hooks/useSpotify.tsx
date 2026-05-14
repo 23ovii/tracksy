@@ -17,6 +17,7 @@ export function useSpotify() {
   const [selectedPlaylist, setSelectedPlaylist] = useState<Playlist | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [feedback, setFeedback] = useState('');
+  const [currentOrder, setCurrentOrder] = useState<Track[]>([]);
   const currentPlaylistIdRef = useRef<string | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const lastOriginalTracksRef = useRef<Track[]>([]);
@@ -46,6 +47,7 @@ export function useSpotify() {
       if (currentPlaylistIdRef.current !== playlist.id) return;
       setSelectedPlaylist(playlist);
       setTracks(raw);
+      setCurrentOrder(raw);
       currentSpotifyOrderRef.current = raw;
     } catch (error) {
       if (currentPlaylistIdRef.current !== playlist.id) return;
@@ -68,6 +70,7 @@ export function useSpotify() {
     abortControllerRef.current = controller;
     const result = await savePlaylistTracks(token!, selectedPlaylist!.id, baseline, sortedTracks, onProgress, onRateLimit, controller.signal);
     currentSpotifyOrderRef.current = [...sortedTracks];
+    setCurrentOrder([...sortedTracks]);
     return result;
   }, [token, selectedPlaylist, tracks]);
 
@@ -89,6 +92,7 @@ export function useSpotify() {
       controller.signal,
     );
     currentSpotifyOrderRef.current = [...original];
+    setCurrentOrder([...original]);
     return result;
   }, [token, selectedPlaylist]);
 
@@ -114,6 +118,7 @@ export function useSpotify() {
     abortControllerRef.current = controller;
     const result = await savePlaylistTracks(token!, selectedPlaylist!.id, baseline, restoredTracks, onProgress, onRateLimit, controller.signal);
     currentSpotifyOrderRef.current = [...restoredTracks];
+    setCurrentOrder([...restoredTracks]);
     return result;
   }, [token, selectedPlaylist, tracks]);
 
@@ -126,19 +131,16 @@ export function useSpotify() {
     setSelectedPlaylist(null);
     setTracks([]);
     setFeedback('');
+    setCurrentOrder([]);
     currentSpotifyOrderRef.current = [];
     lastOriginalTracksRef.current = [];
     lastSortedTracksRef.current = [];
   }, []);
 
-  const getCurrentOrder = useCallback(
-    () => (currentSpotifyOrderRef.current.length > 0 ? currentSpotifyOrderRef.current : tracks),
-    [tracks],
-  );
-
   return {
     playlists,
     tracks,
+    currentOrder,
     selectedPlaylist,
     isLoading,
     feedback,
@@ -149,6 +151,5 @@ export function useSpotify() {
     restoreOrder,
     cancelSort,
     clearSelection,
-    getCurrentOrder,
   };
 }
