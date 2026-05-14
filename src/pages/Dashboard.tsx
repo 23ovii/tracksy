@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import type { CSSProperties } from 'react';
 
-import { useSpotify } from '../hooks/useSpotify.tsx';
-import { useSortApply } from '../hooks/useSortApply.ts';
+import { usePlaylists, usePlaylistTracks } from '../api/playlists';
+import { useReorderPlaylist } from '../api/mutations';
 import SortProgress from '../components/SortProgress.tsx';
 import Toast from '../components/Toast.tsx';
 import UndoToast from '../components/dashboard/UndoToast.tsx';
@@ -21,7 +21,7 @@ import { getHistory, pushHistory, clearHistory } from '../services/sortHistory';
 import type { HistoryEntry } from '../services/sortHistory';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import { useShortcutsOverlay } from '../context/ShortcutsOverlayContext';
-import { buildTrackOccurrenceKeys } from '../utils/trackIdentity';
+import { buildTrackOccurrenceKeys, restoreTracksFromKeys } from '../utils/trackIdentity';
 import { trackEvent, TrackEvents } from '../services/analytics';
 
 const GLASS: CSSProperties = {
@@ -32,16 +32,14 @@ const GLASS: CSSProperties = {
 };
 
 function Dashboard() {
-  const spotify = useSpotify();
-  const { playlists, tracks, currentOrder, selectedPlaylist, isLoading, loadPlaylists, loadPlaylistTracks, cancelSort, clearSelection } = spotify;
+  const [selectedPlaylist, setSelectedPlaylist] = useState<Playlist | null>(null);
 
-  const sortApply = useSortApply({
-    applySort: spotify.applySort,
-    undoLastSort: spotify.undoLastSort,
-    restoreOrder: spotify.restoreOrder,
-    cancelSort,
-  });
-  const { applying, isUndo, applyProgress, rateLimitMsg, startApply, startUndo, startRestore, settle, cancel } = sortApply;
+  const playlistsQuery = usePlaylists();
+  const tracksQuery = usePlaylistTracks(selectedPlaylist?.id ?? null);
+  const reorder = useReorderPlaylist(selectedPlaylist?.id ?? '');
+
+  const tracks = useMemo(() => tracksQuery.data ?? [], [tracksQuery.data]);
+  const playlists = useMemo(() => playlistsQuery.data ?? [], [playlistsQuery.data]);
 
   const [sortBy, setSortBy] = useState<SortKey>('name');
   const [sortDir, setSortDir] = useState<SortDir>('asc');
@@ -57,6 +55,23 @@ function Dashboard() {
   const filterInputRef = useRef<HTMLInputElement>(null);
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { open: overlayOpen, toggle: toggleOverlay } = useShortcutsOverlay();
+
+  // Apply progress state — driven by savePlaylistTracks callbacks
+  const [applying, setApplying] = useState(false);
+  const [isUndo, setIsUndo] = useState(false);
+  const [applyProgress, setApplyProgress] = useState(0);
+  const [rateLimitMsg, setRateLimitMsg] = useState('');
+
+  // Refs for operation metadata (set at apply time, read at handleDone time)
+  const mutationPromiseRef = useRef<Promise<{ moves: number }> | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const isUndoRef = useRef(false);
+  const isRestoreRef = useRef(false);
+  const preApplyIdsRef = useRef<string[]>([]);
+  const preApplyKeysRef = useRef<string[]>([]);
+
+  // Previous order stored for undo — captured just before apply
+  const [lastApplied, setLastApplied] = useState<{ previous: Track[]; sorted: Track[] } | null>(null);
 
   function showToast(msg: string, type?: 'cancel') {
     if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
@@ -92,8 +107,6 @@ function Dashboard() {
     setSortKey((k) => k + 1);
   }
 
-  useEffect(() => { loadPlaylists(); }, [loadPlaylists]);
-
   const prevPlaylistCountRef = useRef(0);
   useEffect(() => {
     if (playlists.length > 0 && playlists.length !== prevPlaylistCountRef.current) {
@@ -118,14 +131,13 @@ function Dashboard() {
     });
   }
 
-  const sorted = useMemo(
-    () => sortTracks(currentOrder.length ? currentOrder : tracks, sortBy, sortDir),
-    [currentOrder, tracks, sortBy, sortDir],
-  );
+  const sorted = useMemo(() => sortTracks(tracks, sortBy, sortDir), [tracks, sortBy, sortDir]);
   const totalMs = useMemo(() => tracks.reduce((s, t) => s + t.durationMs, 0), [tracks]);
 
+  // diffMap: shows how far each track in `sorted` has moved from the current Spotify order.
+  // tracksQuery.data is the source of truth (cache = current Spotify order after each apply).
   const diffMap = useMemo(() => {
-    const baseline = currentOrder.length ? currentOrder : tracks;
+    const baseline = tracks;
     if (!baseline.length || !sorted.length) return new Map<Track, number>();
     const originalPos = new Map<Track, number>();
     baseline.forEach((t, i) => originalPos.set(t, i));
@@ -135,7 +147,7 @@ function Dashboard() {
       map.set(t, from - to);
     });
     return map;
-  }, [currentOrder, tracks, sorted]);
+  }, [tracks, sorted]);
 
   const displayed = useMemo(() => {
     if (!filterQuery.trim()) return sorted;
@@ -212,35 +224,86 @@ function Dashboard() {
 
   function handleBack() {
     if (applying) {
-      cancel();
+      abortControllerRef.current?.abort();
+      abortControllerRef.current = null;
       showToast('Sort canceled', 'cancel');
       return;
     }
-    clearSelection();
+    setSelectedPlaylist(null);
+    reorder.reset();
     setApplied(false);
     setSortFeedback('');
     setUndoUntil(null);
+    setLastApplied(null);
   }
 
   function handleSelect(playlist: Playlist) {
     trackEvent(TrackEvents.PLAYLIST_SELECTED, { trackCount: playlist.trackCount });
-    loadPlaylistTracks(playlist);
+    setSelectedPlaylist(playlist);
+    reorder.reset();
     setApplied(false);
     setSortFeedback('');
     setSortKey((k) => k + 1);
     setUndoUntil(null);
+    setLastApplied(null);
   }
 
-  function handleApply() {
-    startApply(sorted, currentOrder.length ? currentOrder : tracks, (err: unknown) => {
-      if ((err as { name?: string })?.name !== 'AbortError') setSortFeedback('Failed to save to Spotify. Try again.');
+  function startReorder(previous: Track[], target: Track[], opts: { undo?: boolean; restore?: boolean } = {}) {
+    setApplying(true);
+    setIsUndo(Boolean(opts.undo));
+    setApplyProgress(0);
+    setRateLimitMsg('');
+
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
+    const promise = reorder.mutateAsync({
+      previous,
+      sorted: target,
+      abortSignal: controller.signal,
+      onProgress: setApplyProgress,
+      onRateLimit: (r) => setRateLimitMsg(`Rate limited by Spotify — retrying in ${r}s…`),
+    });
+    mutationPromiseRef.current = promise;
+
+    promise.catch((err) => {
+      if ((err as { name?: string })?.name !== 'AbortError') {
+        setSortFeedback('Failed to save to Spotify. Try again.');
+      }
+      setApplying(false);
+      setApplyProgress(0);
+      setRateLimitMsg('');
     });
   }
 
+  function handleApply() {
+    const currentTracks = tracksQuery.data ?? [];
+    isUndoRef.current = false;
+    isRestoreRef.current = false;
+    preApplyIdsRef.current = currentTracks.map((t) => t.id);
+    preApplyKeysRef.current = buildTrackOccurrenceKeys(currentTracks);
+    setLastApplied({ previous: currentTracks, sorted });
+    startReorder(currentTracks, sorted);
+  }
+
   async function handleDone() {
+    const wasUndo = isUndoRef.current;
+    const wasRestore = isRestoreRef.current;
+    const preApplyIds = [...preApplyIdsRef.current];
+    const preApplyKeys = [...preApplyKeysRef.current];
+    isUndoRef.current = false;
+    isRestoreRef.current = false;
+
+    setApplying(false);
+    setApplyProgress(0);
+    setRateLimitMsg('');
+
     const playlistName = selectedPlaylist?.name;
+
     try {
-      const { moves, wasUndo, wasRestore, preApplyIds, preApplyKeys } = await settle();
+      const result = await mutationPromiseRef.current!;
+      const { moves } = result;
+
       if (wasUndo || wasRestore) {
         setUndoUntil(null);
         setApplied(false);
@@ -277,20 +340,33 @@ function Dashboard() {
   }
 
   const handleUndo = useCallback(() => {
+    if (!lastApplied) return;
     trackEvent(TrackEvents.SORT_UNDONE);
     setUndoUntil(null);
-    startUndo((err: unknown) => {
-      if ((err as { name?: string })?.name !== 'AbortError') setSortFeedback('Failed to undo. Try again.');
-    });
-  }, [startUndo]);
+    isUndoRef.current = true;
+    isRestoreRef.current = false;
+    preApplyIdsRef.current = [];
+    preApplyKeysRef.current = [];
+    startReorder(lastApplied.sorted, lastApplied.previous, { undo: true });
+  }, [lastApplied]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleRestore = useCallback((entry: HistoryEntry) => {
+    const currentTracks = tracksQuery.data ?? [];
+    const restoredTracks = restoreTracksFromKeys(
+      currentTracks,
+      entry.trackKeysBefore ?? entry.trackIdsBefore,
+    );
+    if (!restoredTracks) {
+      setSortFeedback('This playlist changed since that history entry was saved. Reload the playlist before restoring.');
+      return;
+    }
     setUndoUntil(null);
-    startRestore(entry, (err: unknown) => {
-      const e = err as { name?: string; message?: string };
-      if (e?.name !== 'AbortError') setSortFeedback(e?.message ?? 'Failed to restore. Try again.');
-    });
-  }, [startRestore]);
+    isUndoRef.current = false;
+    isRestoreRef.current = true;
+    preApplyIdsRef.current = [];
+    preApplyKeysRef.current = [];
+    startReorder(currentTracks, restoredTracks, { restore: true });
+  }, [tracksQuery.data]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function handleClearHistory() {
     if (!selectedPlaylist) return;
@@ -300,6 +376,8 @@ function Dashboard() {
 
   const accent = selectedPlaylist?.color1 ?? 'var(--green)';
   const accent2 = selectedPlaylist?.color2 ?? '#5af5a0';
+
+  const isLoading = selectedPlaylist ? tracksQuery.isLoading : playlistsQuery.isLoading;
 
   return (
     <>
@@ -314,7 +392,7 @@ function Dashboard() {
           <LibraryPanel
             playlists={playlists}
             isLoading={isLoading}
-            onRefresh={loadPlaylists}
+            onRefresh={() => playlistsQuery.refetch()}
             onSelect={handleSelect}
           />
         )}
