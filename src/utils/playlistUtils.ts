@@ -116,13 +116,3 @@ function sortByDiscography(tracks: Track[]): Track[] {
     return (originalIndex.get(a) ?? 0) - (originalIndex.get(b) ?? 0);
   });
 }
-
-export function removeDuplicateTracks(tracks: Track[]): Track[] {
-  const seen = new Set<string>();
-  return tracks.filter((track) => {
-    const key = track.id || `${track.name}-${track.artist}`;
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
-}
