@@ -33,7 +33,7 @@ const GLASS: CSSProperties = {
 
 function Dashboard() {
   const spotify = useSpotify();
-  const { playlists, tracks, selectedPlaylist, isLoading, loadPlaylists, loadPlaylistTracks, cancelSort, clearSelection, getCurrentOrder } = spotify;
+  const { playlists, tracks, currentOrder, selectedPlaylist, isLoading, loadPlaylists, loadPlaylistTracks, cancelSort, clearSelection } = spotify;
 
   const sortApply = useSortApply({
     applySort: spotify.applySort,
@@ -122,16 +122,17 @@ function Dashboard() {
   const totalMs = useMemo(() => tracks.reduce((s, t) => s + t.durationMs, 0), [tracks]);
 
   const diffMap = useMemo(() => {
-    if (!tracks.length || !sorted.length) return new Map<Track, number>();
+    const baseline = currentOrder.length ? currentOrder : tracks;
+    if (!baseline.length || !sorted.length) return new Map<Track, number>();
     const originalPos = new Map<Track, number>();
-    tracks.forEach((t, i) => originalPos.set(t, i));
+    baseline.forEach((t, i) => originalPos.set(t, i));
     const map = new Map<Track, number>();
     sorted.forEach((t, to) => {
       const from = originalPos.get(t) ?? to;
       map.set(t, from - to);
     });
     return map;
-  }, [tracks, sorted]);
+  }, [currentOrder, tracks, sorted]);
 
   const displayed = useMemo(() => {
     if (!filterQuery.trim()) return sorted;
@@ -228,7 +229,7 @@ function Dashboard() {
   }
 
   function handleApply() {
-    startApply(sorted, getCurrentOrder(), (err: unknown) => {
+    startApply(sorted, currentOrder.length ? currentOrder : tracks, (err: unknown) => {
       if ((err as { name?: string })?.name !== 'AbortError') setSortFeedback('Failed to save to Spotify. Try again.');
     });
   }
