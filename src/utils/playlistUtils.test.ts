@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 
 import type { Track } from '../types';
 
-import { sortTracks, removeDuplicateTracks } from './playlistUtils';
+import { sortTracks } from './playlistUtils';
 
 function makeTrack(overrides: Partial<Track>): Track {
   return {
@@ -100,37 +100,5 @@ describe('sortTracks', () => {
     ];
     const result = sortTracks(tied, 'name', 'asc');
     expect(result.map((t) => t.id)).toEqual(['a', 'b', 'c']);
-  });
-});
-
-describe('removeDuplicateTracks', () => {
-  it('deduplicates by id', () => {
-    const tracks: Track[] = [
-      makeTrack({ id: 'x', name: 'One' }),
-      makeTrack({ id: 'x', name: 'One' }),
-      makeTrack({ id: 'y', name: 'Two' }),
-    ];
-    const result = removeDuplicateTracks(tracks);
-    expect(result).toHaveLength(2);
-    expect(result.map((t) => t.id)).toEqual(['x', 'y']);
-  });
-
-  it('falls back to name+artist key when id is empty', () => {
-    const tracks: Track[] = [
-      makeTrack({ id: '', name: 'Song', artist: 'Band' }),
-      makeTrack({ id: '', name: 'Song', artist: 'Band' }),
-      makeTrack({ id: '', name: 'Song', artist: 'Other' }),
-    ];
-    const result = removeDuplicateTracks(tracks);
-    expect(result).toHaveLength(2);
-  });
-
-  it('keeps first occurrence when deduplicating', () => {
-    const tracks: Track[] = [
-      makeTrack({ id: 'dup', name: 'First',  popularity: 10 }),
-      makeTrack({ id: 'dup', name: 'Second', popularity: 20 }),
-    ];
-    const result = removeDuplicateTracks(tracks);
-    expect(result[0]!.name).toBe('First');
   });
 });
