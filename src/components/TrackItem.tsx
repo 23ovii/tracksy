@@ -2,6 +2,7 @@ import { memo } from 'react';
 import type { CSSProperties } from 'react';
 
 import { SORT_OPTIONS } from '../utils/playlistUtils.ts';
+import { formatDuration } from '../utils/format.ts';
 import type { Track } from '../types';
 
 interface TrackItemProps {
@@ -9,12 +10,6 @@ interface TrackItemProps {
   index: number;
   sortBy: string;
   delta?: number;
-}
-
-function formatDuration(ms: number): string {
-  const m = Math.floor(ms / 60000);
-  const s = Math.floor((ms % 60000) / 1000);
-  return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
 const TrackItem = memo(function TrackItem({ track, index, sortBy, delta }: TrackItemProps) {

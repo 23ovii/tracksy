@@ -1,4 +1,5 @@
 import type { Track, Playlist, SpotifyUser } from '../types';
+import { SPOTIFY_PLAYLIST_PAGE_SIZE, SPOTIFY_TRACK_PAGE_SIZE } from '../utils/constants.ts';
 
 import type {
   SpotifyErrorResponse,
@@ -138,7 +139,7 @@ async function fetchAllPages<T>(firstUrl: string, token: string): Promise<T[]> {
 export async function getSpotifyPlaylists(token: string): Promise<Playlist[]> {
   const [user, items] = await Promise.all([
     fetchSpotify<SpotifyUserObject>('https://api.spotify.com/v1/me', token),
-    fetchAllPages<SpotifyPlaylistObject>('https://api.spotify.com/v1/me/playlists?limit=50', token),
+    fetchAllPages<SpotifyPlaylistObject>(`https://api.spotify.com/v1/me/playlists?limit=${SPOTIFY_PLAYLIST_PAGE_SIZE}`, token),
   ]);
   return items
     .filter((item) => item.owner.id === user.id)
@@ -146,7 +147,7 @@ export async function getSpotifyPlaylists(token: string): Promise<Playlist[]> {
 }
 
 export async function getSpotifyPlaylistTracks(token: string, playlistId: string): Promise<Track[]> {
-  const items = await fetchAllPages<SpotifyPlaylistTrackItem>(`https://api.spotify.com/v1/playlists/${playlistId}/tracks?limit=100`, token);
+  const items = await fetchAllPages<SpotifyPlaylistTrackItem>(`https://api.spotify.com/v1/playlists/${playlistId}/tracks?limit=${SPOTIFY_TRACK_PAGE_SIZE}`, token);
   return items.map(mapTrack).filter((t): t is Track => t !== null);
 }
 

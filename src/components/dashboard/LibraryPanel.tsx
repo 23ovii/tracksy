@@ -1,14 +1,6 @@
-import type { CSSProperties } from 'react';
-
 import type { Playlist } from '../../types';
+import { GLASS_SURFACE } from '../../styles/tokens.ts';
 import PlaylistCard from '../PlaylistCard';
-
-const GLASS: CSSProperties = {
-  background: 'var(--glass-bg)',
-  border: '1px solid var(--border)',
-  borderRadius: 20,
-  boxShadow: 'var(--shadow-card)',
-};
 
 interface LibraryPanelProps {
   playlists: Playlist[];
@@ -19,7 +11,7 @@ interface LibraryPanelProps {
 
 function LibraryPanel({ playlists, isLoading, onRefresh, onSelect }: LibraryPanelProps) {
   return (
-    <div style={{ ...GLASS, padding: 24, marginBottom: 18, animation: 'fadeUp 0.35s var(--ease-out)' }}>
+    <div style={{ ...GLASS_SURFACE, padding: 24, marginBottom: 18, animation: 'fadeUp 0.35s var(--ease-out)' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, padding: '0 4px' }}>
         <div>
           <p style={{

@@ -1,0 +1,8 @@
+export const UNDO_WINDOW_MS = 30_000;
+export const TOKEN_REFRESH_LEEWAY_MS = 60_000;
+export const TOAST_TIMEOUT_MS = 2_500;
+export const TOAST_TIMEOUT_CANCEL_MS = 3_000;
+export const PRESETS_LIMIT = 20;
+export const HISTORY_PER_PLAYLIST_LIMIT = 5;
+export const SPOTIFY_PLAYLIST_PAGE_SIZE = 50;
+export const SPOTIFY_TRACK_PAGE_SIZE = 100;

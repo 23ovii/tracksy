@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
-import type { CSSProperties } from 'react';
 
 import { usePlaylists, usePlaylistTracks } from '../api/playlists';
 import { useReorderPlaylist } from '../api/mutations';
@@ -23,13 +22,8 @@ import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import { useShortcutsOverlay } from '../context/ShortcutsOverlayContext';
 import { buildTrackOccurrenceKeys, restoreTracksFromKeys } from '../utils/trackIdentity';
 import { trackEvent, TrackEvents } from '../services/analytics';
-
-const GLASS: CSSProperties = {
-  background: 'var(--glass-bg)',
-  border: '1px solid var(--border)',
-  borderRadius: 20,
-  boxShadow: 'var(--shadow-card)',
-};
+import { GLASS_SURFACE } from '../styles/tokens.ts';
+import { UNDO_WINDOW_MS, TOAST_TIMEOUT_MS, TOAST_TIMEOUT_CANCEL_MS } from '../utils/constants.ts';
 
 function Dashboard() {
   const [selectedPlaylist, setSelectedPlaylist] = useState<Playlist | null>(null);
@@ -76,7 +70,7 @@ function Dashboard() {
   function showToast(msg: string, type?: 'cancel') {
     if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
     setToast(type !== undefined ? { msg, key: Date.now(), type } : { msg, key: Date.now() });
-    toastTimerRef.current = setTimeout(() => setToast(null), type === 'cancel' ? 3_000 : 2_500);
+    toastTimerRef.current = setTimeout(() => setToast(null), type === 'cancel' ? TOAST_TIMEOUT_CANCEL_MS : TOAST_TIMEOUT_MS);
   }
 
   function handleSavePreset(name: string) {
@@ -308,7 +302,7 @@ function Dashboard() {
         setUndoUntil(null);
         setApplied(false);
         setSortFeedback(moves === 0 ? 'Already in this order.' : 'Reverted.');
-        setTimeout(() => setSortFeedback(''), 3_000);
+        setTimeout(() => setSortFeedback(''), TOAST_TIMEOUT_CANCEL_MS);
       } else {
         const label = SORT_OPTIONS.find((o) => o.id === sortBy)?.label;
         if (moves === 0) {
@@ -317,7 +311,7 @@ function Dashboard() {
           setApplied(true);
           trackEvent(TrackEvents.SORT_APPLIED, { sortBy, moves, trackCount: sorted.length });
           if (playlistName) setSortFeedback(`"${playlistName}" sorted by ${label} and saved.`);
-          setUndoUntil(Date.now() + 30_000);
+          setUndoUntil(Date.now() + UNDO_WINDOW_MS);
           if (selectedPlaylist) {
             const entry: HistoryEntry = {
               id: Date.now().toString(36) + Math.random().toString(36).slice(2),
@@ -398,7 +392,7 @@ function Dashboard() {
         )}
 
         {selectedPlaylist && (
-          <div style={{ ...GLASS, overflow: 'hidden' }}>
+          <div style={{ ...GLASS_SURFACE, overflow: 'hidden' }}>
             <SorterHeader
               selectedPlaylist={selectedPlaylist}
               totalMs={totalMs}
