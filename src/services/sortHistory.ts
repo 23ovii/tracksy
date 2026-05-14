@@ -9,8 +9,9 @@ export interface HistoryEntry {
   trackKeysAfter?: string[];
 }
 
+import { HISTORY_PER_PLAYLIST_LIMIT } from '../utils/constants.ts';
+
 const STORAGE_KEY = 'tracksy_sort_history_v1';
-const MAX_PER_PLAYLIST = 5;
 
 function readAll(): Record<string, HistoryEntry[]> {
   try {
@@ -37,7 +38,7 @@ export function pushHistory(entry: HistoryEntry): void {
   const all = readAll();
   const entries = all[entry.playlistId] ?? [];
   entries.push(entry);
-  all[entry.playlistId] = entries.slice(-MAX_PER_PLAYLIST);
+  all[entry.playlistId] = entries.slice(-HISTORY_PER_PLAYLIST_LIMIT);
   writeAll(all);
 }
 

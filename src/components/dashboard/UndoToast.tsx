@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 
 import { SORT_OPTIONS } from '../../utils/playlistUtils';
+import { UNDO_WINDOW_MS } from '../../utils/constants.ts';
 
 interface UndoToastProps {
   undoUntil: number;
@@ -33,7 +34,7 @@ function UndoToast({ undoUntil, sortBy, accent, accent2, onUndo, onDismiss }: Un
     return () => clearInterval(id);
   }, [hovered, localUntil, onDismiss]);
 
-  const pct = Math.max(0, (localUntil - Date.now()) / 30_000) * 100;
+  const pct = Math.max(0, (localUntil - Date.now()) / UNDO_WINDOW_MS) * 100;
   const label = SORT_OPTIONS.find((o) => o.id === sortBy)?.label;
 
   return (

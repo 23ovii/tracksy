@@ -1,4 +1,5 @@
 import type { SortKey, SortDir } from '../utils/playlistUtils';
+import { PRESETS_LIMIT } from '../utils/constants.ts';
 
 export interface SortPreset {
   id: string;
@@ -10,7 +11,6 @@ export interface SortPreset {
 }
 
 const KEY = 'tracksy_presets_v1';
-const MAX = 20;
 
 const VALID_SORT_KEYS: SortKey[] = ['name', 'artist', 'popularity', 'addedAt', 'durationMs', 'discography'];
 const VALID_SORT_DIRS: SortDir[] = ['asc', 'desc'];
@@ -54,7 +54,7 @@ export function listPresets(): SortPreset[] {
 
 export function savePreset(preset: SortPreset): void {
   const list = listPresets();
-  if (list.length >= MAX) throw new Error('You can only save up to 20 presets. Delete one first.');
+  if (list.length >= PRESETS_LIMIT) throw new Error(`You can only save up to ${PRESETS_LIMIT} presets. Delete one first.`);
   localStorage.setItem(KEY, JSON.stringify([...list, preset]));
 }
 

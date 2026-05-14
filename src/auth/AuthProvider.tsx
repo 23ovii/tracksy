@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { refreshSpotifyToken } from '../services/auth.ts';
 import { getSpotifyCurrentUser } from '../services/spotify.ts';
 import type { TokenResponse, AuthContextValue, SpotifyUser } from '../types';
+import { TOKEN_REFRESH_LEEWAY_MS } from '../utils/constants.ts';
 
 interface AuthState {
   access_token: string;
@@ -55,7 +56,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!authState?.refresh_token || !authState?.expires_at) return;
 
     const msUntilExpiry = authState.expires_at - Date.now();
-    const msUntilRefresh = msUntilExpiry - 60_000;
+    const msUntilRefresh = msUntilExpiry - TOKEN_REFRESH_LEEWAY_MS;
 
     if (msUntilRefresh <= 0) {
       refreshSpotifyToken(authState.refresh_token)
