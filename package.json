@@ -17,15 +17,15 @@
     "validate": "npm run typecheck && npm run lint && npm test"
   },
   "dependencies": {
-    "@tanstack/react-query": "^5.100.10",
-    "@tanstack/react-virtual": "^3.13.24",
+    "@tanstack/react-query": "^5.100.14",
+    "@tanstack/react-virtual": "^3.13.26",
     "@vercel/analytics": "^2.0.1",
     "@vercel/edge-config": "^1.4.3",
     "@vercel/speed-insights": "^2.0.0",
-    "posthog-js": "^1.373.2",
+    "posthog-js": "^1.376.0",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
-    "react-router-dom": "^7.15.0"
+    "react-router-dom": "^7.15.1"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
