@@ -22,7 +22,7 @@ function Toast({ msg, type, stacked }: ToastProps) {
         backdropFilter: 'blur(18px)',
         WebkitBackdropFilter: 'blur(18px)',
         animation: 'toastIn 0.28s var(--ease-out)',
-        whiteSpace: 'nowrap',
+        maxWidth: 'calc(100vw - 32px)',
       }}>
         <div style={{
           width: 30, height: 30, borderRadius: '50%', flexShrink: 0,
@@ -39,7 +39,7 @@ function Toast({ msg, type, stacked }: ToastProps) {
             Sort canceled
           </div>
           <div style={{ fontSize: 11.5, color: 'var(--text-3)', marginTop: 1 }}>
-            No changes were saved to Spotify
+            Spotify may have saved some moves; syncing order.
           </div>
         </div>
       </div>
