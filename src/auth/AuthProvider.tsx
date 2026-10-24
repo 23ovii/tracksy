@@ -6,6 +6,7 @@ import { refreshSpotifyToken } from '../services/auth.ts';
 import { getSpotifyCurrentUser } from '../services/spotify.ts';
 import type { TokenResponse, AuthContextValue, SpotifyUser } from '../types';
 import { TOKEN_REFRESH_LEEWAY_MS } from '../utils/constants.ts';
+import { isRecord } from '../utils/validation';
 
 interface AuthState {
   access_token: string;
@@ -20,7 +21,21 @@ const LOGOUT_SIGNAL_KEY = 'tracksy_auth_logout';
 function parseSavedAuth(stored: string | null): AuthState | null {
   if (!stored) return null;
   try {
-    return JSON.parse(stored) as AuthState;
+    const value: unknown = JSON.parse(stored);
+    if (!isRecord(value) ||
+      typeof value.access_token !== 'string' || value.access_token.trim() === '' ||
+      typeof value.expires_at !== 'number' || !Number.isFinite(value.expires_at) ||
+      value.expires_at <= 0 ||
+      (value.refresh_token !== undefined &&
+        (typeof value.refresh_token !== 'string' || value.refresh_token.trim() === ''))
+    ) {
+      return null;
+    }
+    return {
+      access_token: value.access_token,
+      expires_at: value.expires_at,
+      ...(typeof value.refresh_token === 'string' ? { refresh_token: value.refresh_token } : {}),
+    };
   } catch {
     return null;
   }
@@ -63,7 +78,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const applyToken = useCallback((tokenResponse: TokenResponse): number => {
     authGenerationRef.current += 1;
-    const expiresAt = Date.now() + (tokenResponse.expires_in ?? 3600) * 1000;
+    const expiresAt = Date.now() + tokenResponse.expires_in * 1000;
     const token = tokenResponse.refresh_token ?? authState?.refresh_token;
     setAuthState({
       access_token: tokenResponse.access_token,

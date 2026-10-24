@@ -133,12 +133,14 @@ validated.
 - **Change:** Extracted reorder progress, cancellation, mutation completion, metadata, and error cleanup into `useReorderOperation`; moved preset and playlist-history persistence/actions into `useDashboardPresetsHistory`. The page retains presentation and user-facing completion feedback.
 - **Verification:** Hook tests cover successful/failed reorder completion, progress, and preset/history scoping; `npm run validate` and `npm run build` passed.
 
-#### [ ] Q2 — Validate persisted and remote JSON at runtime
+#### [x] Q2 — Validate persisted and remote JSON at runtime
 
 - **Severity:** Low · **Effort:** M
 - **Location:** `src/auth/AuthProvider.tsx:20-30,93`; `src/services/spotify.ts:73-88`; `src/services/auth.ts:121`
 - **Problem:** Parsed storage and API response values are asserted to application types rather than checked; malformed storage or changed API responses may enter core flows.
 - **Suggested fix:** Validate auth state and required response fields before storing or consuming them.
+- **Change:** Validate persisted auth state and OAuth token responses before accepting them; require a valid access token and expiry. Parse Spotify profile, playlist, paging, and track fields before mapping them, and reject pagination URLs outside Spotify's API origin.
+- **Verification:** Tests cover malformed persisted auth, token responses, Spotify profile/playlist/track payloads, and external pagination URLs; `npm run validate` and `npm run build` passed.
 
 ### Performance
 

@@ -40,6 +40,7 @@ describe('AuthProvider', () => {
 
   beforeEach(() => {
     vi.mocked(refreshSpotifyToken).mockReset();
+    vi.mocked(getSpotifyCurrentUser).mockClear();
     vi.mocked(getSpotifyCurrentUser).mockResolvedValue({
       id: 'account',
       display_name: 'Account',
@@ -158,6 +159,26 @@ describe('AuthProvider', () => {
 
     expect(JSON.parse(sessionStorage.getItem('tracksy_auth_state')!).access_token).toBe('new-token');
     expect(localStorage.getItem('tracksy_auth_state')).toBeNull();
+  });
+
+  it('discards malformed saved auth state', async () => {
+    sessionStorage.setItem('tracksy_auth_state', JSON.stringify({
+      access_token: 'valid-token',
+      refresh_token: 42,
+      expires_at: Date.now() + 5 * 60_000,
+    }));
+
+    await act(async () => {
+      root.render(
+        <QueryClientProvider client={queryClient}>
+          <AuthProvider><AuthProbe /></AuthProvider>
+        </QueryClientProvider>,
+      );
+    });
+
+    expect(container.querySelector('button')?.textContent).toBe('logged out');
+    expect(sessionStorage.getItem('tracksy_auth_state')).toBeNull();
+    expect(getSpotifyCurrentUser).not.toHaveBeenCalled();
   });
 
   it('logs out when another tab broadcasts a logout signal', async () => {

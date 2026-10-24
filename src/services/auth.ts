@@ -1,5 +1,6 @@
 import type { TokenResponse } from '../types';
 import { env } from '../config/env';
+import { isRecord } from '../utils/validation';
 
 const SPOTIFY_AUTHORIZE_URL = 'https://accounts.spotify.com/authorize';
 const SPOTIFY_TOKEN_URL = 'https://accounts.spotify.com/api/token';
@@ -8,6 +9,29 @@ const REDIRECT_URI = env.spotifyRedirectUri;
 const SCOPES = 'user-read-private playlist-read-private playlist-read-collaborative playlist-modify-public playlist-modify-private';
 const VERIFIER_KEY = 'tracksy_pkce_verifier';
 const STATE_KEY = 'tracksy_oauth_state';
+
+function parseTokenResponse(value: unknown): TokenResponse {
+  if (!isRecord(value) ||
+    typeof value.access_token !== 'string' || value.access_token.trim() === '' ||
+    (value.refresh_token !== undefined &&
+      (typeof value.refresh_token !== 'string' || value.refresh_token.trim() === '')) ||
+    typeof value.expires_in !== 'number' || !Number.isFinite(value.expires_in) || value.expires_in <= 0
+  ) {
+    throw new Error('Spotify returned an invalid token response.');
+  }
+
+  return {
+    access_token: value.access_token,
+    ...(typeof value.refresh_token === 'string' ? { refresh_token: value.refresh_token } : {}),
+    expires_in: value.expires_in,
+  };
+}
+
+function tokenErrorMessage(value: unknown): string | null {
+  return isRecord(value) && typeof value.error_description === 'string'
+    ? value.error_description
+    : null;
+}
 
 function randomString(length = 64): string {
   const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
@@ -86,11 +110,11 @@ export async function exchangeSpotifyCode(code: string): Promise<TokenResponse> 
   });
 
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.error_description || 'Failed to exchange Spotify authorization code.');
+    const errorData: unknown = await response.json().catch(() => null);
+    throw new Error(tokenErrorMessage(errorData) || 'Failed to exchange Spotify authorization code.');
   }
 
-  const tokenData: TokenResponse = await response.json();
+  const tokenData = parseTokenResponse(await response.json());
   sessionStorage.removeItem(VERIFIER_KEY);
   return tokenData;
 }
@@ -118,7 +142,7 @@ export async function refreshSpotifyToken(refreshToken: string): Promise<TokenRe
     throw new Error('Failed to refresh Spotify access token.');
   }
 
-  return response.json() as Promise<TokenResponse>;
+  return parseTokenResponse(await response.json());
 }
 
 export function verifyOAuthState(returnedState: string | null): boolean {
