@@ -202,12 +202,14 @@ validated.
 
 ### Accessibility (a11y)
 
-#### [ ] A1 — Do not hijack Enter on focused controls
+#### [x] A1 — Do not hijack Enter on focused controls
 
 - **Severity:** Medium · **Effort:** S
 - **Location:** `src/hooks/useKeyboardShortcuts.ts:5-7,30-33`; `src/pages/Dashboard.tsx:184-188`
 - **Problem:** The global Enter shortcut ignores inputs and textareas but not buttons/links. It prevents their normal Enter activation and triggers sort instead.
 - **Suggested fix:** Ignore Enter on interactive elements or use a documented chord such as Ctrl+Enter.
+- **Change:** The global shortcut handler now leaves Enter untouched when focus is within a native interactive control or an element with button/link semantics. Enter continues to apply the sort when focus is outside controls.
+- **Verification:** `useKeyboardShortcuts.test.tsx` covers Enter on a nested button target and a non-interactive page target; `npm run validate` and `npm run build` passed.
 
 #### [ ] A2 — Expose track and progress semantics to assistive technology
 

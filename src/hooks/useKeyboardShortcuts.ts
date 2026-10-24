@@ -2,6 +2,12 @@ import { useEffect, useRef } from 'react';
 
 type Shortcuts = Record<string, () => void>;
 
+function isInteractiveTarget(target: EventTarget | null): boolean {
+  return target instanceof Element && target.closest(
+    'button, a[href], input, select, textarea, summary, [role="button"], [role="link"], [contenteditable="true"]',
+  ) !== null;
+}
+
 function defaultShouldIgnore(e: KeyboardEvent): boolean {
   const t = e.target as HTMLElement;
   return t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable;
@@ -19,6 +25,7 @@ export function useKeyboardShortcuts(
   useEffect(() => {
     function handler(e: KeyboardEvent) {
       if (ignoreRef.current(e)) return;
+      if (e.key === 'Enter' && isInteractiveTarget(e.target)) return;
 
       const mods: string[] = [];
       if (e.ctrlKey) mods.push('ctrl');
