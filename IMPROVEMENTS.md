@@ -182,12 +182,14 @@ validated.
 - **Change:** The track table now distinguishes an empty playlist, no matches for an active filter, and playlists with no sortable tracks. It suppresses the empty state while loading or after a load error.
 - **Verification:** `TrackTable.test.tsx` covers empty, filtered, unsupported-only, loading, and error states; `npm run validate` and `npm run build` passed.
 
-#### [ ] U4 — Fit the history drawer to small viewports
+#### [x] U4 — Fit the history drawer to small viewports
 
 - **Severity:** Low · **Effort:** S
 - **Location:** `src/components/dashboard/SorterHeader.tsx:205-212`
 - **Problem:** The fixed 340px drawer can overflow screens narrower than its width.
 - **Suggested fix:** Use a viewport-constrained width such as `min(340px, 100vw)` and verify its contents on mobile.
+- **Change:** Constrained the history drawer to `min(340px, 100vw)` so it cannot exceed the viewport width.
+- **Verification:** `SorterHeader.test.tsx` checks the viewport-constrained drawer width; `npm run validate` and `npm run build` passed.
 
 #### [ ] U5 — Show the diff preview only when the order changes
 
