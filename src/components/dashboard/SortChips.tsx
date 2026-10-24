@@ -30,6 +30,10 @@ function SortChips({ sortBy, sortDir, onPick, disabled = false }: SortChipsProps
             key={opt.id}
             onClick={() => { if (!disabled) onPick(opt.id); }}
             disabled={disabled}
+            aria-pressed={active}
+            aria-label={`Sort by ${opt.label}${active && opt.id !== 'discography'
+              ? `, ${sortDir === 'asc' ? 'ascending' : 'descending'}`
+              : ''}`}
             className={`tk-chip${active ? ' is-active' : ''}`}
             style={{
               display: 'inline-flex', alignItems: 'center', gap: 7,
@@ -45,7 +49,7 @@ function SortChips({ sortBy, sortDir, onPick, disabled = false }: SortChipsProps
           >
             {opt.label}
             {active && opt.id !== 'discography' && (
-              <span style={{ fontSize: 12, fontWeight: 800, marginLeft: 2 }}>
+              <span aria-hidden="true" style={{ fontSize: 12, fontWeight: 800, marginLeft: 2 }}>
                 {sortDir === 'asc' ? '↑' : '↓'}
               </span>
             )}
