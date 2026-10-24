@@ -42,7 +42,7 @@ function SortProgress({ active, progress, label, onDone, color = '#1db954', colo
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10, fontSize: 12, position: 'relative' }}>
         <span style={{ color, fontWeight: 600, letterSpacing: '-0.1px' }}>
           {rateLimitMsg
-            ? <span style={{ color: '#f59e0b' }}>{rateLimitMsg}</span>
+            ? <span role="status" aria-live="polite" style={{ color: '#f59e0b' }}>{rateLimitMsg}</span>
             : <>Sorting by <strong style={{ fontWeight: 800 }}>{label}</strong></>
           }
         </span>
@@ -53,7 +53,13 @@ function SortProgress({ active, progress, label, onDone, color = '#1db954', colo
       <div style={{
         height: 4, background: 'var(--border)',
         borderRadius: 2, overflow: 'hidden', position: 'relative',
-      }}>
+      }}
+        role="progressbar"
+        aria-label={`Sorting by ${label ?? 'selected sort'}`}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={Math.round(progress)}
+      >
         <div style={{
           height: '100%',
           width: `${progress}%`,

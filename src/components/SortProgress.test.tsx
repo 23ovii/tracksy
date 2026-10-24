@@ -25,6 +25,27 @@ describe('SortProgress', () => {
     vi.useRealTimers();
   });
 
+  it('exposes progress values and announces rate-limit status', async () => {
+    await act(async () => {
+      root.render(
+        <SortProgress
+          active
+          progress={42.4}
+          label="Name"
+          onDone={vi.fn()}
+          rateLimitMsg="Waiting for Spotify"
+        />,
+      );
+    });
+
+    const progress = container.querySelector('[role="progressbar"]');
+    expect(progress?.getAttribute('aria-valuemin')).toBe('0');
+    expect(progress?.getAttribute('aria-valuemax')).toBe('100');
+    expect(progress?.getAttribute('aria-valuenow')).toBe('42');
+    expect(progress?.getAttribute('aria-label')).toBe('Sorting by Name');
+    expect(container.querySelector('[role="status"]')?.textContent).toBe('Waiting for Spotify');
+  });
+
   it('does not call onDone after unmount', async () => {
     const onDone = vi.fn();
 

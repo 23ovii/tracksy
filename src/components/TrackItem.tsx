@@ -19,6 +19,8 @@ const TrackItem = memo(function TrackItem({ track, index, sortBy, delta }: Track
   return (
     <div
       className={`tk-row-hoverable${delta !== undefined ? ' track-row track-row--delta' : ' track-row'}`}
+      role="row"
+      aria-rowindex={index + 2}
       style={{
         '--row-accent': activeColor,
         padding: '0 24px',
@@ -30,14 +32,14 @@ const TrackItem = memo(function TrackItem({ track, index, sortBy, delta }: Track
         position: 'relative',
       } as CSSProperties}
     >
-      <span style={{
+      <span role="cell" style={{
         color: 'var(--text-3)', fontSize: 12, fontWeight: 600,
         fontVariantNumeric: 'tabular-nums',
       }}>
         {String(index + 1).padStart(2, '0')}
       </span>
 
-      <div style={{ minWidth: 0 }}>
+      <div role="cell" style={{ minWidth: 0 }}>
         <div style={{
           fontWeight: 600, fontSize: 14,
           whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
@@ -54,14 +56,14 @@ const TrackItem = memo(function TrackItem({ track, index, sortBy, delta }: Track
         }}>{track.artist}</div>
       </div>
 
-      <div className="track-artist" style={{
+      <div role="cell" className="track-artist" style={{
         fontSize: 13,
         fontWeight: sortBy === 'artist' ? 700 : 400,
         color: sortBy === 'artist' ? opt?.color : 'var(--text-2)',
         whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
       }}>{track.artist}</div>
 
-      <div className="track-pop" style={{
+      <div role="cell" className="track-pop" style={{
         textAlign: 'right', fontSize: 13,
         fontWeight: sortBy === 'popularity' ? 700 : 500,
         color: sortBy === 'popularity' ? opt?.color : 'var(--text-2)',
@@ -69,7 +71,7 @@ const TrackItem = memo(function TrackItem({ track, index, sortBy, delta }: Track
       }}>{track.popularity}</div>
 
       {delta !== undefined && (
-        <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
+        <div role="cell" style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
           {delta > 0 ? (
             <span style={{
               color: '#4ade80', background: 'rgba(74,222,128,0.12)',
@@ -94,7 +96,7 @@ const TrackItem = memo(function TrackItem({ track, index, sortBy, delta }: Track
         </div>
       )}
 
-      <div style={{
+      <div role="cell" style={{
         textAlign: 'right', fontSize: 12,
         fontWeight: sortBy === 'durationMs' ? 700 : 500,
         color: sortBy === 'durationMs' ? opt?.color : 'var(--text-3)',

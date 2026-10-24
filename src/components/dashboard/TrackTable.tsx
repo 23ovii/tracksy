@@ -45,15 +45,17 @@ function VirtualTrackList({ sorted, sortBy, diffMap, withDelta }: {
     <div
       ref={parentRef}
       style={{ maxHeight: 480, overflowY: 'auto' }}
+      role="rowgroup"
     >
-      <div style={{ height: totalSize, position: 'relative' }}>
+      <div role="presentation" style={{ height: totalSize, position: 'relative' }}>
         {items.map((virtualItem) => {
           const t = sorted[virtualItem.index];
           if (!t) return null;
-          const delta = withDelta ? diffMap!.get(t) : undefined;
+          const delta = withDelta ? diffMap?.get(t) ?? 0 : undefined;
           return (
             <div
               key={`${t.id}-${virtualItem.index}`}
+              role="presentation"
               style={{
                 position: 'absolute',
                 top: 0,
@@ -92,6 +94,7 @@ function TrackTable({
   }
 
   const withDelta = showPreview && hasDiff;
+  const shouldShowTrackList = !isLoading && (isError || sorted.length > 0);
 
   return (
     <>
@@ -175,27 +178,44 @@ function TrackTable({
         </div>
       )}
 
-      {/* Column headers */}
       <div
-        className={withDelta ? 'track-row track-row--delta' : 'track-row'}
-        style={{
-          padding: '0 24px', height: 38, alignItems: 'center',
-          borderBottom: '1px solid var(--border)',
-          background: 'var(--bg-inset)',
-          position: 'sticky', top: 0, zIndex: 1,
-        }}
+        key={sortKey}
+        role="table"
+        aria-label="Playlist tracks"
+        aria-rowcount={shouldShowTrackList ? sorted.length + 1 : 1}
+        aria-colcount={withDelta ? 6 : 5}
       >
-        <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-3)', letterSpacing: '0.16em', textTransform: 'uppercase' }}>#</span>
-        <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-3)', letterSpacing: '0.16em', textTransform: 'uppercase' }}>Title</span>
-        <span className="track-artist" style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-3)', letterSpacing: '0.16em', textTransform: 'uppercase' }}>Artist</span>
-        <span className="track-pop" style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-3)', letterSpacing: '0.16em', textTransform: 'uppercase', textAlign: 'right' }}>Pop</span>
-        {withDelta && (
-          <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-3)', letterSpacing: '0.16em', textTransform: 'uppercase', textAlign: 'center' }}>Δ</span>
+        <div
+          className={withDelta ? 'track-row track-row--delta' : 'track-row'}
+          role="row"
+          aria-rowindex={1}
+          style={{
+            padding: '0 24px', height: 38, alignItems: 'center',
+            borderBottom: '1px solid var(--border)',
+            background: 'var(--bg-inset)',
+            position: 'sticky', top: 0, zIndex: 1,
+          }}
+        >
+          <span role="columnheader" style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-3)', letterSpacing: '0.16em', textTransform: 'uppercase' }}>#</span>
+          <span role="columnheader" style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-3)', letterSpacing: '0.16em', textTransform: 'uppercase' }}>Title</span>
+          <span role="columnheader" className="track-artist" style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-3)', letterSpacing: '0.16em', textTransform: 'uppercase' }}>Artist</span>
+          <span role="columnheader" className="track-pop" style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-3)', letterSpacing: '0.16em', textTransform: 'uppercase', textAlign: 'right' }}>Pop</span>
+          {withDelta && (
+            <span role="columnheader" style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-3)', letterSpacing: '0.16em', textTransform: 'uppercase', textAlign: 'center' }}>Δ</span>
+          )}
+          <span role="columnheader" style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-3)', letterSpacing: '0.16em', textTransform: 'uppercase', textAlign: 'right' }}>Time</span>
+        </div>
+        {shouldShowTrackList && (
+          <VirtualTrackList
+            sorted={sorted}
+            sortBy={sortBy}
+            diffMap={diffMap ?? undefined}
+            withDelta={!!withDelta}
+          />
         )}
-        <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-3)', letterSpacing: '0.16em', textTransform: 'uppercase', textAlign: 'right' }}>Time</span>
       </div>
 
-      {isLoading ? (
+      {isLoading && (
         <div style={{
           padding: '40px 24px', fontSize: 13, color: 'var(--text-3)',
           display: 'flex', alignItems: 'center', gap: 10,
@@ -207,7 +227,8 @@ function TrackTable({
           }} />
           Loading tracks…
         </div>
-      ) : !isError && sorted.length === 0 ? (
+      )}
+      {!isLoading && !isError && sorted.length === 0 && (
         <p role="status" style={{
           padding: '32px 24px',
           color: 'var(--text-3)',
@@ -220,15 +241,6 @@ function TrackTable({
               ? 'This playlist has no tracks yet.'
               : 'No sortable tracks are available in this playlist.'}
         </p>
-      ) : (
-        <div key={sortKey}>
-          <VirtualTrackList
-            sorted={sorted}
-            sortBy={sortBy}
-            diffMap={diffMap ?? undefined}
-            withDelta={!!withDelta}
-          />
-        </div>
       )}
     </>
   );

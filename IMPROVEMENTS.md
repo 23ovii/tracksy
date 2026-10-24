@@ -211,12 +211,14 @@ validated.
 - **Change:** The global shortcut handler now leaves Enter untouched when focus is within a native interactive control or an element with button/link semantics. Enter continues to apply the sort when focus is outside controls.
 - **Verification:** `useKeyboardShortcuts.test.tsx` covers Enter on a nested button target and a non-interactive page target; `npm run validate` and `npm run build` passed.
 
-#### [ ] A2 — Expose track and progress semantics to assistive technology
+#### [x] A2 — Expose track and progress semantics to assistive technology
 
 - **Severity:** Medium · **Effort:** M
 - **Location:** `src/components/dashboard/TrackTable.tsx:170-214`; `src/components/SortProgress.tsx:24-52`
 - **Problem:** The visual grid lacks table/row/header semantics, and the progress bar has no accessible role or current value.
 - **Suggested fix:** Use a semantic table or appropriate ARIA grid/table structure and expose progress min/max/current values with an accessible status for rate limiting.
+- **Change:** The virtualized track list now exposes table, row, header, and cell semantics with row/column counts and indices. The sort progress indicator exposes its accessible name and current value, and rate-limit messages are announced as status updates.
+- **Verification:** `npm run validate` passed (117 tests; two pre-existing ESLint warnings); `npm run build` passed.
 
 #### [ ] A3 — Announce active sort and direction
 
