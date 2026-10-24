@@ -10,7 +10,7 @@ validated.
 - [x] Ignore local dotenv files without ignoring `.env.example`.
 - [x] Fix authentication lifecycle races and logout synchronization.
 - [x] Make Spotify reorder failure/cancellation recover safely.
-- [ ] Update vulnerable dependencies and resolve ESLint peer compatibility.
+- [x] Update vulnerable dependencies and resolve ESLint peer compatibility.
 - [ ] Correct user-facing feature and privacy claims.
 - [ ] Address remaining correctness, accessibility, UX, and documentation work.
 - [ ] Evaluate optional feature opportunities.
@@ -79,12 +79,14 @@ validated.
 - **Change:** Ignore `.env*` and explicitly keep `.env.example` trackable.
 - **Verification:** Confirmed `.env.local` is ignored and `.env.example` remains tracked.
 
-#### [ ] S1 — Update vulnerable transitive dependencies
+#### [x] S1 — Update vulnerable transitive dependencies
 
 - **Severity:** High · **Effort:** S/M
 - **Location:** `package.json:28`; `package-lock.json` (locked `dompurify@3.4.2`, `fflate@0.4.8`, and development dependency tree)
 - **Problem:** `npm audit` on 2026-10-24 reported high-severity DOMPurify advisories and a moderate fflate advisory in the production dependency tree, plus development-tree advisories for `brace-expansion`, `undici`, and `@babel/core`. The app does not directly import DOMPurify; reachability of affected SDK paths needs confirmation.
 - **Suggested fix:** Update PostHog and regenerate the lockfile, or apply compatible overrides. Rerun the full audit and investigate affected SDK paths; avoid claiming reachability without evidence.
+- **Change:** Updated vulnerable transitive packages in the lockfile with compatible releases; `npm audit fix` reports zero vulnerabilities. No claim is made that the prior advisories were reachable from app code.
+- **Verification:** `npm audit` reports zero advisories; `npm ls` confirms the updated vulnerable package versions.
 
 #### [ ] S2 — Reduce exposure from browser-persisted OAuth tokens
 
@@ -216,12 +218,14 @@ validated.
 
 ### Dependencies & compatibility
 
-#### [ ] D2 — Resolve ESLint 10 and jsx-a11y peer mismatch
+#### [x] D2 — Resolve ESLint 10 and jsx-a11y peer mismatch
 
 - **Severity:** Medium · **Effort:** S/M
 - **Location:** `package.json:47-50`; `.npmrc:1`; `eslint.config.js:4-5`
 - **Problem:** `npm ls` reported ESLint 10 as invalid against `eslint-plugin-jsx-a11y@6.10.2`'s declared peer range (through ESLint 9). `legacy-peer-deps=true` suppresses that incompatibility.
 - **Suggested fix:** Upgrade to a plugin version declaring ESLint 10 compatibility or pin ESLint 9; remove the peer-dependency override when the dependency tree is compatible.
+- **Change:** Pinned ESLint and `@eslint/js` to the compatible ESLint 9 line and removed the legacy peer-dependency override.
+- **Verification:** `npm ls eslint @eslint/js eslint-plugin-jsx-a11y` resolves without invalid peer warnings.
 
 ### Testing
 
