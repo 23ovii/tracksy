@@ -41,8 +41,8 @@ validated.
 - **Location:** `src/pages/Dashboard.tsx:63,250-279`; `src/components/Navbar.tsx:20-24,110`; `src/components/SortProgress.tsx:18-21`
 - **Problem:** Reordering is canceled by the dashboard Back button only. Signing out/unmounting the page leaves the Spotify write running, and the progress completion timer is not cleaned up.
 - **Suggested fix:** Abort the active operation on unmount and clean up the completion timer; reconcile actual order after abort.
-- **Change:** Dashboard unmount aborts the active reorder and clears its toast timer; `SortProgress` clears its delayed completion timer when it becomes inactive or unmounts.
-- **Verification:** `src/components/SortProgress.test.tsx` covers timer cleanup on unmount; `npm run validate` passed.
+- **Change:** Dashboard unmount aborts the active reorder and clears its toast timer; `SortProgress` clears its delayed completion timer when it becomes inactive or unmounts. Failed or canceled writes await playlist-query invalidation, and sorting remains disabled while Spotify order is being refetched.
+- **Verification:** `src/components/SortProgress.test.tsx` covers timer cleanup on unmount; `src/api/mutations.test.tsx` covers waiting for Spotify reconciliation after a failed write.
 
 #### [ ] B4 — Group discography tracks by album identity
 
