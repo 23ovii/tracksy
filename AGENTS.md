@@ -52,7 +52,7 @@ Scopes are hardcoded in `src/services/auth.ts`:
 
 ## Tooling
 
-- **TypeScript** — `tsconfig.json`. All source files are `.ts`/`.tsx`. Strict mode is OFF; `any` is fine.
+- **TypeScript** — `tsconfig.json`. Strict mode is enabled; prefer explicit types and avoid `any` (ESLint warns on it).
 - **ESLint** — flat config in `eslint.config.js` (ESLint v9). Warnings only, never blocking. `console.log` is allowed.
 - **Prettier** — `.prettierrc`. Run manually, not enforced on commit.
 - **Vitest** — test files live alongside source (`*.test.ts`). Run with `npm test`.
@@ -70,18 +70,16 @@ PKCE OAuth in `src/services/auth.ts`. Code verifier stored in `sessionStorage`, 
 `src/services/analytics.ts` wraps PostHog. Only fires when `VITE_POSTHOG_KEY` is set. Respects a user opt-out flag stored in `localStorage` (`tracksy_analytics_disabled`). `autocapture` and session recording are off; only explicit `trackEvent()` calls emit events. `TrackEvents` const object defines all event names.
 
 ### Data fetching
-`src/hooks/useSpotify.tsx` manages all state: playlists, tracks, selected playlist, loading flags, and Spotify write operations. Calls `src/services/spotify.ts` for every Spotify API call.
+TanStack React Query manages Spotify data. `src/api/playlists.ts` provides `usePlaylists()` and `usePlaylistTracks()`; `src/api/mutations.ts` owns the reorder mutation; `src/api/queryClient.ts` configures caching. `src/services/spotify.ts` contains the Spotify requests, while `src/hooks/useReorderOperation.ts` manages cancellation, progress, and rate-limit state.
 
 - Playlists load on dashboard mount — only playlists owned by the authenticated user (`owner.id === user.id`) are shown.
-- Tracks load immediately when a playlist is selected.
-- `currentSpotifyOrderRef` tracks the true current Spotify order across multiple sort/undo/restore operations.
-- `applySort()` diffs against `currentSpotifyOrderRef`, so chained sorts are always correct.
-- `undoLastSort()` reverts to the pre-sort order cached in `lastOriginalTracksRef`.
-- `restoreOrder(targetKeys)` looks up tracks by occurrence key and calls `savePlaylistTracks`.
-- Rate-limit handling: 429 responses trigger exponential backoff (multiplier increases after every 5 hits).
+- Selecting a playlist enables its track query; the query cache is the source of truth for the current Spotify order.
+- `Dashboard.tsx` derives the selected sort and movement preview from the cached tracks; reorder mutations optimistically update the cache, roll back on failure, and refetch the authoritative order afterward.
+- Preset and sort-history state is managed by `src/hooks/useDashboardPresetsHistory.ts`.
+- Rate-limit handling is bounded and honors Spotify's retry delay, with progress and retry status surfaced to the dashboard.
 
 ### Routing
-`App.tsx` defines five routes: `/` (Home), `/dashboard` (protected), `/callback`, `/privacy`, and a `*` fallback to Home. `BrowserRouter` + `AuthProvider` + `ErrorBoundary` wrap the app in `main.tsx`.
+`App.tsx` defines `/` (Home), `/dashboard` (protected), `/callback`, `/privacy`, and a `*` fallback to Home. `main.tsx` mounts the app under `StrictMode`, `QueryClientProvider`, `BrowserRouter`, `AuthProvider`, and `ErrorBoundary`.
 
 ### Sort flow
 `Dashboard.tsx` manages playlist selection, sort state, preset management, history, undo, and filter. `sortTracks(tracks, by, dir)` in `src/utils/playlistUtils.ts` returns a sorted copy without mutating state. A 30-second undo toast appears after a successful apply — hovering it pauses the countdown.
@@ -123,7 +121,7 @@ Light/dark via `theme-light`/`theme-dark` class on `<html>`. Anti-flash script i
 | `PlaylistCard.tsx` | Playlist card with cover or gradient |
 | `PlaylistSlider.tsx` | Horizontally scrollable playlist carousel |
 | `SortProgress.tsx` | Animated progress bar; fires `onDone` on completion |
-| `TrackItem.tsx` | Track row: index, delta, album art, title, artist, popularity, duration |
+| `TrackItem.tsx` | Track row: index, movement delta, title, artist, popularity, and duration |
 | `ShortcutsOverlay.tsx` | Keyboard shortcut reference panel |
 | `ProtectedRoute.tsx` | Redirects unauthenticated users to `/` |
 | `ErrorBoundary.tsx` | Class component; catches JS errors; inline-styled error panel |
@@ -136,7 +134,7 @@ Light/dark via `theme-light`/`theme-dark` class on `<html>`. Anti-flash script i
 | `SorterHeader.tsx` | Playlist info, Apply/Cancel, history drawer |
 | `SortChips.tsx` | Sort field selector chips |
 | `PresetsRow.tsx` | Saved preset chips |
-| `TrackTable.tsx` | Track list with filter and preview toggle |
+| `TrackTable.tsx` | Accessible track table with filter and movement-delta preview toggle |
 | `AmbientBackdrop.tsx` | Full-screen color gradient from playlist colors |
 | `PlaylistCover.tsx` | Playlist thumbnail |
 
@@ -149,7 +147,7 @@ Light/dark via `theme-light`/`theme-dark` class on `<html>`. Anti-flash script i
 | `tracksy_sort_history_v1` | Sort history per playlist (up to 5 per playlist) |
 | `tracksy_analytics_disabled` | User analytics opt-out flag |
 | `tracksy_theme` | Theme preference (`dark`, `light`, `system`) |
-| `tracksy_show_preview` | Album art preview column visibility |
+| `tracksy_show_preview` | Movement-delta preview visibility |
 
 ### sessionStorage keys
 
