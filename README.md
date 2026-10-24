@@ -2,11 +2,11 @@
 
 Sort your Spotify playlists the smart way.
 
-Tracksy is a client-side SPA that connects to Spotify via OAuth, lets you reorder playlists you own by title, artist, popularity, date added, duration, or discography, then writes the new order back to Spotify. Playlist data is processed in the browser and is not stored by Tracksy.
+Tracksy is a client-side SPA that connects to Spotify via OAuth, lets you reorder playlists you own by title, artist, popularity, date added, duration, or discography, then writes the new order back to Spotify. Combine and reorder sort criteria to break ties, and save those configurations as presets. Playlist data is processed in the browser and is not stored by Tracksy.
 
 ## Features
 
-- **6 sort modes** — Title, Artist, Popularity, Date Added, Duration, Discography
+- **6 sort criteria** — combine Title, Artist, Popularity, Date Added, Duration, and Discography in an ordered list; set each direction, with Discography using its built-in order
 - **Discography sort** — groups tracks by artist and album, ranking by catalogue size; singles and sparse albums sink to the bottom
 - **Apply to Spotify** — optimised reorder algorithm (full PUT for small playlists, individual moves otherwise)
 - **Safe reorder checks** — playlists containing local or unavailable tracks are read-only because Spotify reorder positions cannot be preserved safely
@@ -15,7 +15,7 @@ Tracksy is a client-side SPA that connects to Spotify via OAuth, lets you reorde
 - **Presets** — save and reapply up to 20 named sort configurations
 - **Track filter** — search tracks by title or artist before applying
 - **Movement preview** — compare each track's position before applying a new order
-- **Keyboard shortcuts** — `1–6` pick sort, `d` flips direction, `Enter` applies, `/` opens filter, `?` shows shortcuts
+- **Keyboard shortcuts** — `1–6` pick the primary sort, `d` flips its direction, `Enter` applies, `/` opens filter, `?` shows shortcuts
 - **Light / dark theme** — system-aware, no flash on load
 - **Privacy-first analytics** — PostHog (opt-out available), no cookies, no session recording
 

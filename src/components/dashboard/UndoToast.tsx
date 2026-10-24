@@ -1,18 +1,17 @@
 import { useState, useEffect, useRef } from 'react';
 
-import { SORT_OPTIONS } from '../../utils/playlistUtils';
 import { UNDO_WINDOW_MS } from '../../utils/constants.ts';
 
 interface UndoToastProps {
   undoUntil: number;
-  sortBy: string;
+  sortLabel: string;
   accent: string;
   accent2: string;
   onUndo: () => void;
   onDismiss: () => void;
 }
 
-function UndoToast({ undoUntil, sortBy, accent, accent2, onUndo, onDismiss }: UndoToastProps) {
+function UndoToast({ undoUntil, sortLabel, accent, accent2, onUndo, onDismiss }: UndoToastProps) {
   const [hovered, setHovered] = useState(false);
   const [, setTick] = useState(0);
   // local copy so hover-pause can extend it without touching parent state
@@ -35,8 +34,6 @@ function UndoToast({ undoUntil, sortBy, accent, accent2, onUndo, onDismiss }: Un
   }, [hovered, localUntil, onDismiss]);
 
   const pct = Math.max(0, (localUntil - Date.now()) / UNDO_WINDOW_MS) * 100;
-  const label = SORT_OPTIONS.find((o) => o.id === sortBy)?.label;
-
   return (
     <div
       onMouseEnter={() => {
@@ -67,7 +64,7 @@ function UndoToast({ undoUntil, sortBy, accent, accent2, onUndo, onDismiss }: Un
       <div style={{ padding: '12px 10px 12px 16px', display: 'flex', alignItems: 'center', gap: 10 }}>
         <span style={{ flex: 1, fontSize: 13, color: 'var(--text)', fontWeight: 500 }}>
           Sorted by{' '}
-          <strong style={{ color: accent }}>{label}</strong>
+          <strong style={{ color: accent }}>{sortLabel}</strong>
           . Undo?
         </span>
         <button

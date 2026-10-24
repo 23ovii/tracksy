@@ -223,11 +223,11 @@ validated.
 #### [x] A3 — Announce active sort and direction
 
 - **Severity:** Low · **Effort:** S
-- **Location:** `src/components/dashboard/SortChips.tsx:29-50`
-- **Problem:** The active sort and arrow are visual-only button states.
-- **Suggested fix:** Add `aria-pressed` and an accessible label/state including direction.
-- **Change:** Sort chips now expose pressed state and announce the active direction; the decorative arrow is hidden from screen readers. Discography is announced without a direction because its sort is directionless.
-- **Verification:** `npm run validate` passed (119 tests; two pre-existing ESLint warnings); `npm run build` passed.
+- **Location:** `src/components/dashboard/SortCriteriaEditor.tsx`
+- **Problem:** The active sort and its direction were not clearly conveyed to assistive technology.
+- **Suggested fix:** Expose sort fields and directions through accessible controls.
+- **Change:** The criteria editor exposes labeled sort-field selects, current direction text, and labeled direction/reorder/remove controls. Discography is identified as fixed-order.
+- **Verification:** `npm run validate` passed (125 tests; two pre-existing ESLint warnings); `npm run build` passed.
 
 ### SEO & web fundamentals
 
@@ -295,19 +295,21 @@ validated.
 
 ### Missing features & opportunities
 
-#### [ ] M1 — Consider multi-key sorting
+#### [x] M1 — Consider multi-key sorting
 
 - **Severity:** Nice-to-have · **Effort:** M
-- **Location:** `src/utils/playlistUtils.ts:3-4,25-36`; `src/services/presets.ts:4-12`
+- **Location:** `src/utils/playlistUtils.ts`; `src/services/presets.ts`; `src/components/dashboard/SortCriteriaEditor.tsx`
 - **Problem:** Presets store one key, so users cannot specify deterministic secondary sort criteria for ties.
-- **Suggested fix:** If user demand supports it, add an ordered list of sort keys and persist it in presets.
+- **Suggested fix:** Add an ordered list of sort keys and persist it in presets.
+- **Change:** Added controls to add, remove, reorder, and configure criteria independently; preserved stable single-key behavior and migrated existing presets on read.
+- **Verification:** `npm run validate` passed (125 tests; two existing lint warnings); `npm run build` passed.
 
 ## Suggested order
 
 1. **Now — secure and recover core operations:** B2, B3, B1, S1, S4, S2, and T1.
 2. **Next — correctness and accessible UX:** B4, B6, U1-U5, A1-A3, and E1.
 3. **Then — maintainability and cleanup:** I1, D1-D4, Q1-Q2, and P1.
-4. **Later — optional product work:** M1, after validating user need.
+4. **Later — optional product work:** M1 delivered after user confirmation.
 
 ## Quick wins
 
@@ -318,7 +320,7 @@ validated.
 - [ ] Add clear empty and playlist-load-error states.
 - [ ] Remove unused image-generation dependencies if confirmed unnecessary.
 - [ ] Fix Escape propagation from the history drawer.
-- [ ] Add selected/direction state to sort buttons.
+- [x] Add selected/direction state to sort controls.
 
 ## Review health snapshot
 
