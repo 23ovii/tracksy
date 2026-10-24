@@ -17,15 +17,15 @@
     "validate": "npm run typecheck && npm run lint && npm test"
   },
   "dependencies": {
-    "@tanstack/react-query": "^5.100.10",
-    "@tanstack/react-virtual": "^3.13.24",
+    "@tanstack/react-query": "^5.101.4",
+    "@tanstack/react-virtual": "^3.14.9",
     "@vercel/analytics": "^2.0.1",
-    "@vercel/edge-config": "^1.4.3",
+    "@vercel/edge-config": "^1.5.0",
     "@vercel/speed-insights": "^2.0.0",
-    "posthog-js": "^1.373.2",
-    "react": "^19.2.6",
-    "react-dom": "^19.2.6",
-    "react-router-dom": "^7.15.0"
+    "posthog-js": "^1.409.5",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "react-router-dom": "^7.18.2"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
@@ -33,8 +33,8 @@
     "@tailwindcss/vite": "^4.3.3",
     "@tanstack/react-query-devtools": "^5.101.4",
     "@types/node": "^26.1.2",
-    "@types/react": "^19.2.14",
-    "@types/react-dom": "^19.2.3",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
     "@typescript-eslint/eslint-plugin": "^8.65.0",
     "@typescript-eslint/parser": "^8.65.0",
     "@vitejs/plugin-react": "^6.0.4",
