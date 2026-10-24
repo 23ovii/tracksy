@@ -53,12 +53,14 @@ validated.
 - **Problem:** Albums are grouped by normalized album name alone, so unrelated albums with the same title can be merged and assigned a misleading canonical artist/size.
 - **Suggested fix:** Carry Spotify album ID into the app track model and use it as the grouping key, with an explicit fallback for missing IDs.
 
-#### [ ] B5 — Bound Spotify rate-limit retries
+#### [x] B5 — Bound Spotify rate-limit retries
 
 - **Severity:** Medium · **Effort:** S
 - **Location:** `src/services/spotify.ts:117-125,217-225`
 - **Problem:** A request receiving repeated 429 responses retries recursively without a maximum; its wait multiplier does not increase across retries of that same request.
 - **Suggested fix:** Implement bounded retries with a capped backoff, honor `Retry-After`, and return a user-visible terminal error.
+- **Change:** Spotify write requests retry at most five times, honor numeric or HTTP-date `Retry-After` values, use exponential backoff capped at 60 seconds, and stop promptly if aborted while waiting.
+- **Verification:** `src/services/spotify.savePlaylistTracks.test.ts` covers retry exhaustion, capped backoff, and aborting during a rate-limit wait.
 
 #### [ ] B6 — Avoid stale track rows after data refresh
 
@@ -257,7 +259,7 @@ validated.
 
 ## Suggested order
 
-1. **Now — secure and recover core operations:** B2, B3, B1, B5, S1, S4, S2, and T1.
+1. **Now — secure and recover core operations:** B2, B3, B1, S1, S4, S2, and T1.
 2. **Next — correctness and accessible UX:** B4, B6, U1-U5, A1-A3, and E1.
 3. **Then — maintainability and cleanup:** I1, D1-D4, Q1-Q2, and P1.
 4. **Later — optional product work:** M1, after validating user need.
