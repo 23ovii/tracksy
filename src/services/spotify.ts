@@ -1,4 +1,4 @@
-import type { Track, Playlist, SpotifyUser } from '../types';
+import type { Track, Playlist, PlaylistTracksResult, SpotifyUser } from '../types';
 import { SPOTIFY_PLAYLIST_PAGE_SIZE, SPOTIFY_TRACK_PAGE_SIZE } from '../utils/constants.ts';
 
 import type {
@@ -146,9 +146,10 @@ export async function getSpotifyPlaylists(token: string): Promise<Playlist[]> {
     .map(mapPlaylist);
 }
 
-export async function getSpotifyPlaylistTracks(token: string, playlistId: string): Promise<Track[]> {
+export async function getSpotifyPlaylistTracks(token: string, playlistId: string): Promise<PlaylistTracksResult> {
   const items = await fetchAllPages<SpotifyPlaylistTrackItem>(`https://api.spotify.com/v1/playlists/${playlistId}/tracks?limit=${SPOTIFY_TRACK_PAGE_SIZE}`, token);
-  return items.map(mapTrack).filter((t): t is Track => t !== null);
+  const tracks = items.map(mapTrack).filter((t): t is Track => t !== null);
+  return { tracks, unsupportedCount: items.length - tracks.length };
 }
 
 export async function savePlaylistTracks(
@@ -159,7 +160,12 @@ export async function savePlaylistTracks(
   onProgress?: (pct: number) => void,
   onRateLimit?: (retryAfterSeconds: number) => void,
   signal?: AbortSignal,
+  unsupportedCount = 0,
 ): Promise<{ moves: number }> {
+  if (unsupportedCount > 0) {
+    throw new Error('This playlist contains local or unavailable tracks and cannot be safely reordered.');
+  }
+
   const url = `https://api.spotify.com/v1/playlists/${playlistId}/tracks`;
   let moves = 0;
   let rateLimitHits = 0;

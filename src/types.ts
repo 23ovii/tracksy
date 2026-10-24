@@ -11,6 +11,11 @@ export interface Track {
   popularity: number;
 }
 
+export interface PlaylistTracksResult {
+  tracks: Track[];
+  unsupportedCount: number;
+}
+
 export interface Playlist {
   id: string;
   name: string;

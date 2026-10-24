@@ -12,6 +12,7 @@ interface SorterHeaderProps {
   totalMs: number;
   applying: boolean;
   applied: boolean;
+  canWrite: boolean;
   accent: string;
   accent2: string;
   historyEntries: HistoryEntry[];
@@ -22,7 +23,7 @@ interface SorterHeaderProps {
 }
 
 function SorterHeader({
-  selectedPlaylist, totalMs, applying, applied, accent, accent2,
+  selectedPlaylist, totalMs, applying, applied, canWrite, accent, accent2,
   historyEntries, onBack, onApply, onRestore, onClearHistory,
 }: SorterHeaderProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -136,7 +137,7 @@ function SorterHeader({
           >{applying ? '✕ Cancel' : '← Back'}</button>
           <button
             onClick={onApply}
-            disabled={applying || applied}
+            disabled={applying || applied || !canWrite}
             className="tk-apply-btn"
             style={{
               display: 'flex', alignItems: 'center', gap: 8,
@@ -148,7 +149,7 @@ function SorterHeader({
               color: '#0a0d12',
               fontFamily: 'inherit', fontSize: 13, fontWeight: 800,
               letterSpacing: '-0.1px',
-              cursor: applying || applied ? 'not-allowed' : 'pointer',
+              cursor: applying || applied || !canWrite ? 'not-allowed' : 'pointer',
               boxShadow: applied
                 ? '0 8px 24px rgba(29,185,84,0.35)'
                 : `0 10px 28px -4px ${accent}77, 0 0 0 1px rgba(255,255,255,0.12) inset`,
@@ -268,6 +269,7 @@ function SorterHeader({
                   </div>
                   <button
                     onClick={() => { onRestore(entry); setDrawerOpen(false); }}
+                    disabled={!canWrite}
                     className="tk-accent-btn"
                     style={{
                       '--accent-hover-bg': `${accent}22`,

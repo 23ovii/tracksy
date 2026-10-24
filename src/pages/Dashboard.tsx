@@ -30,9 +30,10 @@ function Dashboard() {
 
   const playlistsQuery = usePlaylists();
   const tracksQuery = usePlaylistTracks(selectedPlaylist?.id ?? null);
-  const reorder = useReorderPlaylist(selectedPlaylist?.id ?? '');
+  const unsupportedCount = tracksQuery.data?.unsupportedCount ?? 0;
+  const reorder = useReorderPlaylist(selectedPlaylist?.id ?? '', unsupportedCount);
 
-  const tracks = useMemo(() => tracksQuery.data ?? [], [tracksQuery.data]);
+  const tracks = useMemo(() => tracksQuery.data?.tracks ?? [], [tracksQuery.data]);
   const playlists = useMemo(() => playlistsQuery.data ?? [], [playlistsQuery.data]);
 
   const [sortBy, setSortBy] = useState<SortKey>('name');
@@ -243,6 +244,12 @@ function Dashboard() {
   }
 
   function startReorder(previous: Track[], target: Track[], opts: { undo?: boolean; restore?: boolean } = {}) {
+    if (!tracksQuery.data || tracksQuery.isLoading || tracksQuery.isError) return;
+    if (unsupportedCount > 0) {
+      setSortFeedback('This playlist contains local or unavailable tracks and cannot be safely reordered.');
+      return;
+    }
+
     setApplying(true);
     setIsUndo(Boolean(opts.undo));
     setApplyProgress(0);
@@ -271,7 +278,8 @@ function Dashboard() {
   }
 
   function handleApply() {
-    const currentTracks = tracksQuery.data ?? [];
+    if (!tracksQuery.data || tracksQuery.isError || unsupportedCount > 0) return;
+    const currentTracks = tracksQuery.data?.tracks ?? [];
     isUndoRef.current = false;
     isRestoreRef.current = false;
     preApplyIdsRef.current = currentTracks.map((t) => t.id);
@@ -345,7 +353,7 @@ function Dashboard() {
   }, [lastApplied]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleRestore = useCallback((entry: HistoryEntry) => {
-    const currentTracks = tracksQuery.data ?? [];
+    const currentTracks = tracksQuery.data?.tracks ?? [];
     const restoredTracks = restoreTracksFromKeys(
       currentTracks,
       entry.trackKeysBefore ?? entry.trackIdsBefore,
@@ -372,6 +380,10 @@ function Dashboard() {
   const accent2 = selectedPlaylist?.color2 ?? '#5af5a0';
 
   const isLoading = selectedPlaylist ? tracksQuery.isLoading : playlistsQuery.isLoading;
+  const canWrite = Boolean(
+    selectedPlaylist && tracksQuery.data && !tracksQuery.isLoading &&
+    !tracksQuery.isError && unsupportedCount === 0,
+  );
 
   return (
     <>
@@ -398,6 +410,7 @@ function Dashboard() {
               totalMs={totalMs}
               applying={applying}
               applied={applied}
+              canWrite={canWrite}
               accent={accent}
               accent2={accent2}
               historyEntries={sortHistory}
@@ -406,6 +419,28 @@ function Dashboard() {
               onRestore={handleRestore}
               onClearHistory={handleClearHistory}
             />
+
+            {unsupportedCount > 0 && (
+              <div role="status" style={{
+                padding: '12px 24px',
+                borderBottom: '1px solid var(--border)',
+                background: 'rgba(245,158,11,0.08)',
+                color: 'var(--text-2)',
+                fontSize: 13,
+              }}>
+                Sorting is disabled because this playlist contains {unsupportedCount} local or unavailable {unsupportedCount === 1 ? 'track' : 'tracks'}.
+              </div>
+            )}
+            {tracksQuery.isError && (
+              <div role="alert" style={{
+                padding: '12px 24px',
+                borderBottom: '1px solid var(--border)',
+                color: 'var(--error-text)',
+                fontSize: 13,
+              }}>
+                Could not load this playlist’s tracks. Go back and select it again before sorting.
+              </div>
+            )}
 
             <SortChips sortBy={sortBy} sortDir={sortDir} onPick={pickSort} disabled={applying} />
 

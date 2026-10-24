@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-import type { Track } from '../types';
+import type { PlaylistTracksResult, Track } from '../types';
 import { useAuth } from '../auth/AuthProvider';
 import { savePlaylistTracks } from '../services/spotify';
 
@@ -14,31 +14,37 @@ export interface ReorderVars {
   onRateLimit?: (retryAfterSeconds: number) => void;
 }
 
-export function useReorderPlaylist(playlistId: string) {
+export function useReorderPlaylist(playlistId: string, unsupportedCount: number) {
   const qc = useQueryClient();
-  const { token } = useAuth();
+  const { token, user } = useAuth();
+  const accountId = user?.id;
+  const queryKey = accountId ? playlistKeys.tracks(accountId, playlistId) : null;
 
   return useMutation<{ moves: number }, Error, ReorderVars, { snapshot: Track[] | undefined }>({
     mutationFn: ({ previous, sorted, abortSignal, onProgress, onRateLimit }) =>
-      savePlaylistTracks(token!, playlistId, previous, sorted, onProgress, onRateLimit, abortSignal),
+      savePlaylistTracks(token!, playlistId, previous, sorted, onProgress, onRateLimit, abortSignal, unsupportedCount),
 
     onMutate: async ({ sorted }) => {
-      if (!playlistId) return { snapshot: undefined };
-      await qc.cancelQueries({ queryKey: playlistKeys.tracks(playlistId) });
-      const snapshot = qc.getQueryData<Track[]>(playlistKeys.tracks(playlistId));
-      qc.setQueryData(playlistKeys.tracks(playlistId), sorted);
+      if (!playlistId || !queryKey || unsupportedCount > 0) return { snapshot: undefined };
+      await qc.cancelQueries({ queryKey });
+      const snapshot = qc.getQueryData<PlaylistTracksResult>(queryKey)?.tracks;
+      qc.setQueryData<PlaylistTracksResult>(queryKey, (current) =>
+        current ? { ...current, tracks: sorted } : current,
+      );
       return { snapshot };
     },
 
     onError: (_err, _vars, ctx) => {
-      if (ctx?.snapshot !== undefined && playlistId) {
-        qc.setQueryData(playlistKeys.tracks(playlistId), ctx.snapshot);
+      if (ctx?.snapshot !== undefined && queryKey) {
+        qc.setQueryData<PlaylistTracksResult>(queryKey, (current) =>
+          current ? { ...current, tracks: ctx.snapshot! } : current,
+        );
       }
     },
 
     onSettled: () => {
-      if (playlistId) {
-        qc.invalidateQueries({ queryKey: playlistKeys.tracks(playlistId) });
+      if (queryKey) {
+        qc.invalidateQueries({ queryKey });
       }
     },
   });

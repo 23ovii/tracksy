@@ -1,31 +1,31 @@
 import { useQuery } from '@tanstack/react-query';
 
-import type { Playlist, Track } from '../types';
+import type { Playlist, PlaylistTracksResult } from '../types';
 import { useAuth } from '../auth/AuthProvider';
 import { getSpotifyPlaylists, getSpotifyPlaylistTracks } from '../services/spotify';
 
 export const playlistKeys = {
   all: ['playlists'] as const,
-  lists: () => [...playlistKeys.all, 'list'] as const,
-  tracks: (id: string) => [...playlistKeys.all, id, 'tracks'] as const,
+  lists: (accountId: string) => [...playlistKeys.all, accountId, 'list'] as const,
+  tracks: (accountId: string, id: string) => [...playlistKeys.all, accountId, id, 'tracks'] as const,
 };
 
 export function usePlaylists() {
-  const { token } = useAuth();
+  const { token, user, isAuthenticated } = useAuth();
   return useQuery<Playlist[]>({
-    queryKey: playlistKeys.lists(),
+    queryKey: user ? playlistKeys.lists(user.id) : [...playlistKeys.all, '__skip__'],
     queryFn: () => getSpotifyPlaylists(token!),
-    enabled: Boolean(token),
+    enabled: Boolean(token && user && isAuthenticated),
     staleTime: 5 * 60_000,
   });
 }
 
 export function usePlaylistTracks(playlistId: string | null) {
-  const { token } = useAuth();
-  return useQuery<Track[]>({
-    queryKey: playlistId ? playlistKeys.tracks(playlistId) : ['__skip__'],
+  const { token, user, isAuthenticated } = useAuth();
+  return useQuery<PlaylistTracksResult>({
+    queryKey: playlistId && user ? playlistKeys.tracks(user.id, playlistId) : [...playlistKeys.all, '__skip__'],
     queryFn: () => getSpotifyPlaylistTracks(token!, playlistId!),
-    enabled: Boolean(token && playlistId),
+    enabled: Boolean(token && user && isAuthenticated && playlistId),
     staleTime: 60_000,
   });
 }
