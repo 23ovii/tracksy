@@ -66,6 +66,7 @@ function mapTrack(item: SpotifyPlaylistTrackItem): Track | null {
     name: track.name,
     artist: track.artists?.map((a) => a.name).join(', ') ?? 'Unknown artist',
     album: track.album?.name ?? '',
+    ...(track.album?.id ? { albumId: track.album.id } : {}),
     albumYear: parseInt(track.album?.release_date?.slice(0, 4) ?? '0', 10),
     trackNumber: track.track_number ?? 0,
     durationMs: track.duration_ms ?? 0,

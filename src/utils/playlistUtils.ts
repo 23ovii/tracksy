@@ -39,11 +39,15 @@ export function sortTracks(tracks: Track[], by: SortKey, dir: SortDir = 'asc'): 
 function sortByDiscography(tracks: Track[]): Track[] {
   const normalAlbum = (t: Track) => t.album.toLowerCase().trim();
   const primaryArtist = (t: Track) => t.artist.split(',')[0]!.trim().toLowerCase();
+  const albumKey = (t: Track) => {
+    if (t.albumId) return `id:${t.albumId}`;
+    return `name:${normalAlbum(t)}\u0000artist:${primaryArtist(t)}`;
+  };
 
-  // Group tracks by album name — album is the source of truth, not artist string
+  // Prefer Spotify album identity; fall back to album name and primary artist.
   const albumTracks = new Map<string, Track[]>();
   for (const t of tracks) {
-    const k = normalAlbum(t);
+    const k = albumKey(t);
     if (!albumTracks.has(k)) albumTracks.set(k, []);
     albumTracks.get(k)!.push(t);
   }
@@ -74,25 +78,27 @@ function sortByDiscography(tracks: Track[]): Track[] {
   // First appearance of each album in the original playlist — keeps equal-count albums stable
   const albumFirstSeen = new Map<string, number>();
   tracks.forEach((t, i) => {
-    const k = normalAlbum(t);
+    const k = albumKey(t);
     if (!albumFirstSeen.has(k)) albumFirstSeen.set(k, i);
   });
 
   // First appearance of each canonical artist in the original playlist
   const artistFirstSeen = new Map<string, number>();
   tracks.forEach((t, i) => {
-    const artist = albumArtist.get(normalAlbum(t))!;
+    const artist = albumArtist.get(albumKey(t))!;
     if (!artistFirstSeen.has(artist)) artistFirstSeen.set(artist, i);
   });
 
   return [...tracks].sort((a, b) => {
-    const aArtist = albumArtist.get(normalAlbum(a))!;
-    const bArtist = albumArtist.get(normalAlbum(b))!;
+    const aAlbumKey = albumKey(a);
+    const bAlbumKey = albumKey(b);
+    const aArtist = albumArtist.get(aAlbumKey)!;
+    const bArtist = albumArtist.get(bAlbumKey)!;
     const aArtistCount = artistCount.get(aArtist) ?? 0;
     const bArtistCount = artistCount.get(bArtist) ?? 0;
 
-    const aAlbumSize = albumTracks.get(normalAlbum(a))?.length ?? 0;
-    const bAlbumSize = albumTracks.get(normalAlbum(b))?.length ?? 0;
+    const aAlbumSize = albumTracks.get(aAlbumKey)?.length ?? 0;
+    const bAlbumSize = albumTracks.get(bAlbumKey)?.length ?? 0;
 
     // Albums with fewer than 3 tracks, or artists with only 1 song, sink to the very bottom
     const aAlone = aArtistCount === 1 || aAlbumSize < 3;
@@ -106,9 +112,9 @@ function sortByDiscography(tracks: Track[]): Track[] {
 
     // Rank albums by track count, most first; tie → first appearance in playlist
     if (aAlbumSize !== bAlbumSize) return bAlbumSize - aAlbumSize;
-    const aAlbum = normalAlbum(a);
-    const bAlbum = normalAlbum(b);
-    if (aAlbum !== bAlbum) return (albumFirstSeen.get(aAlbum) ?? 0) - (albumFirstSeen.get(bAlbum) ?? 0);
+    if (aAlbumKey !== bAlbumKey) {
+      return (albumFirstSeen.get(aAlbumKey) ?? 0) - (albumFirstSeen.get(bAlbumKey) ?? 0);
+    }
 
     // Same album — sort by track number
     if (a.trackNumber !== b.trackNumber) return a.trackNumber - b.trackNumber;

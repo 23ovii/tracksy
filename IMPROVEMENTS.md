@@ -46,12 +46,14 @@ validated.
 - **Change:** Dashboard unmount aborts the active reorder and clears its toast timer; `SortProgress` clears its delayed completion timer when it becomes inactive or unmounts. Failed or canceled writes await playlist-query invalidation, and sorting remains disabled while Spotify order is being refetched.
 - **Verification:** `src/components/SortProgress.test.tsx` covers timer cleanup on unmount; `src/api/mutations.test.tsx` covers waiting for Spotify reconciliation after a failed write.
 
-#### [ ] B4 — Group discography tracks by album identity
+#### [x] B4 — Group discography tracks by album identity
 
 - **Severity:** Medium · **Effort:** M
-- **Location:** `src/utils/playlistUtils.ts:39-60,84-110`; `src/types.ts:1-12`; `src/services/spotify.types.ts`
+- **Location:** `src/utils/playlistUtils.ts`; `src/types.ts`; `src/services/spotify.types.ts`; `src/services/spotify.ts`
 - **Problem:** Albums are grouped by normalized album name alone, so unrelated albums with the same title can be merged and assigned a misleading canonical artist/size.
 - **Suggested fix:** Carry Spotify album ID into the app track model and use it as the grouping key, with an explicit fallback for missing IDs.
+- **Change:** Spotify album IDs are carried onto tracks and used as the discography grouping identity. When absent, grouping falls back to normalized album name plus primary artist.
+- **Verification:** `src/utils/playlistUtils.test.ts` covers same-named albums with distinct IDs and the missing-ID fallback; `src/services/spotify.test.ts` verifies the ID is mapped from Spotify. `npm run validate` passed (81 tests); `npm run build` passed.
 
 #### [x] B5 — Bound Spotify rate-limit retries
 

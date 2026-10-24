@@ -101,4 +101,49 @@ describe('sortTracks', () => {
     const result = sortTracks(tied, 'name', 'asc');
     expect(result.map((t) => t.id)).toEqual(['a', 'b', 'c']);
   });
+
+  it('keeps same-named albums with different Spotify identities separate', () => {
+    const tracks = [
+      makeTrack({
+        id: 'other-artist-single',
+        artist: 'Other Artist',
+        album: 'Shared Title',
+        albumId: 'album-other',
+        trackNumber: 1,
+      }),
+      ...[1, 2, 3].map((trackNumber) => makeTrack({
+        id: `main-artist-${trackNumber}`,
+        artist: 'Main Artist',
+        album: 'Shared Title',
+        albumId: 'album-main',
+        trackNumber,
+      })),
+    ];
+
+    expect(sortTracks(tracks, 'discography').map((track) => track.id)).toEqual([
+      'main-artist-1',
+      'main-artist-2',
+      'main-artist-3',
+      'other-artist-single',
+    ]);
+  });
+
+  it('falls back to album name and primary artist when Spotify album identity is missing', () => {
+    const tracks = [
+      makeTrack({ id: 'other-single', artist: 'Other Artist', album: 'Shared Title', trackNumber: 1 }),
+      ...[1, 2, 3].map((trackNumber) => makeTrack({
+        id: `main-${trackNumber}`,
+        artist: 'Main Artist',
+        album: 'Shared Title',
+        trackNumber,
+      })),
+    ];
+
+    expect(sortTracks(tracks, 'discography').map((track) => track.id)).toEqual([
+      'main-1',
+      'main-2',
+      'main-3',
+      'other-single',
+    ]);
+  });
 });

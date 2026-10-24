@@ -104,7 +104,7 @@ PKCE OAuth in `src/services/auth.ts`. Code verifier stored in `sessionStorage`, 
 - `savePlaylistTracks(token, playlistId, original, sorted)` — optimizes reorder: full PUT if ≤100 tracks with >50% changes, otherwise individual reorder requests; tracks current position with a `slot` map for O(1) lookups; respects `AbortSignal` and rate-limit backoff
 
 ### Sort options (`src/utils/playlistUtils.ts`)
-`SORT_OPTIONS` defines 6 sort keys: `name`, `artist`, `popularity`, `addedAt`, `durationMs`, `discography`. `sortTracks(tracks, by, dir)` handles all of them. The `discography` sort groups tracks by album, ranks artists by total track count, then ranks albums within each artist by size — singles and sparse albums sink to the bottom.
+`SORT_OPTIONS` defines 6 sort keys: `name`, `artist`, `popularity`, `addedAt`, `durationMs`, `discography`. `sortTracks(tracks, by, dir)` handles all of them. The `discography` sort groups by Spotify album ID, falling back to normalized album name plus primary artist, ranks artists by total track count, then ranks albums within each artist by size — singles and sparse albums sink to the bottom.
 
 ### Types (`src/types.ts`)
 Central type definitions for `Track`, `Playlist`, `TokenResponse`, `SpotifyUser`, and `AuthContextValue`. `SortOption` lives in `src/utils/playlistUtils.ts`; `SortPreset` lives in `src/services/presets.ts`.
