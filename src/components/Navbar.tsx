@@ -20,8 +20,17 @@ function Navbar() {
   const handleWipeConfirm = () => {
     trackEvent(TrackEvents.ACCOUNT_WIPED);
     logout();
-    localStorage.clear();
-    sessionStorage.clear();
+    for (const key of [
+      'tracksy_presets_v1',
+      'tracksy_sort_history_v1',
+      'tracksy_analytics_disabled',
+      'tracksy_theme',
+      'tracksy_show_preview',
+    ]) {
+      localStorage.removeItem(key);
+    }
+    sessionStorage.removeItem('tracksy_pkce_verifier');
+    sessionStorage.removeItem('tracksy_oauth_state');
     navigate('/');
   };
 

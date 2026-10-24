@@ -8,7 +8,7 @@ validated.
 ## Progress
 
 - [x] Ignore local dotenv files without ignoring `.env.example`.
-- [ ] Fix authentication lifecycle races and logout synchronization.
+- [x] Fix authentication lifecycle races and logout synchronization.
 - [ ] Make Spotify reorder failure/cancellation recover safely.
 - [ ] Update vulnerable dependencies and resolve ESLint peer compatibility.
 - [ ] Correct user-facing feature and privacy claims.
@@ -26,12 +26,14 @@ validated.
 - **Problem:** Spotify reorder requests run sequentially, so completed moves remain applied if a later request fails or is canceled. The UI says no changes were saved, and allows a retry while a query may still be fetching the authoritative order.
 - **Suggested fix:** Explain that a partial update may have occurred; wait for/refetch Spotify order before enabling another write. Do not allow a retry using stale order data. Consider compensating completed moves where that is safe.
 
-#### [ ] B2 — Prevent a pending token refresh from restoring a logged-out session
+#### [x] B2 — Prevent a pending token refresh from restoring a logged-out session
 
 - **Severity:** High · **Effort:** M
 - **Location:** `src/auth/AuthProvider.tsx:59-85,147-150`
 - **Problem:** A refresh request already in flight can complete after logout and call `applyToken`, persisting credentials again.
 - **Suggested fix:** Tie each refresh to the active auth generation/session and discard results for superseded sessions; abort requests on cleanup when possible.
+- **Change:** Refresh results and failures are ignored when their auth generation is no longer active; logout invalidates pending refreshes and removes the stored auth state immediately.
+- **Verification:** `src/auth/AuthProvider.test.tsx` covers refresh completion after logout.
 
 #### [ ] B3 — Abort an in-flight reorder when leaving the dashboard
 
@@ -85,12 +87,14 @@ validated.
 - **Problem:** Access and refresh tokens are stored in JavaScript-readable localStorage, making them accessible to same-origin script execution. No direct XSS was identified in the reviewed source.
 - **Suggested fix:** For stronger isolation, move token exchange/storage to a backend-for-frontend using secure HttpOnly cookies. If the client-only architecture remains, minimize scopes/lifetimes and document residual risk.
 
-#### [ ] S4 — Synchronize logout and avoid clearing unrelated storage
+#### [x] S4 — Synchronize logout and avoid clearing unrelated storage
 
 - **Severity:** Medium · **Effort:** S
 - **Location:** `src/components/Navbar.tsx:20-24`; `src/auth/AuthProvider.tsx:40-45,88-108,147-150`
 - **Problem:** `localStorage.clear()` emits a storage event with a null key, which the auth listener ignores. Other tabs can remain authenticated in memory; the call also clears storage owned by unrelated same-origin features.
 - **Suggested fix:** Remove only app-owned keys, make logout remove the auth key synchronously, and handle a clear/broadcast logout event in other tabs.
+- **Change:** Logout removes only Tracksy-owned storage keys; auth state listens for auth-key removal and storage-clear events from other tabs.
+- **Verification:** `src/auth/AuthProvider.test.tsx` covers a cross-tab storage-clear event.
 
 ### Dead code
 
