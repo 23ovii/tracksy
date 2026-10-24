@@ -112,6 +112,26 @@ describe('getSpotifyPlaylistTracks', () => {
       .rejects.toThrow('track.uri must be a non-empty string');
   });
 
+  it('preserves the existing default when Spotify omits track popularity', async () => {
+    const track = {
+      id: 'track-1',
+      uri: 'spotify:track:track-1',
+      name: 'Song',
+      artists: [{ id: 'artist-1', name: 'Artist' }],
+      album: { id: 'album-1', name: 'Album' },
+      track_number: 1,
+      duration_ms: 180000,
+    };
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({
+      items: [{ added_at: '', is_local: false, track }],
+      next: null,
+      total: 1,
+    }), { status: 200 })));
+
+    const result = await getSpotifyPlaylistTracks('token', 'playlist-1');
+    expect(result.tracks[0]?.popularity).toBe(0);
+  });
+
   it('rejects a pagination URL outside the Spotify API origin before fetching it', async () => {
     const mockFetch = vi.fn().mockResolvedValue(new Response(JSON.stringify({
       items: [],

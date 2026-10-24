@@ -146,6 +146,12 @@ function parseSpotifyTrack(value: unknown): SpotifyTrackObject | null {
   ) {
     throw new Error('Spotify returned an invalid track response: album.release_date has an invalid format.');
   }
+  const popularity = value.popularity === undefined
+    ? 0
+    : requiredInteger(value.popularity, 'track.popularity');
+  if (popularity > 100) {
+    throw new Error('Spotify returned an invalid track response: track.popularity must not exceed 100.');
+  }
   if (albumId !== undefined && albumId !== null && typeof albumId !== 'string') {
     throw new Error('Spotify returned an invalid track response: album.id must be a string.');
   }
@@ -161,7 +167,7 @@ function parseSpotifyTrack(value: unknown): SpotifyTrackObject | null {
     },
     track_number: requiredInteger(value.track_number, 'track.track_number'),
     duration_ms: requiredInteger(value.duration_ms, 'track.duration_ms'),
-    popularity: requiredInteger(value.popularity, 'track.popularity'),
+    popularity,
   };
 }
 

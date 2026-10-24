@@ -24,7 +24,7 @@ export interface SpotifyTrackObject {
   album: SpotifyAlbum;
   track_number: number;
   duration_ms: number;
-  popularity: number;
+  popularity?: number;
 }
 
 export interface SpotifyPlaylistTrackItem {
