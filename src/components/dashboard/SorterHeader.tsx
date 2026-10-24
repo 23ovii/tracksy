@@ -212,7 +212,7 @@ function SorterHeader({
               aria-label="Sort history"
               style={{
                 position: 'absolute', top: 0, right: 0, bottom: 0,
-                width: 340, zIndex: 1,
+                width: '100vw', maxWidth: 340, zIndex: 1,
                 background: 'var(--glass-bg)',
                 borderLeft: '1px solid var(--border2)',
                 boxShadow: '-20px 0 60px rgba(0,0,0,0.3)',

@@ -86,4 +86,43 @@ describe('SorterHeader history drawer Escape handling', () => {
 
     window.removeEventListener('keydown', onWindowKeyDown);
   });
+
+  it('constrains the history drawer width to the viewport', async () => {
+    await act(async () => {
+      root.render(
+        <SorterHeader
+          selectedPlaylist={playlist}
+          totalMs={0}
+          applying={false}
+          applied={false}
+          canWrite
+          accent={playlist.color1}
+          accent2={playlist.color2}
+          historyEntries={[{
+            id: 'entry-1',
+            playlistId: playlist.id,
+            appliedAt: Date.now(),
+            sortLabel: 'Name',
+            trackKeysBefore: ['track#0'],
+            trackKeysAfter: ['track#0'],
+          }]}
+          onBack={vi.fn()}
+          onApply={vi.fn()}
+          onRestore={vi.fn()}
+          onClearHistory={vi.fn()}
+        />,
+      );
+    });
+
+    await act(async () => {
+      [...container.querySelectorAll('button')]
+        .find((button) => button.textContent?.includes('History'))!
+        .click();
+    });
+
+    const drawer = container.querySelector<HTMLElement>('[role="dialog"]');
+    expect(drawer?.getAttribute('aria-label')).toBe('Sort history');
+    expect(drawer?.style.width).toBe('100vw');
+    expect(drawer?.style.maxWidth).toBe('340px');
+  });
 });
