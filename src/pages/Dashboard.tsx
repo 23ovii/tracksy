@@ -372,6 +372,8 @@ function Dashboard() {
           <LibraryPanel
             playlists={playlists}
             isLoading={isLoading}
+            isFetching={playlistsQuery.isFetching}
+            isError={playlistsQuery.isError}
             onRefresh={() => playlistsQuery.refetch()}
             onSelect={handleSelect}
           />

@@ -155,12 +155,14 @@ validated.
 
 ### UI/UX & design
 
-#### [ ] U1 — Distinguish library errors from an empty library
+#### [x] U1 — Distinguish library errors from an empty library
 
 - **Severity:** Medium · **Effort:** S
 - **Location:** `src/pages/Dashboard.tsx:386`; `src/components/dashboard/LibraryPanel.tsx:5-10,63-81`
 - **Problem:** The panel only receives `isLoading`; a failed playlist request is displayed like a successful empty result.
 - **Suggested fix:** Pass query error/retry state and render a distinct actionable error state.
+- **Change:** Library loading, successful empty, initial failure, and failed refresh with cached playlists render distinct states. Initial failures offer a retry action; refresh controls are disabled while a request is in flight.
+- **Verification:** `LibraryPanel.test.tsx` covers the empty state, retry after failure, and retaining cached playlists after a failed refresh; `npm run validate` and `npm run build` passed.
 
 #### [ ] U2 — Make Escape close only the topmost history UI
 
