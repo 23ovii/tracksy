@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { usePlaylists, usePlaylistTracks } from '../api/playlists';
 import { useReorderPlaylist } from '../api/mutations';
@@ -14,17 +14,17 @@ import SorterHeader from '../components/dashboard/SorterHeader';
 import SortChips from '../components/dashboard/SortChips';
 import PresetsRow from '../components/dashboard/PresetsRow';
 import TrackTable from '../components/dashboard/TrackTable';
-import { listPresets, savePreset, deletePreset } from '../services/presets';
-import type { SortPreset } from '../services/presets';
-import { getHistory, pushHistory, clearHistory } from '../services/sortHistory';
-import type { HistoryEntry } from '../services/sortHistory';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
+import { useReorderOperation } from '../hooks/useReorderOperation';
+import { useDashboardPresetsHistory } from '../hooks/useDashboardPresetsHistory';
 import { useShortcutsOverlay } from '../context/ShortcutsOverlayContext';
 import { buildTrackOccurrenceKeys, restoreTracksFromKeys } from '../utils/trackIdentity';
 import { trackEvent, TrackEvents } from '../services/analytics';
 import { GLASS_SURFACE } from '../styles/tokens.ts';
 import { UNDO_WINDOW_MS, TOAST_TIMEOUT_MS, TOAST_TIMEOUT_CANCEL_MS } from '../utils/constants.ts';
 import { errorMessage, isAbortError } from '../utils/errors.ts';
+import type { HistoryEntry } from '../services/sortHistory';
+import type { SortPreset } from '../services/presets';
 
 function reorderFailureMessage(err: unknown) {
   const failure = isAbortError(err) ? 'Sort canceled.' : errorMessage(err, 'Failed to save to Spotify.');
@@ -49,31 +49,28 @@ function Dashboard() {
   const [sortFeedbackIsError, setSortFeedbackIsError] = useState(false);
   const [sortKey, setSortKey] = useState(0);
   const [undoUntil, setUndoUntil] = useState<number | null>(null);
-  const [presets, setPresets] = useState<SortPreset[]>(() => listPresets());
   const [toast, setToast] = useState<{ msg: string; key: number; type?: 'cancel' } | null>(null);
-  const [sortHistory, setSortHistory] = useState<HistoryEntry[]>([]);
   const [showFilter, setShowFilter] = useState(false);
   const [filterQuery, setFilterQuery] = useState('');
   const filterInputRef = useRef<HTMLInputElement>(null);
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { open: overlayOpen, toggle: toggleOverlay } = useShortcutsOverlay();
+  const {
+    presets,
+    history: sortHistory,
+    saveCurrentPreset,
+    removePreset,
+    recordHistory,
+    removeHistory,
+  } = useDashboardPresetsHistory(selectedPlaylist?.id ?? null);
 
-  // Apply progress state — driven by savePlaylistTracks callbacks
-  const [applying, setApplying] = useState(false);
-  const [isUndo, setIsUndo] = useState(false);
-  const [applyProgress, setApplyProgress] = useState(0);
-  const [rateLimitMsg, setRateLimitMsg] = useState('');
-
-  // Refs for operation metadata (set at apply time, read at handleDone time)
-  const mutationPromiseRef = useRef<Promise<{ moves: number }> | null>(null);
-  const abortControllerRef = useRef<AbortController | null>(null);
-  const isUndoRef = useRef(false);
-  const isRestoreRef = useRef(false);
-  const preApplyIdsRef = useRef<string[]>([]);
-  const preApplyKeysRef = useRef<string[]>([]);
+  const operation = useReorderOperation({
+    mutateAsync: reorder.mutateAsync,
+    onError: (error) => updateSortFeedback(reorderFailureMessage(error), true),
+  });
+  const { applying, isUndo, applyProgress, rateLimitMsg } = operation;
 
   useEffect(() => () => {
-    abortControllerRef.current?.abort();
     if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
   }, []);
 
@@ -93,10 +90,7 @@ function Dashboard() {
 
   function handleSavePreset(name: string) {
     try {
-      const id = Date.now().toString(36) + Math.random().toString(36).slice(2);
-      const preset: SortPreset = { id, name, sortBy, sortDir, createdAt: Date.now() };
-      savePreset(preset);
-      setPresets(listPresets());
+      saveCurrentPreset(name, sortBy, sortDir);
       trackEvent(TrackEvents.PRESET_SAVED);
       showToast('Preset saved');
     } catch (err: unknown) {
@@ -105,8 +99,7 @@ function Dashboard() {
   }
 
   function handleDeletePreset(id: string) {
-    deletePreset(id);
-    setPresets(listPresets());
+    removePreset(id);
     showToast('Preset deleted');
   }
 
@@ -126,10 +119,6 @@ function Dashboard() {
       trackEvent(TrackEvents.PLAYLISTS_LOADED, { count: playlists.length });
     }
   }, [playlists.length]);
-
-  useEffect(() => {
-    setSortHistory(selectedPlaylist ? getHistory(selectedPlaylist.id) : []);
-  }, [selectedPlaylist]);
 
   const [showPreview, setShowPreview] = useState<boolean>(() => {
     try { return localStorage.getItem('tracksy_show_preview') !== 'false'; } catch { return true; }
@@ -239,8 +228,7 @@ function Dashboard() {
 
   function handleBack() {
     if (applying) {
-      abortControllerRef.current?.abort();
-      abortControllerRef.current = null;
+      operation.cancel();
       showToast('Sort canceled', 'cancel');
       return;
     }
@@ -263,114 +251,78 @@ function Dashboard() {
     setLastApplied(null);
   }
 
-  function startReorder(previous: Track[], target: Track[], opts: { undo?: boolean; restore?: boolean } = {}) {
+  function startReorder(previous: Track[], target: Track[], kind: 'sort' | 'undo' | 'restore') {
     if (!tracksQuery.data || tracksQuery.isLoading || tracksQuery.isFetching || tracksQuery.isError) return;
     if (unsupportedCount > 0) {
       updateSortFeedback('This playlist contains local or unavailable tracks and cannot be safely reordered.', true);
       return;
     }
+    if (!selectedPlaylist) return;
 
-    setApplying(true);
-    setIsUndo(Boolean(opts.undo));
-    setApplyProgress(0);
-    setRateLimitMsg('');
-
-    const controller = new AbortController();
-    abortControllerRef.current = controller;
-
-    const promise = reorder.mutateAsync({
-      previous,
-      sorted: target,
-      abortSignal: controller.signal,
-      onProgress: setApplyProgress,
-      onRateLimit: (r) => setRateLimitMsg(`Rate limited by Spotify — retrying in ${r}s…`),
-    });
-    mutationPromiseRef.current = promise;
-
-    promise.catch((err) => {
-      updateSortFeedback(reorderFailureMessage(err), true);
-      setApplying(false);
-      setApplyProgress(0);
-      setRateLimitMsg('');
-    });
+    operation.start(previous, target, {
+      kind,
+      playlistId: selectedPlaylist.id,
+      playlistName: selectedPlaylist.name,
+      sortBy,
+      sortedTracks: target,
+      previousTrackIds: kind === 'sort' ? previous.map((track) => track.id) : [],
+      previousTrackKeys: kind === 'sort' ? buildTrackOccurrenceKeys(previous) : [],
+    }, true);
   }
 
   function handleApply() {
     if (!tracksQuery.data || tracksQuery.isFetching || tracksQuery.isError || unsupportedCount > 0) return;
     const currentTracks = tracksQuery.data?.tracks ?? [];
-    isUndoRef.current = false;
-    isRestoreRef.current = false;
-    preApplyIdsRef.current = currentTracks.map((t) => t.id);
-    preApplyKeysRef.current = buildTrackOccurrenceKeys(currentTracks);
     setLastApplied({ previous: currentTracks, sorted });
-    startReorder(currentTracks, sorted);
+    startReorder(currentTracks, sorted, 'sort');
   }
 
   async function handleDone() {
-    const wasUndo = isUndoRef.current;
-    const wasRestore = isRestoreRef.current;
-    const preApplyIds = [...preApplyIdsRef.current];
-    const preApplyKeys = [...preApplyKeysRef.current];
-    isUndoRef.current = false;
-    isRestoreRef.current = false;
+    const completed = await operation.complete();
+    if (!completed) return;
+    const { moves, metadata } = completed;
 
-    setApplying(false);
-    setApplyProgress(0);
-    setRateLimitMsg('');
-
-    const playlistName = selectedPlaylist?.name;
-
-    try {
-      const result = await mutationPromiseRef.current!;
-      const { moves } = result;
-
-      if (wasUndo || wasRestore) {
-        setUndoUntil(null);
-        setApplied(false);
-        updateSortFeedback(moves === 0 ? 'Already in this order.' : 'Reverted.');
-        setTimeout(() => updateSortFeedback(''), TOAST_TIMEOUT_CANCEL_MS);
+    if (metadata.kind === 'undo' || metadata.kind === 'restore') {
+      setUndoUntil(null);
+      setApplied(false);
+      updateSortFeedback(moves === 0 ? 'Already in this order.' : 'Reverted.');
+      setTimeout(() => updateSortFeedback(''), TOAST_TIMEOUT_CANCEL_MS);
+    } else {
+      const label = SORT_OPTIONS.find((o) => o.id === metadata.sortBy)?.label;
+      if (moves === 0) {
+        updateSortFeedback(`"${metadata.playlistName}" is already in this order.`);
       } else {
-        const label = SORT_OPTIONS.find((o) => o.id === sortBy)?.label;
-        if (moves === 0) {
-          updateSortFeedback(`"${playlistName}" is already in this order.`);
-        } else {
-          setApplied(true);
-          trackEvent(TrackEvents.SORT_APPLIED, { sortBy, moves, trackCount: sorted.length });
-          if (playlistName) updateSortFeedback(`"${playlistName}" sorted by ${label} and saved.`);
-          setUndoUntil(Date.now() + UNDO_WINDOW_MS);
-          if (selectedPlaylist) {
-            const entry: HistoryEntry = {
-              id: Date.now().toString(36) + Math.random().toString(36).slice(2),
-              playlistId: selectedPlaylist.id,
-              appliedAt: Date.now(),
-              sortLabel: label ?? sortBy,
-              trackIdsBefore: preApplyIds,
-              trackIdsAfter: sorted.map((t) => t.id),
-              trackKeysBefore: preApplyKeys,
-              trackKeysAfter: buildTrackOccurrenceKeys(sorted),
-            };
-            pushHistory(entry);
-            setSortHistory(getHistory(selectedPlaylist.id));
-          }
-        }
+        setApplied(true);
+        trackEvent(TrackEvents.SORT_APPLIED, {
+          sortBy: metadata.sortBy,
+          moves,
+          trackCount: metadata.sortedTracks.length,
+        });
+        updateSortFeedback(`"${metadata.playlistName}" sorted by ${label} and saved.`);
+        setUndoUntil(Date.now() + UNDO_WINDOW_MS);
+        const entry: HistoryEntry = {
+          id: Date.now().toString(36) + Math.random().toString(36).slice(2),
+          playlistId: metadata.playlistId,
+          appliedAt: Date.now(),
+          sortLabel: label ?? metadata.sortBy,
+          trackIdsBefore: metadata.previousTrackIds,
+          trackIdsAfter: metadata.sortedTracks.map((track) => track.id),
+          trackKeysBefore: metadata.previousTrackKeys,
+          trackKeysAfter: buildTrackOccurrenceKeys(metadata.sortedTracks),
+        };
+        recordHistory(entry);
       }
-    } catch (err: unknown) {
-      updateSortFeedback(reorderFailureMessage(err), true);
     }
   }
 
-  const handleUndo = useCallback(() => {
+  function handleUndo() {
     if (!lastApplied || tracksQuery.isFetching || tracksQuery.isError) return;
     trackEvent(TrackEvents.SORT_UNDONE);
     setUndoUntil(null);
-    isUndoRef.current = true;
-    isRestoreRef.current = false;
-    preApplyIdsRef.current = [];
-    preApplyKeysRef.current = [];
-    startReorder(lastApplied.sorted, lastApplied.previous, { undo: true });
-  }, [lastApplied, tracksQuery.isFetching, tracksQuery.isError]); // eslint-disable-line react-hooks/exhaustive-deps
+    startReorder(lastApplied.sorted, lastApplied.previous, 'undo');
+  }
 
-  const handleRestore = useCallback((entry: HistoryEntry) => {
+  function handleRestore(entry: HistoryEntry) {
     const currentTracks = tracksQuery.data?.tracks ?? [];
     const restoredTracks = restoreTracksFromKeys(
       currentTracks,
@@ -381,17 +333,11 @@ function Dashboard() {
       return;
     }
     setUndoUntil(null);
-    isUndoRef.current = false;
-    isRestoreRef.current = true;
-    preApplyIdsRef.current = [];
-    preApplyKeysRef.current = [];
-    startReorder(currentTracks, restoredTracks, { restore: true });
-  }, [tracksQuery.data]); // eslint-disable-line react-hooks/exhaustive-deps
+    startReorder(currentTracks, restoredTracks, 'restore');
+  }
 
   function handleClearHistory() {
-    if (!selectedPlaylist) return;
-    clearHistory(selectedPlaylist.id);
-    setSortHistory([]);
+    removeHistory();
   }
 
   const accent = selectedPlaylist?.color1 ?? 'var(--green)';

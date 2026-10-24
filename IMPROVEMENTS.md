@@ -124,12 +124,14 @@ validated.
 
 ### Code quality & architecture
 
-#### [ ] Q1 — Separate dashboard operation lifecycle from page orchestration
+#### [x] Q1 — Separate dashboard operation lifecycle from page orchestration
 
 - **Severity:** Low · **Effort:** M
-- **Location:** `src/pages/Dashboard.tsx:29-380`
+- **Location:** `src/pages/Dashboard.tsx`; `src/hooks/useReorderOperation.ts`; `src/hooks/useDashboardPresetsHistory.ts`
 - **Problem:** The page coordinates selection, sorting, mutation, undo, progress, history, presets, shortcuts, and notifications. This makes operation lifecycle edge cases harder to isolate.
 - **Suggested fix:** Extract focused hooks for reorder lifecycle and history/preset actions while leaving presentation in the page/components.
+- **Change:** Extracted reorder progress, cancellation, mutation completion, metadata, and error cleanup into `useReorderOperation`; moved preset and playlist-history persistence/actions into `useDashboardPresetsHistory`. The page retains presentation and user-facing completion feedback.
+- **Verification:** Hook tests cover successful/failed reorder completion, progress, and preset/history scoping; `npm run validate` and `npm run build` passed.
 
 #### [ ] Q2 — Validate persisted and remote JSON at runtime
 
