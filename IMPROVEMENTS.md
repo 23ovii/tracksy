@@ -232,12 +232,14 @@ validated.
 
 ### Testing
 
-#### [ ] T1 — Cover auth, reorder, UI states, and the Edge endpoint
+#### [x] T1 — Cover auth, reorder, UI states, and the Edge endpoint
 
 - **Severity:** Medium · **Effort:** M
 - **Location:** `src/auth/AuthProvider.tsx:59-85`; `src/pages/Dashboard.tsx:224-380`; `api/spotify-status.ts`; `tsconfig.json:20-24`; `package.json` (`lint` script)
 - **Problem:** Existing tests cover utilities and service paths, but not React auth lifecycle, reorder recovery, key UI states, or the status endpoint. TypeScript excludes `api/`, and lint only checks `src`.
 - **Suggested fix:** Add targeted tests for refresh-after-logout, cancel/failure reconciliation, and library empty/error states. Include `api/` in appropriate lint/type validation.
+- **Change:** Added tests for dashboard track-load errors, library loading/empty states, and Edge Config success/default/failure responses. Existing regression coverage verifies refresh completion after logout and waiting for authoritative playlist data after failed/canceled reorder. TypeScript and ESLint now include `api/`.
+- **Verification:** `npm run validate` passed (79 tests); `npm run build` passed. Existing Fast Refresh and analytics dynamic-import warnings remain.
 
 ### Documentation & DX
 
