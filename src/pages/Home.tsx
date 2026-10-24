@@ -19,7 +19,7 @@ interface Feature {
 const FEATURES: Feature[] = [
   {
     label: 'Playlist Sorter',
-    sub: 'BPM · energy · mood',
+    sub: 'Title · artist · popularity · date added · duration · discography',
     tag: 'Live',
     accent: '#1db954',
     icon: (
@@ -166,7 +166,7 @@ function Home() {
           color: 'var(--text-2)', lineHeight: 1.6,
           maxWidth: 560, marginBottom: 44,
         }}>
-          Connect Spotify and reorder any playlist by BPM, energy, popularity, or mood — then push it back in one click.
+          Connect Spotify and reorder your playlists by title, artist, popularity, date added, duration, or discography.
         </p>
 
         {/* CTA row */}

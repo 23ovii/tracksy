@@ -103,9 +103,12 @@ const html = `<!DOCTYPE html>
       the <span class="smart">smart</span> way.
     </div>
     <div class="pills">
-      <div class="pill">BPM</div>
-      <div class="pill">ENERGY</div>
+      <div class="pill">TITLE</div>
+      <div class="pill">ARTIST</div>
       <div class="pill">POPULARITY</div>
+      <div class="pill">DATE ADDED</div>
+      <div class="pill">DURATION</div>
+      <div class="pill">DISCOGRAPHY</div>
     </div>
   </div>
   <div class="url">tracksy-rho.vercel.app</div>

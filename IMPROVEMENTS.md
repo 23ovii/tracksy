@@ -231,12 +231,14 @@ validated.
 
 ### SEO & web fundamentals
 
-#### [ ] E1 — Align marketing and social metadata with shipped sort options
+#### [x] E1 — Align marketing and social metadata with shipped sort options
 
 - **Severity:** Medium · **Effort:** S
 - **Location:** `index.html:9-17`; `src/pages/Home.tsx:22,169`; `src/components/dashboard/LibraryPanel.tsx:31`; `scripts/generate-og.mjs`
 - **Problem:** Page and social copy and the OG image claim BPM, energy, or mood sorting, which is not implemented. Current sort options are title, artist, popularity, date added, duration, and discography.
 - **Suggested fix:** Update copy to accurately describe the app and regenerate `public/tracksy-og.png`.
+- **Change:** Updated page, social, landing-page, and dashboard library copy to list the shipped sort options; changed the OG generator pills and regenerated the image.
+- **Verification:** `node scripts/generate-og.mjs`, `npm run validate` (119 tests; two pre-existing ESLint warnings), and `npm run build` passed.
 
 ### Infrastructure & DevOps
 
