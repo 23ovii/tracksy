@@ -24,6 +24,7 @@ import { buildTrackOccurrenceKeys, restoreTracksFromKeys } from '../utils/trackI
 import { trackEvent, TrackEvents } from '../services/analytics';
 import { GLASS_SURFACE } from '../styles/tokens.ts';
 import { UNDO_WINDOW_MS, TOAST_TIMEOUT_MS, TOAST_TIMEOUT_CANCEL_MS } from '../utils/constants.ts';
+import { errorMessage, isAbortError } from '../utils/errors.ts';
 
 function Dashboard() {
   const [selectedPlaylist, setSelectedPlaylist] = useState<Playlist | null>(null);
@@ -83,7 +84,7 @@ function Dashboard() {
       trackEvent(TrackEvents.PRESET_SAVED);
       showToast('Preset saved');
     } catch (err: unknown) {
-      showToast(err instanceof Error ? err.message : 'Could not save preset.');
+      showToast(errorMessage(err, 'Could not save preset.'));
     }
   }
 
@@ -268,8 +269,8 @@ function Dashboard() {
     mutationPromiseRef.current = promise;
 
     promise.catch((err) => {
-      if ((err as { name?: string })?.name !== 'AbortError') {
-        setSortFeedback('Failed to save to Spotify. Try again.');
+      if (!isAbortError(err)) {
+        setSortFeedback(errorMessage(err, 'Failed to save to Spotify. Try again.'));
       }
       setApplying(false);
       setApplyProgress(0);
@@ -337,7 +338,7 @@ function Dashboard() {
         }
       }
     } catch (err: unknown) {
-      setSortFeedback(err instanceof Error ? err.message : 'Failed to save to Spotify. Try again.');
+      setSortFeedback(errorMessage(err, 'Failed to save to Spotify. Try again.'));
     }
   }
 
