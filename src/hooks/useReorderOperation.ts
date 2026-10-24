@@ -10,7 +10,6 @@ export interface ReorderOperationMetadata {
   playlistName: string;
   sortBy: SortKey;
   sortedTracks: Track[];
-  previousTrackIds: string[];
   previousTrackKeys: string[];
 }
 

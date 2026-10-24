@@ -270,7 +270,7 @@ function SorterHeader({
                       {entry.sortLabel}
                     </div>
                     <div style={{ fontSize: 11, color: 'var(--text-3)' }}>
-                      {relativeTime(entry.appliedAt)} · {entry.trackIdsAfter.length} tracks
+                      {relativeTime(entry.appliedAt)} · {(entry.trackKeysAfter ?? entry.trackIdsAfter ?? []).length} tracks
                     </div>
                   </div>
                   <button
