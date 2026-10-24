@@ -33,6 +33,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
   const [authState, setAuthState] = useState<AuthState | null>(readSavedAuth);
   const [userState, setUserState] = useState<{ accessToken: string; user: SpotifyUser } | null>(null);
+  const authGenerationRef = useRef(0);
   const refreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const previousAccountIdRef = useRef<string | null>(null);
   const user = userState && userState.accessToken === authState?.access_token ? userState.user : null;
@@ -46,6 +47,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [authState]);
 
   const applyToken = useCallback((tokenResponse: TokenResponse): number => {
+    authGenerationRef.current += 1;
     const expiresAt = Date.now() + (tokenResponse.expires_in ?? 3600) * 1000;
     const token = tokenResponse.refresh_token ?? authState?.refresh_token;
     setAuthState({
@@ -59,46 +61,53 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!authState?.refresh_token || !authState?.expires_at) return;
 
+    let active = true;
+    const generation = authGenerationRef.current;
+    const refreshToken = authState.refresh_token;
     const msUntilExpiry = authState.expires_at - Date.now();
     const msUntilRefresh = msUntilExpiry - TOKEN_REFRESH_LEEWAY_MS;
 
-    if (msUntilRefresh <= 0) {
-      refreshSpotifyToken(authState.refresh_token)
-        .then(applyToken)
+    const refresh = () => {
+      refreshSpotifyToken(refreshToken)
+        .then((tokenResponse) => {
+          if (active && generation === authGenerationRef.current) applyToken(tokenResponse);
+        })
         .catch(() => {
+          if (!active || generation !== authGenerationRef.current) return;
+          authGenerationRef.current += 1;
           setAuthState(null);
           queryClient.removeQueries({ queryKey: ['playlists'] });
         });
-      return;
+    };
+
+    if (msUntilRefresh <= 0) {
+      refresh();
+    } else {
+      refreshTimerRef.current = setTimeout(refresh, msUntilRefresh);
     }
 
-    refreshTimerRef.current = setTimeout(() => {
-      refreshSpotifyToken(authState.refresh_token!)
-        .then(applyToken)
-        .catch(() => {
-          setAuthState(null);
-          queryClient.removeQueries({ queryKey: ['playlists'] });
-        });
-    }, msUntilRefresh);
-
-    return () => clearTimeout(refreshTimerRef.current!);
+    return () => {
+      active = false;
+      if (refreshTimerRef.current) clearTimeout(refreshTimerRef.current);
+    };
   }, [authState?.refresh_token, authState?.expires_at, applyToken, queryClient]);
 
   // Per HTML spec, storage events only fire for other tabs, not the current tab
   useEffect(() => {
     const handleStorageChange = (event: StorageEvent) => {
-      if (event.key === STORAGE_KEY) {
-        if (event.newValue) {
-          try {
-            setAuthState(JSON.parse(event.newValue) as AuthState);
-          } catch {
-            setAuthState(null);
-            queryClient.removeQueries({ queryKey: ['playlists'] });
-          }
-        } else {
+      if (event.key !== STORAGE_KEY && event.key !== null) return;
+
+      authGenerationRef.current += 1;
+      if (event.key === STORAGE_KEY && event.newValue) {
+        try {
+          setAuthState(JSON.parse(event.newValue) as AuthState);
+        } catch {
           setAuthState(null);
           queryClient.removeQueries({ queryKey: ['playlists'] });
         }
+      } else {
+        setAuthState(null);
+        queryClient.removeQueries({ queryKey: ['playlists'] });
       }
     };
 
@@ -136,6 +145,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     previousAccountIdRef.current = user.id;
   }, [user, queryClient]);
 
+  const logout = useCallback(() => {
+    authGenerationRef.current += 1;
+    setAuthState(null);
+    localStorage.removeItem(STORAGE_KEY);
+    queryClient.removeQueries({ queryKey: ['playlists'] });
+  }, [queryClient]);
+
   const value = useMemo<AuthContextValue>(
     () => ({
       token: authState?.access_token ?? null,
@@ -144,12 +160,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isAuthenticated,
       user,
       login: applyToken,
-      logout() {
-        setAuthState(null);
-        queryClient.removeQueries({ queryKey: ['playlists'] });
-      },
+      logout,
     }),
-    [authState, isAuthenticated, user, applyToken, queryClient]
+    [authState, isAuthenticated, user, applyToken, logout]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
