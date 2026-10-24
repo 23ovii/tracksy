@@ -164,12 +164,14 @@ validated.
 - **Change:** Library loading, successful empty, initial failure, and failed refresh with cached playlists render distinct states. Initial failures offer a retry action; refresh controls are disabled while a request is in flight.
 - **Verification:** `LibraryPanel.test.tsx` covers the empty state, retry after failure, and retaining cached playlists after a failed refresh; `npm run validate` and `npm run build` passed.
 
-#### [ ] U2 — Make Escape close only the topmost history UI
+#### [x] U2 — Make Escape close only the topmost history UI
 
 - **Severity:** Medium · **Effort:** S
 - **Location:** `src/components/dashboard/SorterHeader.tsx:38-40`; `src/pages/Dashboard.tsx:189-191`
 - **Problem:** The drawer and dashboard both handle Escape; one keypress can close history and navigate back to the library.
 - **Suggested fix:** Centralize Escape handling or stop propagation when the drawer consumes it.
+- **Change:** The history drawer prevents default handling and stops Escape propagation after closing, so the dashboard-level shortcut cannot also navigate back.
+- **Verification:** `SorterHeader.test.tsx` verifies Escape closes the drawer without reaching the window-level navigation handler; `npm run validate` and `npm run build` passed.
 
 #### [ ] U3 — Add an empty-playlist state
 

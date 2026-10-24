@@ -35,7 +35,12 @@ function SorterHeader({
 
   useEffect(() => {
     if (!drawerOpen) return;
-    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') setDrawerOpen(false); };
+    const handler = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return;
+      e.preventDefault();
+      e.stopPropagation();
+      setDrawerOpen(false);
+    };
     document.addEventListener('keydown', handler);
     return () => document.removeEventListener('keydown', handler);
   }, [drawerOpen]);
