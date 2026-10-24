@@ -10,6 +10,8 @@ interface TrackTableProps {
   sortBy: string;
   sortKey: number;
   isLoading: boolean;
+  isError: boolean;
+  isEmptyPlaylist: boolean;
   accent: string;
   diffMap?: Map<Track, number>;
   showPreview: boolean;
@@ -75,7 +77,7 @@ function VirtualTrackList({ sorted, sortBy, diffMap, withDelta }: {
 }
 
 function TrackTable({
-  sorted, sortBy, sortKey, isLoading, accent, diffMap, showPreview, onTogglePreview,
+  sorted, sortBy, sortKey, isLoading, isError, isEmptyPlaylist, accent, diffMap, showPreview, onTogglePreview,
   showFilter, filterQuery, filterInputRef, onFilterChange, onFilterClose,
 }: TrackTableProps) {
   const hasDiff = diffMap && diffMap.size > 0;
@@ -205,6 +207,19 @@ function TrackTable({
           }} />
           Loading tracks…
         </div>
+      ) : !isError && sorted.length === 0 ? (
+        <p role="status" style={{
+          padding: '32px 24px',
+          color: 'var(--text-3)',
+          fontSize: 13,
+          textAlign: 'center',
+        }}>
+          {filterQuery?.trim()
+            ? 'No tracks match your filter.'
+            : isEmptyPlaylist
+              ? 'This playlist has no tracks yet.'
+              : 'No sortable tracks are available in this playlist.'}
+        </p>
       ) : (
         <div key={sortKey}>
           <VirtualTrackList
