@@ -26,6 +26,11 @@ import { GLASS_SURFACE } from '../styles/tokens.ts';
 import { UNDO_WINDOW_MS, TOAST_TIMEOUT_MS, TOAST_TIMEOUT_CANCEL_MS } from '../utils/constants.ts';
 import { errorMessage, isAbortError } from '../utils/errors.ts';
 
+function reorderFailureMessage(err: unknown) {
+  const failure = isAbortError(err) ? 'Sort canceled.' : errorMessage(err, 'Failed to save to Spotify.');
+  return `${failure} Spotify may have applied some moves; review the current playlist order before trying again.`;
+}
+
 function Dashboard() {
   const [selectedPlaylist, setSelectedPlaylist] = useState<Playlist | null>(null);
 
@@ -41,6 +46,7 @@ function Dashboard() {
   const [sortDir, setSortDir] = useState<SortDir>('asc');
   const [applied, setApplied] = useState(false);
   const [sortFeedback, setSortFeedback] = useState('');
+  const [sortFeedbackIsError, setSortFeedbackIsError] = useState(false);
   const [sortKey, setSortKey] = useState(0);
   const [undoUntil, setUndoUntil] = useState<number | null>(null);
   const [presets, setPresets] = useState<SortPreset[]>(() => listPresets());
@@ -74,6 +80,11 @@ function Dashboard() {
   // Previous order stored for undo — captured just before apply
   const [lastApplied, setLastApplied] = useState<{ previous: Track[]; sorted: Track[] } | null>(null);
 
+  function updateSortFeedback(message: string, isError = false) {
+    setSortFeedback(message);
+    setSortFeedbackIsError(isError);
+  }
+
   function showToast(msg: string, type?: 'cancel') {
     if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
     setToast(type !== undefined ? { msg, key: Date.now(), type } : { msg, key: Date.now() });
@@ -104,7 +115,7 @@ function Dashboard() {
     setSortBy(preset.sortBy);
     setSortDir(preset.sortDir);
     setApplied(false);
-    setSortFeedback('');
+    updateSortFeedback('');
     setSortKey((k) => k + 1);
   }
 
@@ -182,7 +193,7 @@ function Dashboard() {
       d: () => {
         if (selectedPlaylist && sortBy !== 'discography') {
           trackEvent(TrackEvents.SHORTCUT_USED, { key: 'd' });
-          setSortDir((dir) => { setApplied(false); setSortFeedback(''); setSortKey((k) => k + 1); return dir === 'asc' ? 'desc' : 'asc'; });
+          setSortDir((dir) => { setApplied(false); updateSortFeedback(''); setSortKey((k) => k + 1); return dir === 'asc' ? 'desc' : 'asc'; });
         }
       },
       enter: () => {
@@ -222,7 +233,7 @@ function Dashboard() {
     }
     trackEvent(TrackEvents.SORT_PICKED, { sortBy: id, sortDir: nextDir });
     setApplied(false);
-    setSortFeedback('');
+    updateSortFeedback('');
     setSortKey((k) => k + 1);
   }
 
@@ -236,7 +247,7 @@ function Dashboard() {
     setSelectedPlaylist(null);
     reorder.reset();
     setApplied(false);
-    setSortFeedback('');
+    updateSortFeedback('');
     setUndoUntil(null);
     setLastApplied(null);
   }
@@ -246,7 +257,7 @@ function Dashboard() {
     setSelectedPlaylist(playlist);
     reorder.reset();
     setApplied(false);
-    setSortFeedback('');
+    updateSortFeedback('');
     setSortKey((k) => k + 1);
     setUndoUntil(null);
     setLastApplied(null);
@@ -255,7 +266,7 @@ function Dashboard() {
   function startReorder(previous: Track[], target: Track[], opts: { undo?: boolean; restore?: boolean } = {}) {
     if (!tracksQuery.data || tracksQuery.isLoading || tracksQuery.isFetching || tracksQuery.isError) return;
     if (unsupportedCount > 0) {
-      setSortFeedback('This playlist contains local or unavailable tracks and cannot be safely reordered.');
+      updateSortFeedback('This playlist contains local or unavailable tracks and cannot be safely reordered.', true);
       return;
     }
 
@@ -277,9 +288,7 @@ function Dashboard() {
     mutationPromiseRef.current = promise;
 
     promise.catch((err) => {
-      if (!isAbortError(err)) {
-        setSortFeedback(errorMessage(err, 'Failed to save to Spotify. Try again.'));
-      }
+      updateSortFeedback(reorderFailureMessage(err), true);
       setApplying(false);
       setApplyProgress(0);
       setRateLimitMsg('');
@@ -318,16 +327,16 @@ function Dashboard() {
       if (wasUndo || wasRestore) {
         setUndoUntil(null);
         setApplied(false);
-        setSortFeedback(moves === 0 ? 'Already in this order.' : 'Reverted.');
-        setTimeout(() => setSortFeedback(''), TOAST_TIMEOUT_CANCEL_MS);
+        updateSortFeedback(moves === 0 ? 'Already in this order.' : 'Reverted.');
+        setTimeout(() => updateSortFeedback(''), TOAST_TIMEOUT_CANCEL_MS);
       } else {
         const label = SORT_OPTIONS.find((o) => o.id === sortBy)?.label;
         if (moves === 0) {
-          setSortFeedback(`"${playlistName}" is already in this order.`);
+          updateSortFeedback(`"${playlistName}" is already in this order.`);
         } else {
           setApplied(true);
           trackEvent(TrackEvents.SORT_APPLIED, { sortBy, moves, trackCount: sorted.length });
-          if (playlistName) setSortFeedback(`"${playlistName}" sorted by ${label} and saved.`);
+          if (playlistName) updateSortFeedback(`"${playlistName}" sorted by ${label} and saved.`);
           setUndoUntil(Date.now() + UNDO_WINDOW_MS);
           if (selectedPlaylist) {
             const entry: HistoryEntry = {
@@ -346,12 +355,12 @@ function Dashboard() {
         }
       }
     } catch (err: unknown) {
-      setSortFeedback(errorMessage(err, 'Failed to save to Spotify. Try again.'));
+      updateSortFeedback(reorderFailureMessage(err), true);
     }
   }
 
   const handleUndo = useCallback(() => {
-    if (!lastApplied) return;
+    if (!lastApplied || tracksQuery.isFetching || tracksQuery.isError) return;
     trackEvent(TrackEvents.SORT_UNDONE);
     setUndoUntil(null);
     isUndoRef.current = true;
@@ -359,7 +368,7 @@ function Dashboard() {
     preApplyIdsRef.current = [];
     preApplyKeysRef.current = [];
     startReorder(lastApplied.sorted, lastApplied.previous, { undo: true });
-  }, [lastApplied]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [lastApplied, tracksQuery.isFetching, tracksQuery.isError]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleRestore = useCallback((entry: HistoryEntry) => {
     const currentTracks = tracksQuery.data?.tracks ?? [];
@@ -368,7 +377,7 @@ function Dashboard() {
       entry.trackKeysBefore ?? entry.trackIdsBefore,
     );
     if (!restoredTracks) {
-      setSortFeedback('This playlist changed since that history entry was saved. Reload the playlist before restoring.');
+      updateSortFeedback('This playlist changed since that history entry was saved. Reload the playlist before restoring.', true);
       return;
     }
     setUndoUntil(null);
@@ -482,16 +491,18 @@ function Dashboard() {
             />
 
             {sortFeedback && !applying && (
-              <div style={{
+              <div role={sortFeedbackIsError ? 'alert' : 'status'} style={{
                 padding: '12px 24px',
-                background: `${accent}10`,
-                borderBottom: `1px solid ${accent}22`,
-                fontSize: 13, color: accent, fontWeight: 500,
+                background: sortFeedbackIsError ? 'rgba(239,68,68,0.08)' : `${accent}10`,
+                borderBottom: `1px solid ${sortFeedbackIsError ? 'rgba(239,68,68,0.22)' : `${accent}22`}`,
+                fontSize: 13, color: sortFeedbackIsError ? 'var(--error-text)' : accent, fontWeight: 500,
                 display: 'flex', alignItems: 'center', gap: 8,
                 animation: 'fadeIn 0.3s var(--ease-out)',
               }}>
-                <svg width="14" height="14" viewBox="0 0 12 12" fill="none">
-                  <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                <svg width="14" height="14" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                  {sortFeedbackIsError
+                    ? <path d="M3 3l6 6M9 3l-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                    : <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />}
                 </svg>
                 <span>
                   {sortFeedback}
@@ -502,7 +513,7 @@ function Dashboard() {
                         href={`https://open.spotify.com/playlist/${selectedPlaylist.id}`}
                         target="_blank"
                         rel="noreferrer"
-                        style={{ color: accent, fontWeight: 700, textDecoration: 'underline', textUnderlineOffset: 3 }}
+                        style={{ color: sortFeedbackIsError ? 'var(--error-text)' : accent, fontWeight: 700, textDecoration: 'underline', textUnderlineOffset: 3 }}
                       >
                         Open in Spotify
                       </a>
@@ -531,7 +542,7 @@ function Dashboard() {
         )}
       </div>
 
-      {undoUntil !== null && !applying && (
+      {undoUntil !== null && !applying && !tracksQuery.isFetching && !tracksQuery.isError && (
         <UndoToast
           undoUntil={undoUntil}
           sortBy={sortBy}

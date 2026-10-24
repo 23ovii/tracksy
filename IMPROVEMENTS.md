@@ -9,7 +9,7 @@ validated.
 
 - [x] Ignore local dotenv files without ignoring `.env.example`.
 - [x] Fix authentication lifecycle races and logout synchronization.
-- [ ] Make Spotify reorder failure/cancellation recover safely.
+- [x] Make Spotify reorder failure/cancellation recover safely.
 - [ ] Update vulnerable dependencies and resolve ESLint peer compatibility.
 - [ ] Correct user-facing feature and privacy claims.
 - [ ] Address remaining correctness, accessibility, UX, and documentation work.
@@ -19,12 +19,14 @@ validated.
 
 ### Bugs & correctness
 
-#### [ ] B1 — Recover safely after failed or canceled playlist writes
+#### [x] B1 — Recover safely after failed or canceled playlist writes
 
 - **Severity:** Medium · **Effort:** M
 - **Location:** `src/services/spotify.ts:184-234`; `src/api/mutations.ts:45-48`; `src/pages/Dashboard.tsx:224-230,250-279,386-389`; `src/components/Toast.tsx:37-43`
 - **Problem:** Spotify reorder requests run sequentially, so completed moves remain applied if a later request fails or is canceled. The UI says no changes were saved, and allows a retry while a query may still be fetching the authoritative order.
 - **Suggested fix:** Explain that a partial update may have occurred; wait for/refetch Spotify order before enabling another write. Do not allow a retry using stale order data. Consider compensating completed moves where that is safe.
+- **Change:** Failed writes wait for the Spotify playlist refetch before settling. Write and undo actions remain unavailable during refetch; failures explain that Spotify may have applied some moves, and cancellation messaging no longer claims that no changes were saved.
+- **Verification:** `src/api/mutations.test.tsx` verifies a failed write waits for refetched Spotify order; `npm run validate` passed.
 
 #### [x] B2 — Prevent a pending token refresh from restoring a logged-out session
 
