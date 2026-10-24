@@ -80,10 +80,10 @@ function TrackTable({
   sorted, sortBy, sortKey, isLoading, isError, isEmptyPlaylist, accent, diffMap, showPreview, onTogglePreview,
   showFilter, filterQuery, filterInputRef, onFilterChange, onFilterClose,
 }: TrackTableProps) {
-  const hasDiff = diffMap && diffMap.size > 0;
+  const hasDiff = diffMap ? Array.from(diffMap.values()).some((delta) => delta !== 0) : false;
 
   let nUp = 0, nDown = 0, nUnchanged = 0;
-  if (hasDiff) {
+  if (diffMap && hasDiff) {
     for (const delta of diffMap.values()) {
       if (delta > 0) nUp++;
       else if (delta < 0) nDown++;

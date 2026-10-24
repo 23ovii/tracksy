@@ -2,7 +2,36 @@ import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import type { Track } from '../../types';
+
 import TrackTable from './TrackTable';
+
+const tracks: Track[] = [
+  {
+    id: 'track-1',
+    uri: 'spotify:track:track-1',
+    name: 'First track',
+    artist: 'Artist',
+    album: 'Album',
+    albumYear: 2020,
+    trackNumber: 1,
+    durationMs: 180000,
+    addedAt: '',
+    popularity: 50,
+  },
+  {
+    id: 'track-2',
+    uri: 'spotify:track:track-2',
+    name: 'Second track',
+    artist: 'Artist',
+    album: 'Album',
+    albumYear: 2020,
+    trackNumber: 2,
+    durationMs: 180000,
+    addedAt: '',
+    popularity: 50,
+  },
+];
 
 describe('TrackTable empty states', () => {
   let container: HTMLDivElement;
@@ -69,5 +98,26 @@ describe('TrackTable empty states', () => {
 
     await act(async () => root.render(renderTable({ isError: true })));
     expect(container.querySelector('[role="status"]')).toBeNull();
+  });
+
+  it('hides the diff summary and preview toggle when all positions are unchanged', async () => {
+    await act(async () => root.render(renderTable({
+      sorted: tracks,
+      diffMap: new Map([[tracks[0]!, 0], [tracks[1]!, 0]]),
+    })));
+
+    expect(container.textContent).not.toContain('moved up');
+    expect(container.querySelector('button')).toBeNull();
+  });
+
+  it('shows the diff summary and preview toggle when tracks have moved', async () => {
+    await act(async () => root.render(renderTable({
+      sorted: tracks,
+      diffMap: new Map([[tracks[0]!, 1], [tracks[1]!, -1]]),
+    })));
+
+    expect(container.textContent).toContain('moved up');
+    expect(container.textContent).toContain('moved down');
+    expect(container.querySelector('button')?.textContent).toContain('Hide preview');
   });
 });
