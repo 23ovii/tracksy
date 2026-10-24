@@ -35,12 +35,14 @@ validated.
 - **Change:** Refresh results and failures are ignored when their auth generation is no longer active; logout invalidates pending refreshes and removes the stored auth state immediately.
 - **Verification:** `src/auth/AuthProvider.test.tsx` covers refresh completion after logout.
 
-#### [ ] B3 — Abort an in-flight reorder when leaving the dashboard
+#### [x] B3 — Abort an in-flight reorder when leaving the dashboard
 
 - **Severity:** Medium · **Effort:** S
 - **Location:** `src/pages/Dashboard.tsx:63,250-279`; `src/components/Navbar.tsx:20-24,110`; `src/components/SortProgress.tsx:18-21`
 - **Problem:** Reordering is canceled by the dashboard Back button only. Signing out/unmounting the page leaves the Spotify write running, and the progress completion timer is not cleaned up.
 - **Suggested fix:** Abort the active operation on unmount and clean up the completion timer; reconcile actual order after abort.
+- **Change:** Dashboard unmount aborts the active reorder and clears its toast timer; `SortProgress` clears its delayed completion timer when it becomes inactive or unmounts.
+- **Verification:** `src/components/SortProgress.test.tsx` covers timer cleanup on unmount; `npm run validate` passed.
 
 #### [ ] B4 — Group discography tracks by album identity
 

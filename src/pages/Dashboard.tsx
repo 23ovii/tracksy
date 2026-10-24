@@ -66,6 +66,11 @@ function Dashboard() {
   const preApplyIdsRef = useRef<string[]>([]);
   const preApplyKeysRef = useRef<string[]>([]);
 
+  useEffect(() => () => {
+    abortControllerRef.current?.abort();
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+  }, []);
+
   // Previous order stored for undo — captured just before apply
   const [lastApplied, setLastApplied] = useState<{ previous: Track[]; sorted: Track[] } | null>(null);
 
