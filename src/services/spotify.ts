@@ -137,6 +137,11 @@ async function writeSpotify(
     }
 
     const retryAfterSeconds = parseRetryAfterSeconds(response.headers.get('Retry-After'));
+    if (retryAfterSeconds > MAX_RATE_LIMIT_WAIT_SECONDS) {
+      throw new Error(
+        `Spotify requested a retry after ${Math.ceil(retryAfterSeconds)} seconds, exceeding the ${MAX_RATE_LIMIT_WAIT_SECONDS}-second maximum wait.`,
+      );
+    }
     const wait = Math.min(
       MAX_RATE_LIMIT_WAIT_SECONDS,
       Math.ceil(retryAfterSeconds * waitMultiplier * 2 ** retry),

@@ -138,4 +138,16 @@ describe('savePlaylistTracks', () => {
     await expect(resultPromise).rejects.toMatchObject({ name: 'AbortError' });
     expect(mockFetch).toHaveBeenCalledOnce();
   });
+
+  it('does not retry earlier than a Retry-After longer than the maximum wait', async () => {
+    const mockFetch = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(null, { status: 429, headers: { 'Retry-After': '120' } }),
+    );
+    const original = tracks(4);
+    const sorted = [...original].reverse();
+
+    await expect(savePlaylistTracks('token', 'playlist', original, sorted))
+      .rejects.toThrow('exceeding the 60-second maximum wait');
+    expect(mockFetch).toHaveBeenCalledOnce();
+  });
 });
