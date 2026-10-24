@@ -223,11 +223,11 @@ validated.
 #### [x] A3 — Announce active sort and direction
 
 - **Severity:** Low · **Effort:** S
-- **Location:** `src/components/dashboard/SortCriteriaEditor.tsx`
-- **Problem:** The active sort and its direction were not clearly conveyed to assistive technology.
-- **Suggested fix:** Expose sort fields and directions through accessible controls.
-- **Change:** The criteria editor exposes labeled sort-field selects, current direction text, and labeled direction/reorder/remove controls. Discography is identified as fixed-order.
-- **Verification:** `npm run validate` passed (125 tests; two pre-existing ESLint warnings); `npm run build` passed.
+- **Location:** `src/components/dashboard/SortChips.tsx:29-50`
+- **Problem:** The active sort and arrow are visual-only button states.
+- **Suggested fix:** Add `aria-pressed` and an accessible label/state including direction.
+- **Change:** Sort chips now expose pressed state and announce the active direction; the decorative arrow is hidden from screen readers. Discography is announced without a direction because its sort is directionless.
+- **Verification:** `npm run validate` passed (119 tests; two pre-existing ESLint warnings); `npm run build` passed.
 
 ### SEO & web fundamentals
 
@@ -295,21 +295,19 @@ validated.
 
 ### Missing features & opportunities
 
-#### [x] M1 — Consider multi-key sorting
+#### [ ] M1 — Consider multi-key sorting
 
 - **Severity:** Nice-to-have · **Effort:** M
-- **Location:** `src/utils/playlistUtils.ts`; `src/services/presets.ts`; `src/components/dashboard/SortCriteriaEditor.tsx`
+- **Location:** `src/utils/playlistUtils.ts:3-4,25-36`; `src/services/presets.ts:4-12`
 - **Problem:** Presets store one key, so users cannot specify deterministic secondary sort criteria for ties.
-- **Suggested fix:** Add an ordered list of sort keys and persist it in presets.
-- **Change:** Added controls to add, remove, reorder, and configure criteria independently; preserved stable single-key behavior and migrated existing presets on read.
-- **Verification:** `npm run validate` passed (125 tests; two existing lint warnings); `npm run build` passed.
+- **Suggested fix:** If user demand supports it, add an ordered list of sort keys and persist it in presets.
 
 ## Suggested order
 
 1. **Completed — secure and recover core operations:** B2, B3, B1, S1, S4, S2, and T1.
 2. **Completed — correctness and accessible UX:** B4, B6, U1-U5, A1-A3, and E1.
 3. **Completed — maintainability and cleanup:** I1, D1-D4, Q1-Q2, and P1.
-4. **Completed — optional product work:** M1 delivered after user confirmation.
+4. **Deferred — optional product work:** M1 reverted after user feedback.
 
 ## Quick wins
 

@@ -82,7 +82,7 @@ TanStack React Query manages Spotify data. `src/api/playlists.ts` provides `useP
 `App.tsx` defines `/` (Home), `/dashboard` (protected), `/callback`, `/privacy`, and a `*` fallback to Home. `main.tsx` mounts the app under `StrictMode`, `QueryClientProvider`, `BrowserRouter`, `AuthProvider`, and `ErrorBoundary`.
 
 ### Sort flow
-`Dashboard.tsx` manages playlist selection, ordered sort criteria, presets, history, undo, and filtering. `sortTracks(tracks, criteria)` in `src/utils/playlistUtils.ts` applies each key and direction in order, returning a sorted copy without mutating state. Legacy single-key calls remain supported. A 30-second undo toast appears after a successful apply — hovering it pauses the countdown.
+`Dashboard.tsx` manages playlist selection, sort state, preset management, history, undo, and filter. `sortTracks(tracks, by, dir)` in `src/utils/playlistUtils.ts` returns a sorted copy without mutating state. A 30-second undo toast appears after a successful apply — hovering it pauses the countdown.
 
 ### Sort presets
 `src/services/presets.ts` stores up to 20 named presets in `localStorage` (`tracksy_presets_v1`). `PresetsRow` renders them as a scrollable chip row.
@@ -94,7 +94,7 @@ TanStack React Query manages Spotify data. `src/api/playlists.ts` provides `useP
 `src/utils/trackIdentity.ts` handles duplicate tracks. Keys: `${id}#${occurrence}`. `buildTrackOccurrenceKeys()` builds the key array; `restoreTracksFromKeys()` maps keys back to tracks.
 
 ### Keyboard shortcuts
-`src/hooks/useKeyboardShortcuts.ts`: `1–6` select the primary sort option, `d` toggles its direction, `Enter` applies the sort, `Escape` goes back or closes the filter, `/` opens the track filter, `?` opens the shortcuts overlay.
+`src/hooks/useKeyboardShortcuts.ts`: `1–6` select sort options, `d` toggles direction, `Enter` applies the sort, `Escape` goes back or closes the filter, `/` opens the track filter, `?` opens the shortcuts overlay.
 
 ### Spotify API calls (`src/services/spotify.ts`)
 - `getSpotifyPlaylists(token)` — paginates all user-owned playlists; assigns deterministic gradient color pairs via hash
@@ -102,7 +102,7 @@ TanStack React Query manages Spotify data. `src/api/playlists.ts` provides `useP
 - `savePlaylistTracks(token, playlistId, original, sorted)` — full PUT if ≤100 tracks with >50% changes, otherwise individual reorder requests; O(1) slot map; `AbortSignal` support
 
 ### Sort options (`src/utils/playlistUtils.ts`)
-`SORT_OPTIONS` defines 6 sort keys: `name`, `artist`, `popularity`, `addedAt`, `durationMs`, `discography`. `sortTracks(tracks, criteria)` applies an ordered list of criteria; the legacy `(tracks, key, direction)` form remains supported. Discography has a fixed built-in order: it groups by Spotify album ID, falling back to normalized album name plus primary artist, ranks artists by total track count, and sinks singles/sparse albums to the bottom.
+`SORT_OPTIONS` defines 6 sort keys: `name`, `artist`, `popularity`, `addedAt`, `durationMs`, `discography`. The `discography` sort groups by Spotify album ID, falling back to normalized album name plus primary artist; it ranks artists by total track count and sinks singles/sparse albums to the bottom.
 
 ### Types (`src/types.ts`)
 `Track`, `Playlist`, `TokenResponse`, `SpotifyUser`, `AuthContextValue`. `SortOption` is in `playlistUtils.ts`; `SortPreset` is in `presets.ts`.
@@ -132,7 +132,7 @@ Light/dark via `theme-light`/`theme-dark` class on `<html>`. Anti-flash script i
 |---|---|
 | `LibraryPanel.tsx` | Playlist list with refresh button |
 | `SorterHeader.tsx` | Playlist info, Apply/Cancel, history drawer |
-| `SortCriteriaEditor.tsx` | Ordered sort fields with per-criterion direction and add, remove, and move controls |
+| `SortChips.tsx` | Sort field selector chips |
 | `PresetsRow.tsx` | Saved preset chips |
 | `TrackTable.tsx` | Accessible track table with filter and movement-delta preview toggle |
 | `AmbientBackdrop.tsx` | Full-screen color gradient from playlist colors |

@@ -102,32 +102,6 @@ describe('sortTracks', () => {
     expect(result.map((t) => t.id)).toEqual(['a', 'b', 'c']);
   });
 
-  it('applies ordered criteria and each criterion direction independently', () => {
-    const tied: Track[] = [
-      makeTrack({ id: 'zulu', name: 'Same', artist: 'Zulu' }),
-      makeTrack({ id: 'other', name: 'Other', artist: 'Beta' }),
-      makeTrack({ id: 'alpha', name: 'Same', artist: 'Alpha' }),
-    ];
-
-    expect(sortTracks(tied, [
-      { key: 'name', direction: 'asc' },
-      { key: 'artist', direction: 'desc' },
-    ]).map((track) => track.id)).toEqual(['other', 'zulu', 'alpha']);
-  });
-
-  it('uses secondary criteria to break discography ties while keeping single-key ties stable', () => {
-    const singles = [
-      makeTrack({ id: 'zulu', artist: 'Zulu', album: 'Single Z' }),
-      makeTrack({ id: 'alpha', artist: 'Alpha', album: 'Single A' }),
-    ];
-
-    expect(sortTracks(singles, 'discography').map((track) => track.id)).toEqual(['zulu', 'alpha']);
-    expect(sortTracks(singles, [
-      { key: 'discography', direction: 'asc' },
-      { key: 'artist', direction: 'asc' },
-    ]).map((track) => track.id)).toEqual(['alpha', 'zulu']);
-  });
-
   it('keeps same-named albums with different Spotify identities separate', () => {
     const tracks = [
       makeTrack({
