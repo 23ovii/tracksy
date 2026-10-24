@@ -242,12 +242,14 @@ validated.
 
 ### Infrastructure & DevOps
 
-#### [ ] I1 — Correct the Sentry privacy disclosure or add the integration
+#### [x] I1 — Correct the Sentry privacy disclosure or add the integration
 
 - **Severity:** Medium · **Effort:** S to correct copy; M to integrate
 - **Location:** `src/pages/Privacy.tsx:123-128`; `src/components/ErrorBoundary.tsx:22-24`; `package.json`
 - **Problem:** The privacy policy says crash reports are sent to Sentry, but no Sentry dependency or integration is present; the error boundary only logs to the console.
 - **Suggested fix:** Remove the inaccurate statement or add a redacted, privacy-reviewed error reporting integration and document it accurately.
+- **Change:** Removed the unsupported Sentry claim from the third-party services list. The policy now lists only services currently integrated with the app; future Sentry work remains a separate planned change.
+- **Verification:** `npm run validate` passed (119 tests; two pre-existing ESLint warnings); `npm run build` passed. Confirmed `src/pages/Privacy.tsx` no longer mentions Sentry.
 
 ### Dependencies & compatibility
 
@@ -306,8 +308,8 @@ validated.
 ## Quick wins
 
 - [x] Ignore `.env.local` and other local dotenv variants.
-- [ ] Correct unsupported BPM/energy/mood copy and regenerate OG artwork.
-- [ ] Remove the inaccurate Sentry disclosure if no integration is planned.
+- [x] Correct unsupported BPM/energy/mood copy and regenerate OG artwork.
+- [x] Remove the inaccurate Sentry disclosure until an integration exists.
 - [ ] Fix the diff preview visibility check for unchanged playlists.
 - [ ] Add clear empty and playlist-load-error states.
 - [ ] Remove unused image-generation dependencies if confirmed unnecessary.

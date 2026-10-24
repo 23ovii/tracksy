@@ -125,7 +125,6 @@ function Privacy() {
                 'Spotify API — used to read and modify your playlists. We never store your credentials.',
                 'PostHog — anonymous usage analytics, EU servers, GDPR compliant.',
                 'Vercel Analytics — page view counts, referrers, and aggregate device/country stats. No personal data.',
-                'Sentry — error monitoring. If the app crashes, an error report is sent. No Spotify data is included.',
               ]} />
             </Section>
 
