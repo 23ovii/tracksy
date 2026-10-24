@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { FocusTrap } from 'focus-trap-react';
 
 import { useShortcutsOverlay } from '../context/ShortcutsOverlayContext';
 import { SORT_OPTIONS } from '../utils/playlistUtils';
@@ -62,29 +63,34 @@ export default function ShortcutsOverlay() {
   if (!open) return null;
 
   return (
-    <div
-      ref={backdropRef}
-      role="presentation"
-      onClick={(e) => { if (e.target === backdropRef.current) setOpen(false); }}
-      onKeyDown={(e) => { if (e.key === 'Escape') setOpen(false); }}
-      style={{
-        position: 'fixed', inset: 0, zIndex: 1000,
-        background: 'var(--modal-backdrop)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-      }}
-    >
-      <div style={{
-        background: 'var(--glass-bg)',
-        border: '1px solid var(--border2)',
-        borderRadius: 18,
-        boxShadow: 'var(--shadow-card)',
-        width: '100%', maxWidth: 420, margin: 16,
-        overflow: 'hidden',
-        animation: 'scaleIn 0.14s ease-out',
-        willChange: 'transform',
-        backdropFilter: 'blur(16px)',
-        WebkitBackdropFilter: 'blur(16px)',
-      }}>
+    <FocusTrap focusTrapOptions={{ allowOutsideClick: true, escapeDeactivates: false }}>
+      <div
+        ref={backdropRef}
+        role="presentation"
+        onClick={(e) => { if (e.target === backdropRef.current) setOpen(false); }}
+        onKeyDown={(e) => { if (e.key === 'Escape') setOpen(false); }}
+        style={{
+          position: 'fixed', inset: 0, zIndex: 1000,
+          background: 'var(--modal-backdrop)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}
+      >
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Keyboard shortcuts"
+          style={{
+            background: 'var(--glass-bg)',
+            border: '1px solid var(--border2)',
+            borderRadius: 18,
+            boxShadow: 'var(--shadow-card)',
+            width: '100%', maxWidth: 420, margin: 16,
+            overflow: 'hidden',
+            animation: 'scaleIn 0.14s ease-out',
+            willChange: 'transform',
+            backdropFilter: 'blur(16px)',
+            WebkitBackdropFilter: 'blur(16px)',
+          }}>
         <div style={{
           padding: '18px 24px 14px',
           borderBottom: '1px solid var(--border)',
@@ -126,7 +132,8 @@ export default function ShortcutsOverlay() {
             </div>
           ))}
         </div>
+        </div>
       </div>
-    </div>
+    </FocusTrap>
   );
 }
