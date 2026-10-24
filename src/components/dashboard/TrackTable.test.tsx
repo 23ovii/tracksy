@@ -6,6 +6,16 @@ import type { Track } from '../../types';
 
 import TrackTable from './TrackTable';
 
+vi.mock('@tanstack/react-virtual', () => ({
+  useVirtualizer: ({ count, estimateSize }: { count: number; estimateSize: () => number }) => ({
+    getVirtualItems: () => Array.from({ length: count }, (_, index) => ({
+      index,
+      start: index * estimateSize(),
+    })),
+    getTotalSize: () => count * estimateSize(),
+  }),
+}));
+
 const tracks: Track[] = [
   {
     id: 'track-1',
@@ -95,6 +105,7 @@ describe('TrackTable empty states', () => {
     await act(async () => root.render(renderTable({ isLoading: true })));
     expect(container.textContent).toContain('Loading tracks');
     expect(container.textContent).not.toContain('no tracks yet');
+    expect(container.querySelectorAll('[role="columnheader"]')).toHaveLength(5);
 
     await act(async () => root.render(renderTable({ isError: true })));
     expect(container.querySelector('[role="status"]')).toBeNull();
@@ -119,5 +130,29 @@ describe('TrackTable empty states', () => {
     expect(container.textContent).toContain('moved up');
     expect(container.textContent).toContain('moved down');
     expect(container.querySelector('button')?.textContent).toContain('Hide preview');
+  });
+
+  it('exposes playlist tracks as a table with indexed rows and column headers', async () => {
+    await act(async () => root.render(renderTable({ sorted: tracks })));
+
+    const table = container.querySelector('[role="table"]');
+    expect(table?.getAttribute('aria-label')).toBe('Playlist tracks');
+    expect(table?.getAttribute('aria-rowcount')).toBe('3');
+    expect(table?.getAttribute('aria-colcount')).toBe('5');
+    expect(container.querySelectorAll('[role="columnheader"]')).toHaveLength(5);
+    expect(container.querySelectorAll('[role="row"]')).toHaveLength(3);
+    expect(container.querySelector('[role="row"][aria-rowindex="2"] [role="cell"]')?.textContent).toBe('01');
+    expect(container.querySelector('[role="row"][aria-rowindex="3"] [role="cell"]')?.textContent).toBe('02');
+  });
+
+  it('includes the delta column in table semantics when the movement preview is shown', async () => {
+    await act(async () => root.render(renderTable({
+      sorted: tracks,
+      diffMap: new Map([[tracks[0]!, 1], [tracks[1]!, -1]]),
+    })));
+
+    expect(container.querySelector('[role="table"]')?.getAttribute('aria-colcount')).toBe('6');
+    expect(container.querySelectorAll('[role="columnheader"]')).toHaveLength(6);
+    expect(container.querySelectorAll('[role="row"][aria-rowindex="2"] [role="cell"]')).toHaveLength(6);
   });
 });
