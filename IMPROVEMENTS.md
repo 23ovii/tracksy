@@ -220,12 +220,14 @@ validated.
 - **Change:** The virtualized track list now exposes table, row, header, and cell semantics with row/column counts and indices. The sort progress indicator exposes its accessible name and current value, and rate-limit messages are announced as status updates.
 - **Verification:** `npm run validate` passed (117 tests; two pre-existing ESLint warnings); `npm run build` passed.
 
-#### [ ] A3 — Announce active sort and direction
+#### [x] A3 — Announce active sort and direction
 
 - **Severity:** Low · **Effort:** S
 - **Location:** `src/components/dashboard/SortChips.tsx:29-50`
 - **Problem:** The active sort and arrow are visual-only button states.
 - **Suggested fix:** Add `aria-pressed` and an accessible label/state including direction.
+- **Change:** Sort chips now expose pressed state and announce the active direction; the decorative arrow is hidden from screen readers. Discography is announced without a direction because its sort is directionless.
+- **Verification:** `npm run validate` passed (119 tests; two pre-existing ESLint warnings); `npm run build` passed.
 
 ### SEO & web fundamentals
 
