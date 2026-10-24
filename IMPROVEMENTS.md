@@ -11,9 +11,9 @@ validated.
 - [x] Fix authentication lifecycle races and logout synchronization.
 - [x] Make Spotify reorder failure/cancellation recover safely.
 - [x] Update vulnerable dependencies and resolve ESLint peer compatibility.
-- [ ] Correct user-facing feature and privacy claims.
-- [ ] Address remaining correctness, accessibility, UX, and documentation work.
-- [ ] Evaluate optional feature opportunities.
+- [x] Correct user-facing feature and privacy claims.
+- [x] Address remaining correctness, accessibility, UX, and documentation work.
+- [x] Evaluate optional feature opportunities.
 
 ## Findings and actions
 
@@ -306,20 +306,20 @@ validated.
 
 ## Suggested order
 
-1. **Now — secure and recover core operations:** B2, B3, B1, S1, S4, S2, and T1.
-2. **Next — correctness and accessible UX:** B4, B6, U1-U5, A1-A3, and E1.
-3. **Then — maintainability and cleanup:** I1, D1-D4, Q1-Q2, and P1.
-4. **Later — optional product work:** M1 delivered after user confirmation.
+1. **Completed — secure and recover core operations:** B2, B3, B1, S1, S4, S2, and T1.
+2. **Completed — correctness and accessible UX:** B4, B6, U1-U5, A1-A3, and E1.
+3. **Completed — maintainability and cleanup:** I1, D1-D4, Q1-Q2, and P1.
+4. **Completed — optional product work:** M1 delivered after user confirmation.
 
 ## Quick wins
 
 - [x] Ignore `.env.local` and other local dotenv variants.
 - [x] Correct unsupported BPM/energy/mood copy and regenerate OG artwork.
 - [x] Remove the inaccurate Sentry disclosure until an integration exists.
-- [ ] Fix the diff preview visibility check for unchanged playlists.
-- [ ] Add clear empty and playlist-load-error states.
-- [ ] Remove unused image-generation dependencies if confirmed unnecessary.
-- [ ] Fix Escape propagation from the history drawer.
+- [x] Fix the diff preview visibility check for unchanged playlists.
+- [x] Add clear empty and playlist-load-error states.
+- [x] Keep `puppeteer-core` for the supported OG generator.
+- [x] Fix Escape propagation from the history drawer.
 - [x] Add selected/direction state to sort controls.
 
 ## Review health snapshot
