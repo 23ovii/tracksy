@@ -1,9 +1,10 @@
 import type { TokenResponse } from '../types';
+import { env } from '../config/env';
 
 const SPOTIFY_AUTHORIZE_URL = 'https://accounts.spotify.com/authorize';
 const SPOTIFY_TOKEN_URL = 'https://accounts.spotify.com/api/token';
-const CLIENT_ID = import.meta.env.VITE_SPOTIFY_CLIENT_ID;
-const REDIRECT_URI = import.meta.env.VITE_SPOTIFY_REDIRECT_URI || `${window.location.origin}/callback`;
+const CLIENT_ID = env.spotifyClientId;
+const REDIRECT_URI = env.spotifyRedirectUri;
 const SCOPES = 'user-read-private playlist-read-private playlist-read-collaborative playlist-modify-public playlist-modify-private';
 const VERIFIER_KEY = 'tracksy_pkce_verifier';
 const STATE_KEY = 'tracksy_oauth_state';
@@ -56,7 +57,7 @@ export async function buildSpotifyAuthUrl(): Promise<string> {
     code_challenge_method: 'S256',
     code_challenge: codeChallenge,
     state: stateValue,
-    show_dialog: 'true',
+    ...(import.meta.env.DEV && { show_dialog: 'true' as const }),
   });
 
   return `${SPOTIFY_AUTHORIZE_URL}?${params.toString()}`;

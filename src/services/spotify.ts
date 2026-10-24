@@ -26,10 +26,17 @@ const COLOR_PAIRS: [string, string][] = [
   ['#2472d4', '#103090'],
 ];
 
+const colorCache = new Map<string, [string, string]>();
+
 export function playlistColors(id: string): [string, string] {
+  const cached = colorCache.get(id);
+  if (cached) return cached;
+
   let hash = 0;
   for (const ch of id) hash = (hash * 31 + ch.charCodeAt(0)) >>> 0;
-  return COLOR_PAIRS[hash % COLOR_PAIRS.length]!;
+  const pair = COLOR_PAIRS[hash % COLOR_PAIRS.length]!;
+  colorCache.set(id, pair);
+  return pair;
 }
 
 function mapPlaylist(item: SpotifyPlaylistObject): Playlist {

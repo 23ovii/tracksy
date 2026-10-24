@@ -152,6 +152,14 @@ button:focus-visible, a:focus-visible {
 .theme-light ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); }
 .theme-light ::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.22); }
 
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 .glass {
   background: var(--glass-bg);
   border: 1px solid var(--border);

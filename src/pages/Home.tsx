@@ -6,6 +6,7 @@ import { useAuth } from '../auth/AuthProvider';
 import { buildSpotifyAuthUrl } from '../services/auth.ts';
 import { trackEvent, TrackEvents } from '../services/analytics';
 import Footer from '../components/Footer';
+import { errorMessage } from '../utils/errors';
 
 interface Feature {
   label: string;
@@ -86,8 +87,8 @@ function Home() {
     try {
       window.location.href = await buildSpotifyAuthUrl();
     } catch (err: unknown) {
-      console.error(err);
-      setError(err instanceof Error ? err.message : 'Failed to start sign-in.');
+      console.error(errorMessage(err, 'Unknown error'));
+      setError(errorMessage(err, 'Failed to start sign-in.'));
       setIsLoading(false);
     }
   };
