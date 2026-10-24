@@ -56,7 +56,6 @@ describe('useReorderOperation', () => {
       playlistName: 'Playlist',
       sortBy: 'name' as const,
       sortedTracks: [track],
-      previousTrackIds: ['track-1'],
       previousTrackKeys: ['track-1#0'],
     };
 
@@ -97,7 +96,6 @@ describe('useReorderOperation', () => {
       playlistName: 'Playlist',
       sortBy: 'name' as const,
       sortedTracks: [track],
-      previousTrackIds: ['track-1'],
       previousTrackKeys: ['track-1#0'],
     };
 
@@ -125,7 +123,6 @@ describe('useReorderOperation', () => {
       playlistName: 'Playlist',
       sortBy: 'name' as const,
       sortedTracks: [track],
-      previousTrackIds: ['track-1'],
       previousTrackKeys: ['track-1#0'],
     };
     await act(async () => {

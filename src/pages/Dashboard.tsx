@@ -265,7 +265,6 @@ function Dashboard() {
       playlistName: selectedPlaylist.name,
       sortBy,
       sortedTracks: target,
-      previousTrackIds: kind === 'sort' ? previous.map((track) => track.id) : [],
       previousTrackKeys: kind === 'sort' ? buildTrackOccurrenceKeys(previous) : [],
     }, true);
   }
@@ -305,12 +304,14 @@ function Dashboard() {
           playlistId: metadata.playlistId,
           appliedAt: Date.now(),
           sortLabel: label ?? metadata.sortBy,
-          trackIdsBefore: metadata.previousTrackIds,
-          trackIdsAfter: metadata.sortedTracks.map((track) => track.id),
           trackKeysBefore: metadata.previousTrackKeys,
           trackKeysAfter: buildTrackOccurrenceKeys(metadata.sortedTracks),
         };
-        recordHistory(entry);
+        try {
+          recordHistory(entry);
+        } catch (error: unknown) {
+          showToast(`Sort was saved, but its history could not be saved: ${errorMessage(error, 'browser storage unavailable')}`);
+        }
       }
     }
   }
@@ -324,9 +325,14 @@ function Dashboard() {
 
   function handleRestore(entry: HistoryEntry) {
     const currentTracks = tracksQuery.data?.tracks ?? [];
+    const targetKeys = entry.trackKeysBefore ?? entry.trackIdsBefore;
+    if (!targetKeys) {
+      updateSortFeedback('This history entry cannot be restored. Sort the playlist again to create a new entry.', true);
+      return;
+    }
     const restoredTracks = restoreTracksFromKeys(
       currentTracks,
-      entry.trackKeysBefore ?? entry.trackIdsBefore,
+      targetKeys,
     );
     if (!restoredTracks) {
       updateSortFeedback('This playlist changed since that history entry was saved. Reload the playlist before restoring.', true);
@@ -337,7 +343,11 @@ function Dashboard() {
   }
 
   function handleClearHistory() {
-    removeHistory();
+    try {
+      removeHistory();
+    } catch (error: unknown) {
+      showToast(errorMessage(error, 'Could not clear sort history.'));
+    }
   }
 
   const accent = selectedPlaylist?.color1 ?? 'var(--green)';

@@ -144,12 +144,14 @@ validated.
 
 ### Performance
 
-#### [ ] P1 — Bound and reduce sort-history storage
+#### [x] P1 — Bound and reduce sort-history storage
 
 - **Severity:** Medium · **Effort:** M
 - **Location:** `src/services/sortHistory.ts:6-8,25-42`; `src/pages/Dashboard.tsx:326-339`
 - **Problem:** Each entry persists redundant ID and occurrence-key arrays. Five entries are capped per playlist but the number of playlists is unbounded, and the full map is serialized synchronously. Write/quota errors are silently ignored.
 - **Suggested fix:** Stop writing redundant ID arrays for new entries, add a global storage bound, and surface persistence failures; consider IndexedDB if expected data volume warrants it.
+- **Change:** New entries persist occurrence keys only, history is capped at 100 entries and 1,000,000 serialized characters globally, and failed or oversized writes surface a user-visible message without discarding the successful Spotify sort.
+- **Verification:** `src/services/sortHistory.test.ts` covers key-only persistence, global retention, storage failures, and the size cap; `npm run validate` and `npm run build` passed.
 
 ### UI/UX & design
 
