@@ -9,6 +9,7 @@ Tracksy is a client-side SPA that connects to Spotify via OAuth, lets you reorde
 - **6 sort modes** — Title, Artist, Popularity, Date Added, Duration, Discography
 - **Discography sort** — groups tracks by artist and album, ranking by catalogue size; singles and sparse albums sink to the bottom
 - **Apply to Spotify** — optimised reorder algorithm (full PUT for small playlists, individual moves otherwise)
+- **Safe reorder checks** — playlists containing local or unavailable tracks are read-only because Spotify reorder positions cannot be preserved safely
 - **Undo** — 30-second undo window with hover-to-pause countdown
 - **Sort history** — restore any of the last 5 orderings per playlist from the history drawer
 - **Presets** — save and reapply up to 20 named sort configurations
