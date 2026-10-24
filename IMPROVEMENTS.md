@@ -113,12 +113,14 @@ validated.
 
 ### Dead code
 
-#### [ ] D1 — Remove unused image-generation dependencies
+#### [x] D1 — Remove unused image-generation dependencies
 
 - **Severity:** Low · **Effort:** S
-- **Location:** `package.json:35,58`; `scripts/generate-og.mjs`
+- **Location:** `package.json`, `package-lock.json`; `scripts/generate-og.mjs`
 - **Problem:** `satori` and `@resvg/resvg-js` are declared but no tracked app or script code imports them; the current OG generator uses Puppeteer.
 - **Suggested fix:** Remove them if no external workflow relies on them, then regenerate the lockfile and validate.
+- **Change:** Removed the unused `satori` and `@resvg/resvg-js` development dependencies; the OG generator's actual Puppeteer dependency remains.
+- **Verification:** Repository search confirms neither package is referenced outside manifests/lockfile; `npm run validate`, `npm run build`, and `npm audit` passed.
 
 ### Code quality & architecture
 
