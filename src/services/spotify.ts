@@ -26,6 +26,10 @@ const COLOR_PAIRS: [string, string][] = [
   ['#2472d4', '#103090'],
 ];
 
+const MAX_RATE_LIMIT_RETRIES = 5;
+const DEFAULT_RATE_LIMIT_WAIT_SECONDS = 5;
+const MAX_RATE_LIMIT_WAIT_SECONDS = 60;
+
 const colorCache = new Map<string, [string, string]>();
 
 export function playlistColors(id: string): [string, string] {
@@ -70,6 +74,18 @@ function mapTrack(item: SpotifyPlaylistTrackItem): Track | null {
   };
 }
 
+function parseRetryAfterSeconds(value: string | null): number {
+  if (value === null || value.trim() === '') return DEFAULT_RATE_LIMIT_WAIT_SECONDS;
+
+  const seconds = Number(value);
+  if (Number.isFinite(seconds)) return Math.max(0, seconds);
+
+  const retryAt = Date.parse(value);
+  return Number.isNaN(retryAt)
+    ? DEFAULT_RATE_LIMIT_WAIT_SECONDS
+    : Math.max(0, (retryAt - Date.now()) / 1000);
+}
+
 async function fetchSpotify<T>(url: string, token: string): Promise<T> {
   const response = await fetch(url, {
     headers: { Authorization: `Bearer ${token}` },
@@ -101,6 +117,7 @@ async function writeSpotify(
   onRateLimit?: (retryAfterSeconds: number) => void,
   waitMultiplier = 1,
   signal?: AbortSignal,
+  retry = 0,
 ): Promise<void> {
   signal?.throwIfAborted();
 
@@ -115,14 +132,36 @@ async function writeSpotify(
   });
 
   if (response.status === 429) {
-    const base = parseInt(response.headers.get('Retry-After') ?? '5', 10);
-    const wait = base * waitMultiplier;
+    if (retry >= MAX_RATE_LIMIT_RETRIES) {
+      throw new Error(`Spotify API rate limit exceeded after ${MAX_RATE_LIMIT_RETRIES} retries.`);
+    }
+
+    const retryAfterSeconds = parseRetryAfterSeconds(response.headers.get('Retry-After'));
+    if (retryAfterSeconds > MAX_RATE_LIMIT_WAIT_SECONDS) {
+      throw new Error(
+        `Spotify requested a retry after ${Math.ceil(retryAfterSeconds)} seconds, exceeding the ${MAX_RATE_LIMIT_WAIT_SECONDS}-second maximum wait.`,
+      );
+    }
+    const wait = Math.min(
+      MAX_RATE_LIMIT_WAIT_SECONDS,
+      Math.ceil(retryAfterSeconds * waitMultiplier * 2 ** retry),
+    );
     onRateLimit?.(wait);
     await new Promise<void>((resolve, reject) => {
-      const timer = setTimeout(resolve, wait * 1000);
-      signal?.addEventListener('abort', () => { clearTimeout(timer); reject(signal.reason); }, { once: true });
+      let timer: ReturnType<typeof setTimeout>;
+      const onAbort = () => {
+        clearTimeout(timer);
+        signal?.removeEventListener('abort', onAbort);
+        reject(signal?.reason ?? new DOMException('The operation was aborted.', 'AbortError'));
+      };
+      timer = setTimeout(() => {
+        signal?.removeEventListener('abort', onAbort);
+        resolve();
+      }, wait * 1000);
+      signal?.addEventListener('abort', onAbort, { once: true });
+      if (signal?.aborted) onAbort();
     });
-    return writeSpotify(url, token, method, body, onRateLimit, waitMultiplier, signal);
+    return writeSpotify(url, token, method, body, onRateLimit, waitMultiplier, signal, retry + 1);
   }
 
   if (!response.ok) {

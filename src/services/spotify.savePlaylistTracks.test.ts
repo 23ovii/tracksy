@@ -94,4 +94,60 @@ describe('savePlaylistTracks', () => {
     await expect(resultPromise).resolves.toEqual({ moves: 4 });
     expect(mockFetch).toHaveBeenCalledTimes(2);
   });
+
+  it('caps exponential retries and fails after five retry attempts', async () => {
+    vi.useFakeTimers();
+    const onRateLimit = vi.fn();
+    const mockFetch = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(null, { status: 429, headers: { 'Retry-After': '5' } }),
+    );
+    const original = tracks(4);
+    const sorted = [...original].reverse();
+    const resultPromise = savePlaylistTracks('token', 'playlist', original, sorted, undefined, onRateLimit);
+    void resultPromise.catch(() => {});
+
+    await vi.runAllTimersAsync();
+
+    await expect(resultPromise).rejects.toThrow('rate limit exceeded after 5 retries');
+    expect(mockFetch).toHaveBeenCalledTimes(6);
+    expect(onRateLimit.mock.calls.map(([seconds]) => seconds)).toEqual([5, 10, 20, 40, 60]);
+  });
+
+  it('aborts during a rate-limit wait without retrying', async () => {
+    vi.useFakeTimers();
+    const controller = new AbortController();
+    const mockFetch = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(null, { status: 429, headers: { 'Retry-After': '30' } }),
+    );
+    const original = tracks(4);
+    const sorted = [...original].reverse();
+    const resultPromise = savePlaylistTracks(
+      'token',
+      'playlist',
+      original,
+      sorted,
+      undefined,
+      undefined,
+      controller.signal,
+    );
+    void resultPromise.catch(() => {});
+
+    await vi.waitFor(() => expect(mockFetch).toHaveBeenCalledOnce());
+    controller.abort();
+
+    await expect(resultPromise).rejects.toMatchObject({ name: 'AbortError' });
+    expect(mockFetch).toHaveBeenCalledOnce();
+  });
+
+  it('does not retry earlier than a Retry-After longer than the maximum wait', async () => {
+    const mockFetch = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(null, { status: 429, headers: { 'Retry-After': '120' } }),
+    );
+    const original = tracks(4);
+    const sorted = [...original].reverse();
+
+    await expect(savePlaylistTracks('token', 'playlist', original, sorted))
+      .rejects.toThrow('exceeding the 60-second maximum wait');
+    expect(mockFetch).toHaveBeenCalledOnce();
+  });
 });
