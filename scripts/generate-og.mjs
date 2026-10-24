@@ -1,10 +1,18 @@
 import puppeteer from 'puppeteer-core';
-import { readFileSync, writeFileSync } from 'fs';
+import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, '..');
+const executablePath = process.env.PUPPETEER_EXECUTABLE_PATH || process.env.CHROME_BIN;
+
+if (!executablePath) {
+  throw new Error('Set PUPPETEER_EXECUTABLE_PATH or CHROME_BIN to an installed Chrome or Edge executable.');
+}
+if (!existsSync(executablePath)) {
+  throw new Error(`Browser executable not found: ${executablePath}`);
+}
 
 const logo = readFileSync(join(root, 'public/tracksy-mark-green.png')).toString('base64');
 const logoSrc = `data:image/png;base64,${logo}`;
@@ -116,7 +124,7 @@ const html = `<!DOCTYPE html>
 </html>`;
 
 const browser = await puppeteer.launch({
-  executablePath: 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',
+  executablePath,
   args: ['--no-sandbox', '--disable-setuid-sandbox'],
   headless: true,
 });

@@ -284,12 +284,14 @@ validated.
 - **Change:** Updated AGENTS.md and CLAUDE.md to describe strict TypeScript, React Query, current operation hooks, and movement-preview semantics. Refreshed README setup, structure, and command details, and marked verified completed or obsolete TODO entries while retaining unresolved work.
 - **Verification:** Cross-checked the guides against `tsconfig.json`, source modules, and `.github/workflows/ci.yml`; `git diff --check` passed. Documentation-only change; tests not run.
 
-#### [ ] D4 — Make the OG generator portable
+#### [x] D4 — Make the OG generator portable
 
 - **Severity:** Low · **Effort:** S
 - **Location:** `scripts/generate-og.mjs`
 - **Problem:** The generator hardcodes a local Windows Edge path and has no npm script, making it difficult to run on other systems or CI.
 - **Suggested fix:** Configure the browser executable portably and add/document a named script if the generator is supported.
+- **Change:** Replaced the hard-coded path with `PUPPETEER_EXECUTABLE_PATH`/`CHROME_BIN`, added clear configuration errors, and exposed/documented `npm run generate:og`.
+- **Verification:** `npm run generate:og` succeeded using the installed Edge executable; `npm run validate` (119 tests) and `npm run build` passed.
 
 ### Missing features & opportunities
 

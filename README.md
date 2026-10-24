@@ -93,6 +93,17 @@ npm test         # Vitest
 
 GitHub Actions runs `npm run validate` and `npm run build` for pull requests and pushes to `main`.
 
+### Regenerate the Open Graph image
+
+`npm run generate:og` requires an installed Chrome or Edge browser. Set `PUPPETEER_EXECUTABLE_PATH` (or `CHROME_BIN`) to the browser executable before running it:
+
+```powershell
+$env:PUPPETEER_EXECUTABLE_PATH = 'C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe'
+npm run generate:og
+```
+
+On macOS or Linux, use the browser's executable path in `PUPPETEER_EXECUTABLE_PATH`.
+
 ## License
 
 MIT
