@@ -102,11 +102,6 @@ const TrackItem = memo(function TrackItem({ track, index, sortBy, delta }: Track
       }}>{formatDuration(track.durationMs)}</div>
     </div>
   );
-}, (prev, next) =>
-  prev.track.id === next.track.id &&
-  prev.index === next.index &&
-  prev.sortBy === next.sortBy &&
-  prev.delta === next.delta
-);
+});
 
 export default TrackItem;

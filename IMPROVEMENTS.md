@@ -64,12 +64,14 @@ validated.
 - **Change:** Spotify write requests retry at most five times, honor numeric or HTTP-date `Retry-After` values, use exponential backoff capped at 60 seconds, and stop promptly if aborted while waiting.
 - **Verification:** `src/services/spotify.savePlaylistTracks.test.ts` covers retry exhaustion, capped backoff, and aborting during a rate-limit wait.
 
-#### [ ] B6 — Avoid stale track rows after data refresh
+#### [x] B6 — Avoid stale track rows after data refresh
 
 - **Severity:** Low · **Effort:** S
 - **Location:** `src/components/TrackItem.tsx:15,106-109`
 - **Problem:** The memo comparator ignores displayed track fields. If a track keeps its ID and index while its metadata changes, the row may not rerender.
 - **Suggested fix:** Compare displayed fields or use the track reference; retain custom memoization only if profiling demonstrates a benefit.
+- **Change:** Removed the ID-based custom memo comparator; React's default shallow prop comparison now rerenders when a refreshed track object has updated metadata while retaining the same ID.
+- **Verification:** `src/components/TrackItem.test.tsx` verifies changed title, artist, album, popularity, and duration render for the same track ID.
 
 ### Security
 
