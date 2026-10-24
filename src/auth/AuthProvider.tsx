@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 
 import { refreshSpotifyToken } from '../services/auth.ts';
 import { getSpotifyCurrentUser } from '../services/spotify.ts';
@@ -29,9 +30,12 @@ function readSavedAuth(): AuthState | null {
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const queryClient = useQueryClient();
   const [authState, setAuthState] = useState<AuthState | null>(readSavedAuth);
-  const [user, setUser] = useState<SpotifyUser | null>(null);
+  const [userState, setUserState] = useState<{ accessToken: string; user: SpotifyUser } | null>(null);
   const refreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const previousAccountIdRef = useRef<string | null>(null);
+  const user = userState && userState.accessToken === authState?.access_token ? userState.user : null;
 
   useEffect(() => {
     if (authState) {
@@ -61,18 +65,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (msUntilRefresh <= 0) {
       refreshSpotifyToken(authState.refresh_token)
         .then(applyToken)
-        .catch(() => setAuthState(null));
+        .catch(() => {
+          setAuthState(null);
+          queryClient.removeQueries({ queryKey: ['playlists'] });
+        });
       return;
     }
 
     refreshTimerRef.current = setTimeout(() => {
       refreshSpotifyToken(authState.refresh_token!)
         .then(applyToken)
-        .catch(() => setAuthState(null));
+        .catch(() => {
+          setAuthState(null);
+          queryClient.removeQueries({ queryKey: ['playlists'] });
+        });
     }, msUntilRefresh);
 
     return () => clearTimeout(refreshTimerRef.current!);
-  }, [authState?.refresh_token, authState?.expires_at, applyToken]);
+  }, [authState?.refresh_token, authState?.expires_at, applyToken, queryClient]);
 
   // Per HTML spec, storage events only fire for other tabs, not the current tab
   useEffect(() => {
@@ -83,30 +93,48 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             setAuthState(JSON.parse(event.newValue) as AuthState);
           } catch {
             setAuthState(null);
+            queryClient.removeQueries({ queryKey: ['playlists'] });
           }
         } else {
           setAuthState(null);
+          queryClient.removeQueries({ queryKey: ['playlists'] });
         }
       }
     };
 
     window.addEventListener('storage', handleStorageChange);
     return () => window.removeEventListener('storage', handleStorageChange);
-  }, []);
+  }, [queryClient]);
 
   const isAuthenticated = Boolean(
     authState?.access_token && authState.expires_at && authState.expires_at > Date.now()
   );
 
   useEffect(() => {
+    let active = true;
+    setUserState(null);
     if (!isAuthenticated || !authState?.access_token) {
-      setUser(null);
-      return;
+      return () => { active = false; };
     }
-    getSpotifyCurrentUser(authState.access_token)
-      .then(setUser)
-      .catch(() => setUser(null));
+    const accessToken = authState.access_token;
+    getSpotifyCurrentUser(accessToken)
+      .then((nextUser) => {
+        if (active) setUserState({ accessToken, user: nextUser });
+      })
+      .catch(() => {
+        if (active) setUserState(null);
+      });
+    return () => { active = false; };
   }, [isAuthenticated, authState?.access_token]);
+
+  useEffect(() => {
+    if (!user) return;
+    const previousAccountId = previousAccountIdRef.current;
+    if (previousAccountId && previousAccountId !== user.id) {
+      queryClient.removeQueries({ queryKey: ['playlists', previousAccountId] });
+    }
+    previousAccountIdRef.current = user.id;
+  }, [user, queryClient]);
 
   const value = useMemo<AuthContextValue>(
     () => ({
@@ -118,9 +146,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       login: applyToken,
       logout() {
         setAuthState(null);
+        queryClient.removeQueries({ queryKey: ['playlists'] });
       },
     }),
-    [authState, isAuthenticated, user, applyToken]
+    [authState, isAuthenticated, user, applyToken, queryClient]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
