@@ -2,14 +2,13 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import type { ReorderVars } from '../api/mutations';
 import type { Track } from '../types';
-import type { SortCriterion, SortKey } from '../utils/playlistUtils';
+import type { SortKey } from '../utils/playlistUtils';
 
 export interface ReorderOperationMetadata {
   kind: 'sort' | 'undo' | 'restore';
   playlistId: string;
   playlistName: string;
   sortBy: SortKey;
-  sortCriteria: SortCriterion[];
   sortedTracks: Track[];
   previousTrackKeys: string[];
 }

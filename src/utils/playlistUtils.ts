@@ -3,11 +3,6 @@ import type { Track } from '../types';
 export type SortKey = 'name' | 'artist' | 'popularity' | 'addedAt' | 'durationMs' | 'discography';
 export type SortDir = 'asc' | 'desc';
 
-export interface SortCriterion {
-  key: SortKey;
-  direction: SortDir;
-}
-
 export interface SortOption {
   id: SortKey;
   label: string;
@@ -34,40 +29,14 @@ const COMPARATORS: Record<keyof Comparable, (a: Track, b: Track) => number> = {
   durationMs: (a, b) => a.durationMs - b.durationMs,
 };
 
-export function sortCriteriaLabel(criteria: readonly SortCriterion[]): string {
-  return criteria.map(({ key, direction }) => {
-    const label = SORT_OPTIONS.find((option) => option.id === key)?.label ?? key;
-    if (key === 'discography') return label;
-    return `${label} ${direction === 'asc' ? '↑' : '↓'}`;
-  }).join(', then ');
+export function sortTracks(tracks: Track[], by: SortKey, dir: SortDir = 'asc'): Track[] {
+  if (by === 'discography') return sortByDiscography(tracks);
+  const cmp = COMPARATORS[by];
+  const sign = dir === 'asc' ? 1 : -1;
+  return [...tracks].sort((a, b) => sign * cmp(a, b));
 }
 
-export function sortTracks(
-  tracks: Track[],
-  by: SortKey | readonly SortCriterion[],
-  dir: SortDir = 'asc',
-): Track[] {
-  const criteria = typeof by === 'string' ? [{ key: by, direction: dir }] : by;
-  const compareDiscography = criteria.some(({ key }) => key === 'discography')
-    ? createDiscographyComparator(tracks)
-    : null;
-
-  return [...tracks].sort((a, b) => {
-    for (const criterion of criteria) {
-      let comparison: number;
-      if (criterion.key === 'discography') {
-        if (!compareDiscography) throw new Error('Discography comparator was not initialized.');
-        comparison = compareDiscography(a, b);
-      } else {
-        comparison = (criterion.direction === 'asc' ? 1 : -1) * COMPARATORS[criterion.key](a, b);
-      }
-      if (comparison !== 0) return comparison;
-    }
-    return 0;
-  });
-}
-
-function createDiscographyComparator(tracks: Track[]): (a: Track, b: Track) => number {
+function sortByDiscography(tracks: Track[]): Track[] {
   const normalAlbum = (t: Track) => t.album.toLowerCase().trim();
   const primaryArtist = (t: Track) => t.artist.split(',')[0]!.trim().toLowerCase();
   const albumKey = (t: Track) => {
@@ -102,6 +71,10 @@ function createDiscographyComparator(tracks: Track[]): (a: Track, b: Track) => n
     artistCount.set(artist, (artistCount.get(artist) ?? 0) + members.length);
   }
 
+  // Original index for stable tie-breaking
+  const originalIndex = new Map<Track, number>();
+  tracks.forEach((t, i) => originalIndex.set(t, i));
+
   // First appearance of each album in the original playlist — keeps equal-count albums stable
   const albumFirstSeen = new Map<string, number>();
   tracks.forEach((t, i) => {
@@ -116,7 +89,7 @@ function createDiscographyComparator(tracks: Track[]): (a: Track, b: Track) => n
     if (!artistFirstSeen.has(artist)) artistFirstSeen.set(artist, i);
   });
 
-  return (a, b) => {
+  return [...tracks].sort((a, b) => {
     const aAlbumKey = albumKey(a);
     const bAlbumKey = albumKey(b);
     const aArtist = albumArtist.get(aAlbumKey)!;
@@ -131,7 +104,7 @@ function createDiscographyComparator(tracks: Track[]): (a: Track, b: Track) => n
     const aAlone = aArtistCount === 1 || aAlbumSize < 3;
     const bAlone = bArtistCount === 1 || bAlbumSize < 3;
     if (aAlone !== bAlone) return aAlone ? 1 : -1;
-    if (aAlone && bAlone) return 0;
+    if (aAlone && bAlone) return (originalIndex.get(a) ?? 0) - (originalIndex.get(b) ?? 0);
 
     // Rank artists by total track count, most first; tie → first appearance in playlist
     if (aArtistCount !== bArtistCount) return bArtistCount - aArtistCount;
@@ -146,6 +119,6 @@ function createDiscographyComparator(tracks: Track[]): (a: Track, b: Track) => n
     // Same album — sort by track number
     if (a.trackNumber !== b.trackNumber) return a.trackNumber - b.trackNumber;
 
-    return 0;
-  };
+    return (originalIndex.get(a) ?? 0) - (originalIndex.get(b) ?? 0);
+  });
 }
