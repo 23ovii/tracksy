@@ -30,7 +30,7 @@ function LibraryPanel({ playlists, isLoading, isFetching, isError, onRefresh, on
             </span>
           </h2>
           <p style={{ fontSize: 12.5, color: 'var(--text-3)', lineHeight: 1.5 }}>
-            Pick a playlist to sort by BPM, energy, popularity, and more
+            Pick a playlist to sort by title, artist, popularity, date added, duration, or discography
           </p>
         </div>
         <button
