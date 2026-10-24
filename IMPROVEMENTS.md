@@ -173,12 +173,14 @@ validated.
 - **Change:** The history drawer prevents default handling and stops Escape propagation after closing, so the dashboard-level shortcut cannot also navigate back.
 - **Verification:** `SorterHeader.test.tsx` verifies Escape closes the drawer without reaching the window-level navigation handler; `npm run validate` and `npm run build` passed.
 
-#### [ ] U3 — Add an empty-playlist state
+#### [x] U3 — Add an empty-playlist state
 
 - **Severity:** Low · **Effort:** S
 - **Location:** `src/components/dashboard/TrackTable.tsx:199-214`
 - **Problem:** A successfully loaded playlist with zero tracks renders an empty list without explanation.
 - **Suggested fix:** Show a specific empty state distinct from loading and error states.
+- **Change:** The track table now distinguishes an empty playlist, no matches for an active filter, and playlists with no sortable tracks. It suppresses the empty state while loading or after a load error.
+- **Verification:** `TrackTable.test.tsx` covers empty, filtered, unsupported-only, loading, and error states; `npm run validate` and `npm run build` passed.
 
 #### [ ] U4 — Fit the history drawer to small viewports
 

@@ -486,6 +486,8 @@ function Dashboard() {
               sortBy={sortBy}
               sortKey={sortKey}
               isLoading={isLoading}
+              isError={tracksQuery.isError}
+              isEmptyPlaylist={tracks.length === 0 && unsupportedCount === 0}
               accent={accent}
               diffMap={diffMap}
               showPreview={showPreview}
