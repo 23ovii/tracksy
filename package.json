@@ -22,6 +22,7 @@
     "@vercel/analytics": "^2.0.1",
     "@vercel/edge-config": "^1.5.0",
     "@vercel/speed-insights": "^2.0.0",
+    "focus-trap-react": "^12.0.3",
     "posthog-js": "^1.409.5",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",

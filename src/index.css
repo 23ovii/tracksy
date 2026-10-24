@@ -28,7 +28,7 @@
   --green-mid: rgba(29,185,84,0.22);
   --text:      #eef2f7;
   --text-2:    #9aa8c0;
-  --text-3:    #6c7a91;
+  --text-3:    #8a96aa;
   --nav-bg:    rgba(7, 10, 15, 0.82);
   --nav-border: rgba(255,255,255,0.05);
   --shadow-card: 0 1px 0 rgba(255,255,255,0.04) inset, 0 24px 60px -28px rgba(0,0,0,0.65);
@@ -59,7 +59,7 @@
   --green-mid: rgba(29,185,84,0.16);
   --text:      #0f141a;
   --text-2:    #4a5568;
-  --text-3:    #6c7a91;
+  --text-3:    #636f82;
   --nav-bg:    rgba(247, 248, 250, 0.92);
   --nav-border: rgba(0,0,0,0.07);
   --shadow-card: 0 1px 0 rgba(255,255,255,0.8) inset, 0 4px 20px -8px rgba(0,0,0,0.14);
@@ -126,6 +126,22 @@ body {
 button:focus-visible, a:focus-visible {
   outline: 2px solid rgba(29,185,84,0.5);
   outline-offset: 3px;
+}
+
+.tk-skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 10000;
+  background: var(--green);
+  color: #000;
+  padding: 8px 14px;
+  border-radius: 0 0 8px 0;
+  font-weight: 700;
+}
+
+.tk-skip-link:focus {
+  left: 0;
 }
 
 ::-webkit-scrollbar { width: 6px; height: 6px; }

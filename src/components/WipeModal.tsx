@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { FocusTrap } from 'focus-trap-react';
 
 type Step = 'confirm' | 'done';
 
@@ -16,32 +17,33 @@ function WipeModal({ onClose, onConfirm }: WipeModalProps) {
   };
 
   return (
-    <div
-      role="presentation"
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
-      onKeyDown={(e) => { if (e.key === 'Escape') onClose(); }}
-      style={{
-        position: 'fixed', inset: 0, zIndex: 1000,
-        background: 'rgba(0,0,0,0.55)',
-        backdropFilter: 'blur(4px)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        padding: 24,
-      }}
-    >
+    <FocusTrap focusTrapOptions={{ allowOutsideClick: true, escapeDeactivates: false }}>
       <div
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="wipe-modal-title"
+        role="presentation"
+        onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+        onKeyDown={(e) => { if (e.key === 'Escape') onClose(); }}
         style={{
-          background: 'var(--surface)',
-          border: '1px solid var(--border)',
-          borderRadius: 16,
-          padding: '28px 32px',
-          maxWidth: 460,
-          width: '100%',
-          boxShadow: '0 24px 64px rgba(0,0,0,0.4)',
-        }}>
-        {step === 'confirm' ? (
+          position: 'fixed', inset: 0, zIndex: 1000,
+          background: 'rgba(0,0,0,0.55)',
+          backdropFilter: 'blur(4px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: 24,
+        }}
+      >
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="wipe-modal-title"
+          style={{
+            background: 'var(--surface)',
+            border: '1px solid var(--border)',
+            borderRadius: 16,
+            padding: '28px 32px',
+            maxWidth: 460,
+            width: '100%',
+            boxShadow: '0 24px 64px rgba(0,0,0,0.4)',
+          }}>
+          {step === 'confirm' ? (
           <>
             <h2 id="wipe-modal-title" style={{ margin: '0 0 12px', fontSize: 18, fontWeight: 700, color: 'var(--text)' }}>
               Disconnect &amp; wipe data?
@@ -71,7 +73,7 @@ function WipeModal({ onClose, onConfirm }: WipeModalProps) {
               </button>
             </div>
           </>
-        ) : (
+          ) : (
           <>
             <h2 id="wipe-modal-title" style={{ margin: '0 0 12px', fontSize: 18, fontWeight: 700, color: 'var(--text)' }}>
               All clear
@@ -95,9 +97,10 @@ function WipeModal({ onClose, onConfirm }: WipeModalProps) {
               <CancelButton onClick={onClose} label="Close" />
             </div>
           </>
-        )}
+          )}
+        </div>
       </div>
-    </div>
+    </FocusTrap>
   );
 }
 

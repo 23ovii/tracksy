@@ -50,6 +50,7 @@ function App() {
           <StatusBanner message={message} onDismiss={() => setDismissed(true)} />
         )}
         <ShortcutsOverlay />
+        <main id="main">
         <Suspense fallback={<RouteFallback />}>
           <Routes>
             <Route path="/" element={<Home />} />
@@ -59,6 +60,7 @@ function App() {
             <Route path="*" element={<Home />} />
           </Routes>
         </Suspense>
+        </main>
         <Analytics />
         <SpeedInsights />
       </div>

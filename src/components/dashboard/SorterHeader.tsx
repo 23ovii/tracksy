@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { CSSProperties } from 'react';
+import { FocusTrap } from 'focus-trap-react';
 
 import type { Playlist } from '../../types';
 import type { HistoryEntry } from '../../services/sortHistory';
@@ -189,27 +190,32 @@ function SorterHeader({
       </div>
 
       {drawerOpen && (
-        <>
-          <div
-            role="presentation"
-            onClick={() => setDrawerOpen(false)}
-            style={{
-              position: 'fixed', inset: 0, zIndex: 200,
-              background: 'var(--modal-backdrop)',
-              animation: 'fadeIn 0.2s ease',
-            }}
-          />
-          <div style={{
-            position: 'fixed', top: 0, right: 0, bottom: 0,
-            width: 340, zIndex: 201,
-            background: 'var(--glass-bg)',
-            borderLeft: '1px solid var(--border2)',
-            boxShadow: '-20px 0 60px rgba(0,0,0,0.3)',
-            display: 'flex', flexDirection: 'column',
-            animation: 'slideInRight 0.25s var(--ease-out)',
-            backdropFilter: 'blur(16px)',
-            WebkitBackdropFilter: 'blur(16px)',
-          }}>
+        <FocusTrap focusTrapOptions={{ allowOutsideClick: true, escapeDeactivates: false }}>
+          <div style={{ position: 'fixed', inset: 0, zIndex: 200 }}>
+            <div
+              role="presentation"
+              onClick={() => setDrawerOpen(false)}
+              style={{
+                position: 'absolute', inset: 0,
+                background: 'var(--modal-backdrop)',
+                animation: 'fadeIn 0.2s ease',
+              }}
+            />
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-label="Sort history"
+              style={{
+                position: 'absolute', top: 0, right: 0, bottom: 0,
+                width: 340, zIndex: 1,
+                background: 'var(--glass-bg)',
+                borderLeft: '1px solid var(--border2)',
+                boxShadow: '-20px 0 60px rgba(0,0,0,0.3)',
+                display: 'flex', flexDirection: 'column',
+                animation: 'slideInRight 0.25s var(--ease-out)',
+                backdropFilter: 'blur(16px)',
+                WebkitBackdropFilter: 'blur(16px)',
+              }}>
             {/* Header */}
             <div style={{
               padding: '20px 20px 16px',
@@ -302,8 +308,9 @@ function SorterHeader({
                 }}
               >Clear history</button>
             </div>
+            </div>
           </div>
-        </>
+        </FocusTrap>
       )}
     </>
   );

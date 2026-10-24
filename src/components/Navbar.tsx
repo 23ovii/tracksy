@@ -39,6 +39,7 @@ function Navbar() {
         position: 'sticky', top: 0, zIndex: 200,
         display: 'flex', alignItems: 'center',
       }}>
+        <a href="#main" className="tk-skip-link">Skip to main content</a>
         <div style={{
           width: '100%', maxWidth: 1180, margin: '0 auto',
           padding: '0 28px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
