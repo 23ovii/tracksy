@@ -1,72 +1,72 @@
 # Project TODO
-> Last updated: 2026-04-27
+> Last updated: 2026-10-24
 
 ## 🔥 High Priority
 
 ### P0 — Critical Bugs
-- [ ] Fix Tailwind content glob (production CSS bug) - Change content array to include .ts/.tsx files, define shadow-glow class
-- [ ] Align marketing copy with actually-shipped sort keys - Update all references from BPM/energy/mood to actual sort options
-- [ ] Add OAuth `state` parameter for CSRF protection - Implement state validation in auth flow
-- [ ] Guard `Callback.tsx` against React StrictMode double-invoke - Add useRef guard to prevent double execution
+- [x] Resolve Tailwind source-detection task - Tailwind v4's Vite plugin auto-detects sources; the `--shadow-glow` token is defined in `src/styles/tailwind.css`
+- [x] Align marketing copy with actually-shipped sort keys - Updated page/social copy and regenerated the Open Graph image
+- [x] Add OAuth `state` parameter for CSRF protection - State is stored, returned, and verified in the OAuth callback
+- [x] Guard `Callback.tsx` against React StrictMode double-invoke - A `useRef` guard prevents duplicate callback processing
 
 ### P1 — High-impact polish
 - [ ] Replace array-index keys on TrackItem with stable IDs - Use track.id instead of array index
-- [ ] Re-enable react-hooks ESLint rules - Enable rules-of-hooks and exhaustive-deps
-- [ ] Add CSP and security headers in vercel.json - Implement Content-Security-Policy and security headers
-- [ ] Add a top-level ErrorBoundary - Create error boundary component wrapping App
-- [ ] Extract a `<ProtectedRoute>` wrapper - Reusable authentication wrapper for routes
-- [ ] Multi-tab sign-out sync - Sync auth state across tabs via storage event
+- [x] Re-enable react-hooks ESLint rules - `rules-of-hooks` and `exhaustive-deps` are enabled as warnings
+- [x] Add CSP and security headers in vercel.json - Content-Security-Policy and security headers are configured
+- [x] Add a top-level ErrorBoundary - `main.tsx` wraps the app in `ErrorBoundary`
+- [x] Extract a `<ProtectedRoute>` wrapper - Dashboard route is protected by the reusable wrapper
+- [x] Multi-tab sign-out sync - AuthProvider broadcasts logout across tabs
 
 ## 🐛 Bugs to Fix
 
 ### Track Identity & Validation
 - [ ] Fix track identity mapping bug in savePlaylistTracks - Rekey Map by array index instead of object reference
-- [ ] Add input validation to mapTrack and mapPlaylist - Filter out items where id is null/undefined/empty
+- [x] Add input validation to Spotify response mapping - Playlist and track responses are validated before mapping
 
 ### Rate Limiting
-- [ ] Fix rate limit retry - Add max retry count of 5 instead of infinite loop
-- [ ] Fix unbounded backoff multiplier - Cap multiplier at 4x
-- [ ] Improve rate limit message UX - Better messaging and disable Apply button during retry
+- [x] Fix rate limit retry - Retry count is capped at 5
+- [x] Bound rate-limit retry delays - Waits are capped at 60 seconds
+- [x] Improve rate limit message UX - Retry status is shown and Apply is disabled during the operation
 
 ### Auth & Session
-- [ ] Add missing token validation in Callback.tsx - Validate access_token exists before calling login()
+- [x] Add missing token validation in Callback.tsx - OAuth token responses are validated before login
 - [ ] Add 401 re-auth handling - Detect 401 responses and redirect to login with message
 - [ ] Fix silent logout on token refresh failure - Surface message to user before clearing auth state
 - [ ] Add logout confirmation - Confirmation step before clearing auth state
 
 ### UI State
 - [ ] Fix AbortController race condition in applySort - Abort previous request before creating new controller
-- [ ] Prevent spam-clicking Refresh playlists button - Disable button while loading
-- [ ] Add empty playlist state - Show message when playlist has 0 tracks
+- [x] Prevent spam-clicking Refresh playlists button - Refresh is disabled while fetching
+- [x] Add empty playlist state - The track table distinguishes empty and unsupported-only playlists
 - [ ] Cancel sort stays on playlist - When canceling an in-progress sort, show a notification and remain on the current playlist instead of navigating back
 
 ### Dead Code
-- [ ] Wire up removeDuplicateTracks function - Call before sorting and notify user of removed duplicates
+- [x] Retire obsolete duplicate-removal task - No `removeDuplicateTracks` function exists; duplicate tracks are preserved and addressed by occurrence keys
 
 ## ✨ Features to Add
 
 ### Tier S — Highest Leverage
 - [ ] Restore BPM, energy, and danceability via ReccoBeats - Re-implement audio features using ReccoBeats API
 - [ ] Smart Shuffle: energy-curve ordering - Energy-curve sort with warm-up, peak, cool-down
-- [ ] Sort presets (saved configurations) - Save and re-apply sort configurations
-- [ ] Sort preview / diff visualization - Show what changes before applying to Spotify
+- [x] Sort presets (saved configurations) - Save and re-apply sort configurations
+- [x] Sort preview / diff visualization - Show per-track position changes before applying to Spotify
 
 ### Tier A — High Value, Modest Effort
 - [ ] Multi-sort with tiebreakers - Stack up to 3 sort keys with priority order
 - [ ] Filter before sort - Add filter bar (search, year range, popularity, duration)
-- [ ] Sort history (last 5 operations per playlist) - Persistent history with restore capability
+- [x] Sort history (last 5 operations per playlist) - Persistent history with restore capability
 - [ ] Playlist diff badges (what changed since last visit) - Badge playlists with +N −M indicators
-- [ ] Keyboard shortcuts + help overlay - Power-user shortcuts with discoverable help
+- [x] Keyboard shortcuts + help overlay - Power-user shortcuts with discoverable help
 - [ ] Make Tracksy a PWA - Installable with offline support and app icon
 
 ### Tier B — Nice to Have
-- [ ] Dark/light theme with system preference detection - Add light theme alongside dark
+- [x] Dark/light theme with system preference detection - Light and dark themes support system preference
 - [ ] i18n with English + 4 starter locales - Add Spanish, Portuguese, French, German
 - [ ] SEO landing pages with static rendering - 3 pre-rendered SEO landing pages
-- [ ] Open Graph + Twitter Card image - Designed 1200×630 share preview image
+- [x] Open Graph + Twitter Card image - Generated 1200×630 share preview image
 - [ ] Funnel analytics with privacy-friendly events - Track conversion funnel with Vercel Analytics
 - [ ] Sentry error tracking - Frontend error monitoring
-- [ ] "Disconnect & wipe local data" button - Trust-builder for clearing all local data
+- [x] "Disconnect & wipe local data" button - Available from the account menu
 
 ### Tier C — Long-Term / Strategic
 - [ ] Backend with playlist version history - Vercel Functions + Neon Postgres for persistent snapshots
@@ -82,25 +82,25 @@
 ## 🔧 Improvements / Refactoring
 
 ### P2 — Quality / Maintainability
-- [ ] Split Dashboard.tsx into smaller components - Extract PlaylistCover, AmbientBackdrop, SorterHeader, SortChips, TrackTable
-- [ ] Add Vitest unit tests for pure utilities - Test sortTracks, removeDuplicateTracks, playlistColors
-- [ ] Optimize savePlaylistTracks (O(n²) → O(n)) - Rewrite with Map for O(n) performance
+- [x] Split Dashboard.tsx into smaller components - Dashboard components and operation hooks are extracted
+- [x] Add Vitest tests for current pure utilities - Sort, track identity, and error utilities have focused tests
+- [ ] Optimize savePlaylistTracks - Position maps make lookups O(1), but array splices and shifted-slot updates still cost O(distance) per move
 - [ ] Fix typography & contrast issues - Fix emoji fonts, improve --text-3 contrast, fix disabled button cursors
 - [ ] Mobile responsiveness for track table - Responsive layout for <600px screens
 - [x] "Undo last sort" toast - 30-second undo window after applying sort
 - [ ] Rethink undo toast notification UI - Reconsider layout, sizing, dismiss button placement, and overall visual design
 - [ ] Show actual Spotify order on playlist load - Display tracks in their current Spotify order before any sort is applied, so users can see what they're starting from
 - [ ] Reduce OAuth scope and turn off forced consent - Remove show_dialog parameter, audit scopes
-- [ ] Sync / regenerate stale documentation - Update CLAUDE.md, README.md, todo.txt
-- [ ] Add a minimal CI workflow - GitHub Actions for lint+build+test
+- [x] Sync / regenerate stale documentation - Updated AGENTS.md, CLAUDE.md, README.md, and this TODO against current source
+- [x] Add a minimal CI workflow - GitHub Actions runs `npm run validate` and `npm run build`
 
 ### Operational
 - [ ] Weekly digest email (requires backend) - Opt-in weekly recap of activity
 - [ ] Public roadmap page - /roadmap page driven by GitHub Issues
 
 ## 📚 Documentation
-- [ ] Update CLAUDE.md to reflect current source tree - Fix stale references to .jsx/.js, removed components
-- [ ] Update README.md sort options - Match actual SORT_OPTIONS keys
+- [x] Update CLAUDE.md to reflect current source tree - Corrected data-fetching, type, and preview descriptions
+- [x] Update README.md sort options - Lists all shipped sort options and current movement preview
 - [ ] Add SCOPES documentation in spotifyConfig.ts - Explain what each OAuth scope is for
 - [ ] Add privacy disclosure for playlist snapshots - Update privacy modal for backend storage
 - [ ] Document monitoring setup in README - Sentry project setup instructions

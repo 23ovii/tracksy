@@ -275,12 +275,14 @@ validated.
 
 ### Documentation & DX
 
-#### [ ] D3 — Synchronize project guides and TODOs with the current source
+#### [x] D3 — Synchronize project guides and TODOs with the current source
 
 - **Severity:** Medium · **Effort:** S/M
 - **Location:** `AGENTS.md:56,67,73,124`; `CLAUDE.md:56,67,73,124`; `README.md:17,68-69`; `TODO.md:7-18,95`
 - **Problem:** The guides refer to removed hooks/context/components, call strict TypeScript disabled although it is enabled, and list OAuth state/CI as missing although they exist. README also calls the current track-difference preview album-art preview.
 - **Suggested fix:** Update/consolidate guides and prune TODO items against the actual source and CI configuration.
+- **Change:** Updated AGENTS.md and CLAUDE.md to describe strict TypeScript, React Query, current operation hooks, and movement-preview semantics. Refreshed README setup, structure, and command details, and marked verified completed or obsolete TODO entries while retaining unresolved work.
+- **Verification:** Cross-checked the guides against `tsconfig.json`, source modules, and `.github/workflows/ci.yml`; `git diff --check` passed. Documentation-only change; tests not run.
 
 #### [ ] D4 — Make the OG generator portable
 

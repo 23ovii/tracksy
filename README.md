@@ -2,7 +2,7 @@
 
 Sort your Spotify playlists the smart way.
 
-Tracksy is a client-side SPA that connects to Spotify via OAuth, lets you reorder any playlist by title, artist, popularity, date added, duration, or album discography, then writes the new order back to Spotify in one click — no backend required.
+Tracksy is a client-side SPA that connects to Spotify via OAuth, lets you reorder playlists you own by title, artist, popularity, date added, duration, or discography, then writes the new order back to Spotify. Playlist data is processed in the browser and is not stored by Tracksy.
 
 ## Features
 
@@ -14,7 +14,7 @@ Tracksy is a client-side SPA that connects to Spotify via OAuth, lets you reorde
 - **Sort history** — restore any of the last 5 orderings per playlist from the history drawer
 - **Presets** — save and reapply up to 20 named sort configurations
 - **Track filter** — search tracks by title or artist before applying
-- **Album art preview** — toggle a thumbnail column in the track table
+- **Movement preview** — compare each track's position before applying a new order
 - **Keyboard shortcuts** — `1–6` pick sort, `d` flips direction, `Enter` applies, `/` opens filter, `?` shows shortcuts
 - **Light / dark theme** — system-aware, no flash on load
 - **Privacy-first analytics** — PostHog (opt-out available), no cookies, no session recording
@@ -23,7 +23,7 @@ Tracksy is a client-side SPA that connects to Spotify via OAuth, lets you reorde
 
 ### Prerequisites
 
-- Node.js >= 20
+- Node.js >= 20.19.0
 - A [Spotify Developer](https://developer.spotify.com/dashboard) app with a redirect URI set to `http://127.0.0.1:5173/callback`
 
 ### Setup
@@ -64,15 +64,20 @@ Open `http://127.0.0.1:5173` — use `127.0.0.1`, not `localhost`. PKCE stores t
 
 ```
 src/
-  services/              # auth, spotify API, analytics, presets, sort history
-  hooks/                 # useAuth, useSpotify, useTheme, useKeyboardShortcuts
-  context/               # AuthContext, ShortcutsOverlayContext
+  api/                   # React Query playlist queries, reorder mutation, query client
+  auth/                  # AuthProvider and useAuth
+  config/                # validated environment configuration
+  services/              # Spotify API, OAuth, analytics, presets, sort history
+  hooks/                 # reorder operation, dashboard history, theme, shortcuts, status
+  context/               # ShortcutsOverlayContext
   utils/                 # sortTracks, trackIdentity (duplicate-safe keys)
   components/            # shared UI components
   components/dashboard/  # dashboard-specific sub-components
   pages/                 # Home, Dashboard, Callback, Privacy
+  styles/                # design tokens and Tailwind entry point
   types.ts               # shared TypeScript interfaces
   index.css              # CSS variables (dark + light themes), keyframes
+api/                     # Spotify status Vercel function
 ```
 
 ## Commands
@@ -81,9 +86,12 @@ src/
 npm run dev      # Start dev server at http://127.0.0.1:5173
 npm run build    # Production build → /dist
 npm run preview  # Preview production build
-npm run lint     # ESLint (warnings only)
+npm run validate # TypeScript, ESLint, and Vitest
+npm run lint     # ESLint
 npm test         # Vitest
 ```
+
+GitHub Actions runs `npm run validate` and `npm run build` for pull requests and pushes to `main`.
 
 ## License
 
