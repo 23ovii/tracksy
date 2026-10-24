@@ -15,18 +15,33 @@ interface AuthState {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 const STORAGE_KEY = 'tracksy_auth_state';
+const LOGOUT_SIGNAL_KEY = 'tracksy_auth_logout';
 
-function readSavedAuth(): AuthState | null {
-  const stored = localStorage.getItem(STORAGE_KEY);
-  if (!stored) {
-    return null;
-  }
-
+function parseSavedAuth(stored: string | null): AuthState | null {
+  if (!stored) return null;
   try {
     return JSON.parse(stored) as AuthState;
   } catch {
     return null;
   }
+}
+
+function readSavedAuth(): AuthState | null {
+  const savedInSession = sessionStorage.getItem(STORAGE_KEY);
+  const savedInLocalStorage = localStorage.getItem(STORAGE_KEY);
+  if (savedInLocalStorage) localStorage.removeItem(STORAGE_KEY);
+
+  const sessionAuth = parseSavedAuth(savedInSession);
+  const auth = sessionAuth ?? parseSavedAuth(savedInLocalStorage);
+  if (!auth) {
+    sessionStorage.removeItem(STORAGE_KEY);
+    return null;
+  }
+
+  if (!sessionAuth) {
+    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(auth));
+  }
+  return auth;
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -40,9 +55,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (authState) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(authState));
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(authState));
     } else {
-      localStorage.removeItem(STORAGE_KEY);
+      sessionStorage.removeItem(STORAGE_KEY);
     }
   }, [authState]);
 
@@ -95,20 +110,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Per HTML spec, storage events only fire for other tabs, not the current tab
   useEffect(() => {
     const handleStorageChange = (event: StorageEvent) => {
-      if (event.key !== STORAGE_KEY && event.key !== null) return;
+      if (event.key !== LOGOUT_SIGNAL_KEY && event.key !== STORAGE_KEY && event.key !== null) return;
+      if (event.key === STORAGE_KEY && event.newValue) return;
 
       authGenerationRef.current += 1;
-      if (event.key === STORAGE_KEY && event.newValue) {
-        try {
-          setAuthState(JSON.parse(event.newValue) as AuthState);
-        } catch {
-          setAuthState(null);
-          queryClient.removeQueries({ queryKey: ['playlists'] });
-        }
-      } else {
-        setAuthState(null);
-        queryClient.removeQueries({ queryKey: ['playlists'] });
-      }
+      sessionStorage.removeItem(STORAGE_KEY);
+      setAuthState(null);
+      queryClient.removeQueries({ queryKey: ['playlists'] });
     };
 
     window.addEventListener('storage', handleStorageChange);
@@ -148,7 +156,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(() => {
     authGenerationRef.current += 1;
     setAuthState(null);
+    sessionStorage.removeItem(STORAGE_KEY);
     localStorage.removeItem(STORAGE_KEY);
+    localStorage.setItem(LOGOUT_SIGNAL_KEY, String(Date.now()));
+    localStorage.removeItem(LOGOUT_SIGNAL_KEY);
     queryClient.removeQueries({ queryKey: ['playlists'] });
   }, [queryClient]);
 
