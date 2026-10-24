@@ -1,6 +1,6 @@
 import { afterEach, describe, it, expect, vi } from 'vitest';
 
-import { getSpotifyPlaylistTracks, playlistColors, savePlaylistTracks } from './spotify';
+import { getSpotifyCurrentUser, getSpotifyPlaylistTracks, getSpotifyPlaylists, playlistColors, savePlaylistTracks } from './spotify';
 
 const COLOR_PAIRS_LENGTH = 14;
 
@@ -64,7 +64,7 @@ describe('getSpotifyPlaylistTracks', () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({
       items: [
         { track: validTrack, is_local: false, added_at: '2020-01-01T00:00:00Z' },
-        { track: { ...validTrack, id: null, uri: 'spotify:local:local-track' }, is_local: true, added_at: null },
+        { track: { id: null, uri: 'spotify:local:local-track' }, is_local: true, added_at: null },
         { track: null, is_local: false, added_at: null },
       ],
       next: null,
@@ -86,6 +86,93 @@ describe('getSpotifyPlaylistTracks', () => {
         popularity: 50,
       }],
       unsupportedCount: 2,
+    });
+  });
+
+  it('rejects malformed track payloads instead of mapping missing fields to defaults', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({
+      items: [{
+        added_at: '2020-01-01T00:00:00Z',
+        is_local: false,
+        track: {
+          id: 'track-1',
+          name: 'Song',
+          artists: [{ name: 'Artist' }],
+          album: { name: 'Album' },
+          track_number: 1,
+          duration_ms: 180000,
+          popularity: 50,
+        },
+      }],
+      next: null,
+      total: 1,
+    }), { status: 200 })));
+
+    await expect(getSpotifyPlaylistTracks('token', 'playlist-1'))
+      .rejects.toThrow('track.uri must be a non-empty string');
+  });
+
+  it('preserves the existing default when Spotify omits track popularity', async () => {
+    const track = {
+      id: 'track-1',
+      uri: 'spotify:track:track-1',
+      name: 'Song',
+      artists: [{ id: 'artist-1', name: 'Artist' }],
+      album: { id: 'album-1', name: 'Album' },
+      track_number: 1,
+      duration_ms: 180000,
+    };
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({
+      items: [{ added_at: '', is_local: false, track }],
+      next: null,
+      total: 1,
+    }), { status: 200 })));
+
+    const result = await getSpotifyPlaylistTracks('token', 'playlist-1');
+    expect(result.tracks[0]?.popularity).toBe(0);
+  });
+
+  it('rejects a pagination URL outside the Spotify API origin before fetching it', async () => {
+    const mockFetch = vi.fn().mockResolvedValue(new Response(JSON.stringify({
+      items: [],
+      next: 'https://attacker.example/steal-token',
+      total: 0,
+    }), { status: 200 }));
+    vi.stubGlobal('fetch', mockFetch);
+
+    await expect(getSpotifyPlaylistTracks('token', 'playlist-1'))
+      .rejects.toThrow('invalid pagination URL');
+    expect(mockFetch).toHaveBeenCalledOnce();
+  });
+
+  describe('Spotify user and playlist responses', () => {
+    it('rejects a user response without an account ID', async () => {
+      vi.stubGlobal('fetch', vi.fn().mockResolvedValue(
+        new Response(JSON.stringify({ display_name: 'Account', images: [] }), { status: 200 }),
+      ));
+
+      await expect(getSpotifyCurrentUser('token')).rejects.toThrow('user.id must be a non-empty string');
+    });
+
+    it('rejects playlist entries without an owner ID', async () => {
+      vi.stubGlobal('fetch', vi.fn((input: string | URL) => {
+        const url = String(input);
+        const body = url.endsWith('/me')
+          ? { id: 'account', display_name: 'Account', images: [] }
+          : {
+              items: [{
+                id: 'playlist',
+                name: 'Playlist',
+                owner: {},
+                tracks: { total: 0 },
+              }],
+              next: null,
+              total: 1,
+            };
+        return Promise.resolve(new Response(JSON.stringify(body), { status: 200 }));
+      }));
+
+      await expect(getSpotifyPlaylists('token')).rejects.toThrow('playlist.owner.id must be a non-empty string');
     });
   });
 });

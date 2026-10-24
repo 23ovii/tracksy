@@ -5,7 +5,7 @@ export interface SpotifyImage {
 }
 
 export interface SpotifyArtist {
-  id: string;
+  id?: string;
   name: string;
 }
 
@@ -24,7 +24,7 @@ export interface SpotifyTrackObject {
   album: SpotifyAlbum;
   track_number: number;
   duration_ms: number;
-  popularity: number;
+  popularity?: number;
 }
 
 export interface SpotifyPlaylistTrackItem {
@@ -51,9 +51,4 @@ export interface SpotifyUserObject {
   id: string;
   display_name: string | null;
   images?: SpotifyImage[];
-}
-
-export interface SpotifyErrorResponse {
-  error?: { message?: string; status?: number };
-  error_description?: string;
 }

@@ -29,7 +29,7 @@ export interface Playlist {
 export interface TokenResponse {
   access_token: string;
   refresh_token?: string;
-  expires_in?: number;
+  expires_in: number;
 }
 
 export interface SpotifyUser {
