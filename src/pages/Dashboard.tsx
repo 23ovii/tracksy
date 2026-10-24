@@ -151,9 +151,12 @@ function Dashboard() {
     return sorted.filter((t) => t.name.toLowerCase().includes(q) || t.artist.toLowerCase().includes(q));
   }, [sorted, filterQuery]);
 
+  useEffect(() => {
+    if (showFilter) filterInputRef.current?.focus();
+  }, [showFilter]);
+
   function openFilter() {
     setShowFilter(true);
-    setTimeout(() => filterInputRef.current?.focus(), 40);
   }
 
   function closeFilter() {

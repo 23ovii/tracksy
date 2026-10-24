@@ -1,5 +1,7 @@
 import type { PostHog } from 'posthog-js';
 
+import { env } from '../config/env';
+
 let posthogPromise: Promise<PostHog> | null = null;
 
 const load = (): Promise<PostHog> => {
@@ -21,11 +23,11 @@ function isOptedOut(): boolean {
 }
 
 export async function initAnalytics(): Promise<void> {
-  const key = import.meta.env.VITE_POSTHOG_KEY as string | undefined;
+  const key = env.posthogKey;
   if (!key) return;
   const posthog = await load();
   posthog.init(key, {
-    api_host: import.meta.env.VITE_POSTHOG_HOST || 'https://eu.i.posthog.com',
+    api_host: env.posthogHost,
     person_profiles: 'identified_only',
     autocapture: false,
     capture_pageview: false,
@@ -59,12 +61,12 @@ export const TrackEvents = {
 type TrackEventName = typeof TrackEvents[keyof typeof TrackEvents];
 
 export function trackEvent(event: TrackEventName, properties?: Record<string, string | number>): void {
-  if (isOptedOut() || !import.meta.env.VITE_POSTHOG_KEY) return;
+  if (isOptedOut() || !env.posthogKey) return;
   load().then(p => p.capture(event, properties)).catch(() => {});
 }
 
 export function trackPageview(): void {
-  if (isOptedOut() || !import.meta.env.VITE_POSTHOG_KEY) return;
+  if (isOptedOut() || !env.posthogKey) return;
   load().then(p => p.capture('$pageview')).catch(() => {});
 }
 
@@ -79,7 +81,7 @@ export function setAnalyticsDisabled(disabled: boolean): void {
     } else {
       localStorage.removeItem('tracksy_analytics_disabled');
     }
-    if (import.meta.env.VITE_POSTHOG_KEY) {
+    if (env.posthogKey) {
       load().then(p => disabled ? p.opt_out_capturing() : p.opt_in_capturing()).catch(() => {});
     }
   } catch { /* ignore */ }

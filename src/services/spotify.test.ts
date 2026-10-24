@@ -13,6 +13,7 @@ describe('playlistColors', () => {
     const a = playlistColors('playlist-abc-123');
     const b = playlistColors('playlist-abc-123');
     expect(a).toEqual(b);
+    expect(a).toBe(b);
   });
 
   it('returns a tuple of two hex color strings', () => {

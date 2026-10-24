@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useCallback, useContext, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 
 interface CtxValue {
@@ -11,8 +11,9 @@ const Ctx = createContext<CtxValue>({ open: false, setOpen: () => {}, toggle: ()
 
 export function ShortcutsOverlayProvider({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
-  const toggle = () => setOpen((v) => !v);
-  return <Ctx.Provider value={{ open, setOpen, toggle }}>{children}</Ctx.Provider>;
+  const toggle = useCallback(() => setOpen((v) => !v), []);
+  const value = useMemo(() => ({ open, setOpen, toggle }), [open, toggle]);
+  return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
 
 export const useShortcutsOverlay = () => useContext(Ctx);
