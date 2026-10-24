@@ -66,6 +66,11 @@ function Dashboard() {
   const preApplyIdsRef = useRef<string[]>([]);
   const preApplyKeysRef = useRef<string[]>([]);
 
+  useEffect(() => () => {
+    abortControllerRef.current?.abort();
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+  }, []);
+
   // Previous order stored for undo — captured just before apply
   const [lastApplied, setLastApplied] = useState<{ previous: Track[]; sorted: Track[] } | null>(null);
 
@@ -248,7 +253,7 @@ function Dashboard() {
   }
 
   function startReorder(previous: Track[], target: Track[], opts: { undo?: boolean; restore?: boolean } = {}) {
-    if (!tracksQuery.data || tracksQuery.isLoading || tracksQuery.isError) return;
+    if (!tracksQuery.data || tracksQuery.isLoading || tracksQuery.isFetching || tracksQuery.isError) return;
     if (unsupportedCount > 0) {
       setSortFeedback('This playlist contains local or unavailable tracks and cannot be safely reordered.');
       return;
@@ -282,7 +287,7 @@ function Dashboard() {
   }
 
   function handleApply() {
-    if (!tracksQuery.data || tracksQuery.isError || unsupportedCount > 0) return;
+    if (!tracksQuery.data || tracksQuery.isFetching || tracksQuery.isError || unsupportedCount > 0) return;
     const currentTracks = tracksQuery.data?.tracks ?? [];
     isUndoRef.current = false;
     isRestoreRef.current = false;
@@ -385,7 +390,7 @@ function Dashboard() {
 
   const isLoading = selectedPlaylist ? tracksQuery.isLoading : playlistsQuery.isLoading;
   const canWrite = Boolean(
-    selectedPlaylist && tracksQuery.data && !tracksQuery.isLoading &&
+    selectedPlaylist && tracksQuery.data && !tracksQuery.isLoading && !tracksQuery.isFetching &&
     !tracksQuery.isError && unsupportedCount === 0,
   );
 
@@ -443,6 +448,16 @@ function Dashboard() {
                 fontSize: 13,
               }}>
                 Could not load this playlist’s tracks. Go back and select it again before sorting.
+              </div>
+            )}
+            {tracksQuery.isFetching && tracksQuery.data && (
+              <div role="status" style={{
+                padding: '12px 24px',
+                borderBottom: '1px solid var(--border)',
+                color: 'var(--text-2)',
+                fontSize: 13,
+              }}>
+                Syncing playlist order with Spotify…
               </div>
             )}
 

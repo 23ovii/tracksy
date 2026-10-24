@@ -12,14 +12,23 @@ interface SortProgressProps {
 
 function SortProgress({ active, progress, label, onDone, color = '#1db954', colorEnd = '#5af5a0', rateLimitMsg }: SortProgressProps) {
   const doneFired = useRef(false);
+  const doneTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    if (!active) { doneFired.current = false; return; }
+    if (!active) {
+      doneFired.current = false;
+      if (doneTimerRef.current) clearTimeout(doneTimerRef.current);
+      return;
+    }
     if (progress >= 100 && !doneFired.current) {
       doneFired.current = true;
-      setTimeout(onDone, 300);
+      doneTimerRef.current = setTimeout(onDone, 300);
     }
   }, [active, progress, onDone]);
+
+  useEffect(() => () => {
+    if (doneTimerRef.current) clearTimeout(doneTimerRef.current);
+  }, []);
 
   if (!active && progress === 0) return null;
 

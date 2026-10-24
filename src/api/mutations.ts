@@ -44,7 +44,7 @@ export function useReorderPlaylist(playlistId: string, unsupportedCount: number)
 
     onSettled: () => {
       if (queryKey) {
-        qc.invalidateQueries({ queryKey });
+        return qc.invalidateQueries({ queryKey });
       }
     },
   });
