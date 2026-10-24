@@ -88,12 +88,15 @@ validated.
 - **Change:** Updated vulnerable transitive packages in the lockfile with compatible releases; `npm audit fix` reports zero vulnerabilities. No claim is made that the prior advisories were reachable from app code.
 - **Verification:** `npm audit` reports zero advisories; `npm ls` confirms the updated vulnerable package versions.
 
-#### [ ] S2 — Reduce exposure from browser-persisted OAuth tokens
+#### [x] S2 — Reduce exposure from browser-persisted OAuth tokens
 
 - **Severity:** Medium · **Effort:** L/M
-- **Location:** `src/auth/AuthProvider.tsx:17,40-45`
+- **Location:** `src/auth/AuthProvider.tsx`
 - **Problem:** Access and refresh tokens are stored in JavaScript-readable localStorage, making them accessible to same-origin script execution. No direct XSS was identified in the reviewed source.
 - **Suggested fix:** For stronger isolation, move token exchange/storage to a backend-for-frontend using secure HttpOnly cookies. If the client-only architecture remains, minimize scopes/lifetimes and document residual risk.
+- **Change:** Auth state is now stored in per-tab `sessionStorage`; existing auth state in `localStorage` is migrated and removed. Logout still synchronizes across tabs using a transient, non-secret local-storage signal. Sign-in state is not synchronized across tabs.
+- **Residual risk:** `sessionStorage` remains readable by same-origin JavaScript, so this reduces persistence and cross-tab exposure but does not protect tokens from active XSS. An HttpOnly-cookie backend-for-frontend would be required for that stronger isolation.
+- **Verification:** `src/auth/AuthProvider.test.tsx` covers legacy migration, tab-local persistence, logout, and cross-tab logout signaling.
 
 #### [x] S4 — Synchronize logout and avoid clearing unrelated storage
 

@@ -64,7 +64,7 @@ Scopes are hardcoded in `src/services/auth.ts`:
 All components use **inline `style={{...}}`** props referencing CSS variables. Do not use Tailwind `className` — Tailwind is present but used only for the minimal `src/styles/tailwind.css` config. Mixing `className` with inline styles is an inconsistency to avoid.
 
 ### Auth flow
-PKCE OAuth in `src/services/auth.ts`. Code verifier stored in `sessionStorage`, swapped for tokens on `/callback`, then deleted. Auth state (`access_token`, `refresh_token`, `expires_at`) persisted to `localStorage` under key `tracksy_auth_state`. `AuthContext` (`src/context/AuthContext.tsx`) manages token refresh 1 minute before expiry via `setTimeout` and syncs auth state across tabs via `storage` events. Access via `useAuth()` hook (`src/hooks/useAuth.tsx`).
+PKCE OAuth in `src/services/auth.ts`. Code verifier stored in `sessionStorage`, swapped for tokens on `/callback`, then deleted. Auth state (`access_token`, `refresh_token`, `expires_at`) is kept in per-tab `sessionStorage` under `tracksy_auth_state`; legacy local-storage auth state is migrated and removed. `AuthProvider` (`src/auth/AuthProvider.tsx`) refreshes tokens 1 minute before expiry and broadcasts logout across tabs with a transient, non-secret local-storage signal. Sign-in state is not synchronized across tabs. Access auth via `useAuth()` (`src/auth/AuthProvider.tsx`).
 
 ### Analytics
 `src/services/analytics.ts` wraps PostHog. Only fires when `VITE_POSTHOG_KEY` is set. Respects a user opt-out flag stored in `localStorage` (`tracksy_analytics_disabled`). `autocapture` and session recording are off; only explicit `trackEvent()` calls emit events. `TrackEvents` const object defines all event names.
@@ -144,12 +144,18 @@ Light/dark via `theme-light`/`theme-dark` class on `<html>`. Anti-flash script i
 
 | Key | Purpose |
 |---|---|
-| `tracksy_auth_state` | OAuth tokens and expiry |
+| `tracksy_auth_logout` | Transient, non-secret cross-tab logout signal |
 | `tracksy_presets_v1` | Saved sort presets (up to 20) |
 | `tracksy_sort_history_v1` | Sort history per playlist (up to 5 per playlist) |
 | `tracksy_analytics_disabled` | User analytics opt-out flag |
 | `tracksy_theme` | Theme preference (`dark`, `light`, `system`) |
 | `tracksy_show_preview` | Album art preview column visibility |
+
+### sessionStorage keys
+
+| Key | Purpose |
+|---|---|
+| `tracksy_auth_state` | Per-tab OAuth tokens and expiry |
 
 ### Deployment
 Vercel via Git integration. Every push to `main` triggers an automatic production deployment. `vercel.json` configures SPA routing and security headers. Environment variables are set in the Vercel dashboard.
