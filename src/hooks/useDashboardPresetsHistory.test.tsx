@@ -34,7 +34,10 @@ describe('useDashboardPresetsHistory', () => {
 
     await act(async () => root.render(<Probe playlistId="playlist-a" />));
     await act(async () => {
-      state.saveCurrentPreset('Favorites', 'artist', 'desc');
+      state.saveCurrentPreset('Favorites', [
+        { key: 'artist', direction: 'desc' },
+        { key: 'addedAt', direction: 'asc' },
+      ]);
     });
 
     const entry: HistoryEntry = {
@@ -49,6 +52,10 @@ describe('useDashboardPresetsHistory', () => {
 
     expect(state.presets).toHaveLength(1);
     expect(state.presets[0]?.name).toBe('Favorites');
+    expect(state.presets[0]?.criteria).toEqual([
+      { key: 'artist', direction: 'desc' },
+      { key: 'addedAt', direction: 'asc' },
+    ]);
     expect(state.history).toEqual([entry]);
 
     await act(async () => root.render(<Probe playlistId="playlist-b" />));
@@ -71,7 +78,7 @@ describe('useDashboardPresetsHistory', () => {
       throw new Error('Storage unavailable');
     });
 
-    expect(() => state.saveCurrentPreset('Favorites', 'artist', 'desc'))
+    expect(() => state.saveCurrentPreset('Favorites', [{ key: 'artist', direction: 'desc' }]))
       .toThrow('Storage unavailable');
   });
 });

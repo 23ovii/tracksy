@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import type { KeyboardEvent } from 'react';
 
 import type { SortPreset } from '../../services/presets';
-import { SORT_OPTIONS } from '../../utils/playlistUtils';
+import { sortCriteriaLabel } from '../../utils/playlistUtils';
 
 const PAGE = 5;
 
@@ -135,12 +135,15 @@ function PresetChip({ preset, onLoad, onDelete }: {
   onDelete: (id: string) => void;
 }) {
   const [hovered, setHovered] = useState(false);
-  const label = SORT_OPTIONS.find((o) => o.id === preset.sortBy)?.label ?? preset.sortBy;
-  const dir = preset.sortDir === 'asc' ? '↑' : '↓';
+  const primary = preset.criteria[0];
+  const detail = sortCriteriaLabel(preset.criteria);
+  const summary = primary
+    ? `${sortCriteriaLabel([primary])}${preset.criteria.length > 1 ? ` +${preset.criteria.length - 1}` : ''}`
+    : 'No sort';
 
   return (
     <div
-      title={`${label} ${dir}`}
+      title={detail}
       style={{
         display: 'inline-flex', alignItems: 'center',
         borderRadius: 50,
@@ -165,7 +168,7 @@ function PresetChip({ preset, onLoad, onDelete }: {
       >
         {preset.name}
         <span style={{ fontSize: 10, color: 'var(--text-3)', fontWeight: 600 }}>
-          {label} {dir}
+          {summary}
         </span>
       </button>
       <button

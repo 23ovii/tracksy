@@ -55,6 +55,7 @@ describe('useReorderOperation', () => {
       playlistId: 'playlist',
       playlistName: 'Playlist',
       sortBy: 'name' as const,
+      sortCriteria: [{ key: 'name' as const, direction: 'asc' as const }],
       sortedTracks: [track],
       previousTrackKeys: ['track-1#0'],
     };
@@ -95,6 +96,7 @@ describe('useReorderOperation', () => {
       playlistId: 'playlist',
       playlistName: 'Playlist',
       sortBy: 'name' as const,
+      sortCriteria: [{ key: 'name' as const, direction: 'asc' as const }],
       sortedTracks: [track],
       previousTrackKeys: ['track-1#0'],
     };
@@ -122,6 +124,7 @@ describe('useReorderOperation', () => {
       playlistId: 'playlist',
       playlistName: 'Playlist',
       sortBy: 'name' as const,
+      sortCriteria: [{ key: 'name' as const, direction: 'asc' as const }],
       sortedTracks: [track],
       previousTrackKeys: ['track-1#0'],
     };

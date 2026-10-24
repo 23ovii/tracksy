@@ -5,13 +5,13 @@ import { useReorderPlaylist } from '../api/mutations';
 import SortProgress from '../components/SortProgress.tsx';
 import Toast from '../components/Toast.tsx';
 import UndoToast from '../components/dashboard/UndoToast.tsx';
-import { SORT_OPTIONS, sortTracks } from '../utils/playlistUtils.ts';
-import type { SortKey, SortDir } from '../utils/playlistUtils.ts';
+import { SORT_OPTIONS, sortCriteriaLabel, sortTracks } from '../utils/playlistUtils.ts';
+import type { SortCriterion, SortKey } from '../utils/playlistUtils.ts';
 import type { Playlist, Track } from '../types';
 import AmbientBackdrop from '../components/dashboard/AmbientBackdrop';
 import LibraryPanel from '../components/dashboard/LibraryPanel';
 import SorterHeader from '../components/dashboard/SorterHeader';
-import SortChips from '../components/dashboard/SortChips';
+import SortCriteriaEditor from '../components/dashboard/SortCriteriaEditor';
 import PresetsRow from '../components/dashboard/PresetsRow';
 import TrackTable from '../components/dashboard/TrackTable';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
@@ -42,8 +42,9 @@ function Dashboard() {
   const tracks = useMemo(() => tracksQuery.data?.tracks ?? [], [tracksQuery.data]);
   const playlists = useMemo(() => playlistsQuery.data ?? [], [playlistsQuery.data]);
 
-  const [sortBy, setSortBy] = useState<SortKey>('name');
-  const [sortDir, setSortDir] = useState<SortDir>('asc');
+  const [sortCriteria, setSortCriteria] = useState<SortCriterion[]>([{ key: 'name', direction: 'asc' }]);
+  const primaryCriterion = sortCriteria[0];
+  const sortBy = primaryCriterion?.key ?? 'name';
   const [applied, setApplied] = useState(false);
   const [sortFeedback, setSortFeedback] = useState('');
   const [sortFeedbackIsError, setSortFeedbackIsError] = useState(false);
@@ -90,7 +91,7 @@ function Dashboard() {
 
   function handleSavePreset(name: string) {
     try {
-      saveCurrentPreset(name, sortBy, sortDir);
+      saveCurrentPreset(name, sortCriteria);
       trackEvent(TrackEvents.PRESET_SAVED);
       showToast('Preset saved');
     } catch (err: unknown) {
@@ -105,8 +106,7 @@ function Dashboard() {
 
   function handleLoadPreset(preset: SortPreset) {
     trackEvent(TrackEvents.PRESET_APPLIED);
-    setSortBy(preset.sortBy);
-    setSortDir(preset.sortDir);
+    setSortCriteria(preset.criteria);
     setApplied(false);
     updateSortFeedback('');
     setSortKey((k) => k + 1);
@@ -132,7 +132,7 @@ function Dashboard() {
     });
   }
 
-  const sorted = useMemo(() => sortTracks(tracks, sortBy, sortDir), [tracks, sortBy, sortDir]);
+  const sorted = useMemo(() => sortTracks(tracks, sortCriteria), [tracks, sortCriteria]);
   const totalMs = useMemo(() => tracks.reduce((s, t) => s + t.durationMs, 0), [tracks]);
 
   // diffMap: shows how far each track in `sorted` has moved from the current Spotify order.
@@ -182,7 +182,9 @@ function Dashboard() {
       d: () => {
         if (selectedPlaylist && sortBy !== 'discography') {
           trackEvent(TrackEvents.SHORTCUT_USED, { key: 'd' });
-          setSortDir((dir) => { setApplied(false); updateSortFeedback(''); setSortKey((k) => k + 1); return dir === 'asc' ? 'desc' : 'asc'; });
+          handleCriteriaChange(sortCriteria.map((criterion, index) => index === 0
+            ? { ...criterion, direction: criterion.direction === 'asc' ? 'desc' : 'asc' }
+            : criterion));
         }
       },
       enter: () => {
@@ -211,19 +213,37 @@ function Dashboard() {
     },
   );
 
-  function pickSort(id: SortKey) {
-    const toggling = sortBy === id && id !== 'discography';
-    const nextDir = toggling && sortDir === 'asc' ? 'desc' : 'asc';
-    if (toggling) {
-      setSortDir(nextDir);
-    } else {
-      setSortBy(id);
-      setSortDir('asc');
-    }
-    trackEvent(TrackEvents.SORT_PICKED, { sortBy: id, sortDir: nextDir });
+  function handleCriteriaChange(criteria: SortCriterion[]) {
+    const primary = criteria[0];
+    if (!primary) return;
+    setSortCriteria(criteria);
+    trackEvent(TrackEvents.SORT_PICKED, {
+      sortBy: primary.key,
+      sortDir: primary.direction,
+      sortCriteriaCount: criteria.length,
+    });
     setApplied(false);
     updateSortFeedback('');
     setSortKey((k) => k + 1);
+  }
+
+  function pickSort(id: SortKey) {
+    const currentIndex = sortCriteria.findIndex((criterion) => criterion.key === id);
+    if (currentIndex === 0 && id !== 'discography') {
+      handleCriteriaChange(sortCriteria.map((criterion, index) => index === 0
+        ? { ...criterion, direction: criterion.direction === 'asc' ? 'desc' : 'asc' }
+        : criterion));
+      return;
+    }
+    if (currentIndex > 0) {
+      const next = [...sortCriteria];
+      const [criterion] = next.splice(currentIndex, 1);
+      if (!criterion) return;
+      next.unshift(criterion);
+      handleCriteriaChange(next);
+      return;
+    }
+    handleCriteriaChange([{ key: id, direction: 'asc' }, ...sortCriteria.slice(1)]);
   }
 
   function handleBack() {
@@ -264,6 +284,7 @@ function Dashboard() {
       playlistId: selectedPlaylist.id,
       playlistName: selectedPlaylist.name,
       sortBy,
+      sortCriteria,
       sortedTracks: target,
       previousTrackKeys: kind === 'sort' ? buildTrackOccurrenceKeys(previous) : [],
     }, true);
@@ -287,13 +308,14 @@ function Dashboard() {
       updateSortFeedback(moves === 0 ? 'Already in this order.' : 'Reverted.');
       setTimeout(() => updateSortFeedback(''), TOAST_TIMEOUT_CANCEL_MS);
     } else {
-      const label = SORT_OPTIONS.find((o) => o.id === metadata.sortBy)?.label;
+      const label = sortCriteriaLabel(metadata.sortCriteria);
       if (moves === 0) {
         updateSortFeedback(`"${metadata.playlistName}" is already in this order.`);
       } else {
         setApplied(true);
         trackEvent(TrackEvents.SORT_APPLIED, {
           sortBy: metadata.sortBy,
+          sortCriteriaCount: metadata.sortCriteria.length,
           moves,
           trackCount: metadata.sortedTracks.length,
         });
@@ -428,7 +450,7 @@ function Dashboard() {
               </div>
             )}
 
-            <SortChips sortBy={sortBy} sortDir={sortDir} onPick={pickSort} disabled={applying} />
+            <SortCriteriaEditor criteria={sortCriteria} onChange={handleCriteriaChange} disabled={applying} />
 
             <PresetsRow
               presets={presets}
@@ -441,7 +463,7 @@ function Dashboard() {
             <SortProgress
               active={applying}
               progress={applyProgress}
-              label={isUndo ? 'original order' : SORT_OPTIONS.find((o) => o.id === sortBy)?.label}
+              label={isUndo ? 'original order' : sortCriteriaLabel(sortCriteria)}
               onDone={handleDone}
               color={accent}
               colorEnd={accent2}
@@ -505,7 +527,7 @@ function Dashboard() {
       {undoUntil !== null && !applying && !tracksQuery.isFetching && !tracksQuery.isError && (
         <UndoToast
           undoUntil={undoUntil}
-          sortBy={sortBy}
+          sortLabel={sortCriteriaLabel(sortCriteria)}
           accent={accent}
           accent2={accent2}
           onUndo={handleUndo}
