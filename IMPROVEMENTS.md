@@ -191,12 +191,14 @@ validated.
 - **Change:** Constrained the history drawer to `min(340px, 100vw)` so it cannot exceed the viewport width.
 - **Verification:** `SorterHeader.test.tsx` checks the viewport-constrained drawer width; `npm run validate` and `npm run build` passed.
 
-#### [ ] U5 — Show the diff preview only when the order changes
+#### [x] U5 — Show the diff preview only when the order changes
 
 - **Severity:** Low · **Effort:** S
 - **Location:** `src/pages/Dashboard.tsx` (diff map construction); `src/components/dashboard/TrackTable.tsx:81-92`
 - **Problem:** The diff map includes zero-delta entries, so checking `diffMap.size > 0` shows the “moved” summary and preview toggle even when every track is unchanged.
 - **Suggested fix:** Derive a `hasChanges` flag from nonzero deltas, or store only changed tracks in the map.
+- **Change:** The track table now checks for a nonzero position delta before rendering the moved summary or preview toggle.
+- **Verification:** `TrackTable.test.tsx` covers all-zero and changed-order diff maps; `npm run validate` and `npm run build` passed.
 
 ### Accessibility (a11y)
 
